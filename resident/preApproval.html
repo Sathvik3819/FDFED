@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Raise Issue Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        font-family: "Outfit", sans-serif;
+      }
+
+      body {
+        height: 100vh;
+        width: 100vw;
+        background-color: #f5faff;
+      }
+
+      nav {
+        border-bottom: 1px solid rgba(128, 128, 128, 0.547);
+      }
+
+      .bodyContainer {
+        display: grid;
+        grid-template-columns: 1fr 4fr;
+        grid-template-rows: auto auto;
+        row-gap: 30px;
+      }
+
+      .item1 {
+        grid-column: 1 / span 2;
+      }
+
+      .adCon {
+        height: 85vh;
+      }
+
+      .contentCon {
+        min-height: 83vh;
+        background-color: white;
+        position: relative;
+      }
+
+      .overlay-form {
+        background-color: rgba(0, 0, 0, 0.3);
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 999;
+      }
+
+      .scroll-container {
+        max-height: 500px;
+        overflow-y: scroll;
+        overflow-x: hidden;
+      }
+
+      
+    </style>
+  </head>
+
+  <body>
+    <div class="bodyContainer">
+      <!-- NAV -->
+      <nav
+        class="d-flex align-items-center pt-2 bg-white item1"
+        style="font-size: 19px; padding-left: 100px; gap: 100px"
+      >
+        <div class="pe-5 pb-1">
+          <img src="../Logo copy.png" alt="Logo" height="40px" />
+        </div>
+        <ul class="d-flex pt-3 gap-4 align-items-center list-unstyled">
+          <li class="nav-link px-2">Dashboard</li>
+          <li class="nav-link px-2" style="border-bottom: 5px solid #f4593c; color: #f4593c">Pre Approvals</li>
+          <li class="nav-link px-2">Common space bookings</li>
+          <li class="nav-link px-2">Payments</li>
+          <li class="nav-link px-2">Issue raising</li>
+          
+        </ul>
+      </nav>
+
+      <!-- AD SECTION -->
+      <div
+        class="item2 p-2 adCon d-flex justify-content-center align-items-center"
+      >
+        <div
+          class="d-flex justify-content-center align-items-center"
+          style="
+            height: 100%;
+            width: 80%;
+            border: 3px dashed #8ac5ff;
+            background-color: #45a2ff35;
+          "
+        >
+          <p
+            style="
+              transform: rotate(270deg);
+              font-size: 30px;
+              font-weight: 700;
+              color: #45a2ff;
+            "
+          >
+            Advertisement
+          </p>
+        </div>
+      </div>
+
+      <!-- CONTENT SECTION -->
+      <div class="item3 p-3 contentCon me-3 border">
+        <div class="d-flex justify-content-between align-items-center">
+          <h4 class="fw-bold ps-2 pt-2">Pre Approvals</h4>
+          <button
+            id="Raiseissue"
+            onclick="toggleIssueForm(true)"
+            class="p-2 rounded-2 btn"
+            style="font-size: 20px; background-color: #f4593c; color: white"
+          >
+            Pre Approve
+          </button>
+        </div>
+
+        <!-- TABLE -->
+        <div id="issuesTable" class="table-responsive px-2 pt-3">
+          <div>
+            <div
+              class="p-2 text-center"
+              style="
+                background-color: #8ac0f667;
+                font-size: 24px;
+                font-weight: 700;
+              "
+            >
+              Your Requests
+            </div>
+            <div class="px-5 py-3 d-flex flex-column scroll-container">
+              <div
+                class="px-3 py-2 mb-3"
+                style="
+                  max-width: 800px;
+                  background-color: rgba(255, 217, 0, 0.309);
+                  border-left: 6px solid gold;
+                  border-radius: 5px 0 0 5px;
+                "
+              >
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5 style="color: rgb(93, 79, 0)">Visitor Name</h5>
+                  <span
+                    class="d-flex justify-content-center align-items-center"
+                  >
+                    <p
+                      class="px-3 py-2 rounded-5"
+                      style="background-color: rgba(255, 0, 0, 0.335)"
+                    >
+                      Pending
+                    </p>
+                  </span>
+                </div>
+                <div class="d-flex gap-5 align-items-start">
+                  <p><b class="pe-1">Purpose:</b>Delivery</p>
+                  <p><b class="pe-1">Date:</b>25/08/2025</p>
+                  <p><b class="pe-1">Time:</b>2:30 PM</p>
+                  <p><b class="pe-1">Phone no:</b>9292548730</p>
+                </div>
+              </div>
+
+              <div
+                class="px-3 py-2 mb-3"
+                style="
+                  max-width: 800px;
+                  background-color: rgba(255, 217, 0, 0.309);
+                  border-left: 6px solid gold;
+                  border-radius: 5px 0 0 5px;
+                "
+              >
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5 style="color: rgb(93, 79, 0)">Visitor Name</h5>
+                  <span
+                    class="d-flex justify-content-center align-items-center"
+                  >
+                    <p
+                      class="px-3 py-2 rounded-5"
+                      style="background-color: rgba(255, 0, 0, 0.335)"
+                    >
+                      Pending
+                    </p>
+                  </span>
+                </div>
+                <div class="d-flex gap-5 align-items-start">
+                  <p><b class="pe-1">Purpose:</b>Delivery</p>
+                  <p><b class="pe-1">Date:</b>25/08/2025</p>
+                  <p><b class="pe-1">Time:</b>2:30 PM</p>
+                  <p><b class="pe-1">Phone no:</b>9292548730</p>
+                </div>
+              </div>
+
+              <div
+                class="px-3 py-2 mb-3"
+                style="
+                  max-width: 800px;
+                  background-color: rgba(255, 217, 0, 0.309);
+                  border-left: 6px solid gold;
+                  border-radius: 5px 0 0 5px;
+                "
+              >
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5 style="color: rgb(93, 79, 0)">Visitor Name</h5>
+                  <span
+                    class="d-flex justify-content-center align-items-center"
+                  >
+                    <p
+                      class="px-3 py-2 rounded-5"
+                      style="background-color: rgba(255, 0, 0, 0.335)"
+                    >
+                      Pending
+                    </p>
+                  </span>
+                </div>
+                <div class="d-flex gap-5 align-items-start">
+                  <p><b class="pe-1">Purpose:</b>Delivery</p>
+                  <p><b class="pe-1">Date:</b>25/08/2025</p>
+                  <p><b class="pe-1">Time:</b>2:30 PM</p>
+                  <p><b class="pe-1">Phone no:</b>9292548730</p>
+                </div>
+              </div>
+
+              <div
+                class="px-3 py-2 mb-3"
+                style="
+                  max-width: 800px;
+                  background-color: rgba(255, 217, 0, 0.309);
+                  border-left: 6px solid gold;
+                  border-radius: 5px 0 0 5px;
+                "
+              >
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5 style="color: rgb(93, 79, 0)">Visitor Name</h5>
+                  <span
+                    class="d-flex justify-content-center align-items-center"
+                  >
+                    <p
+                      class="px-3 py-2 rounded-5"
+                      style="background-color: rgba(255, 0, 0, 0.335)"
+                    >
+                      Pending
+                    </p>
+                  </span>
+                </div>
+                <div class="d-flex gap-5 align-items-start">
+                  <p><b class="pe-1">Purpose:</b>Delivery</p>
+                  <p><b class="pe-1">Date:</b>25/08/2025</p>
+                  <p><b class="pe-1">Time:</b>2:30 PM</p>
+                  <p><b class="pe-1">Phone no:</b>9292548730</p>
+                </div>
+              </div>
+
+              <div
+                class="px-3 py-2 mb-3"
+                style="
+                  max-width: 800px;
+                  background-color: rgba(255, 217, 0, 0.309);
+                  border-left: 6px solid gold;
+                  border-radius: 5px 0 0 5px;
+                "
+              >
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5 style="color: rgb(93, 79, 0)">Visitor Name</h5>
+                  <span
+                    class="d-flex justify-content-center align-items-center"
+                  >
+                    <p
+                      class="px-3 py-2 rounded-5"
+                      style="background-color: rgba(255, 0, 0, 0.335)"
+                    >
+                      Pending
+                    </p>
+                  </span>
+                </div>
+                <div class="d-flex gap-5 align-items-start">
+                  <p><b class="pe-1">Purpose:</b>Delivery</p>
+                  <p><b class="pe-1">Date:</b>25/08/2025</p>
+                  <p><b class="pe-1">Time:</b>2:30 PM</p>
+                  <p><b class="pe-1">Phone no:</b>9292548730</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORM -->
+        <div
+          id="submitIssueForm"
+          class="d-none overlay-form d-flex justify-content-center align-items-center"
+        >
+          <div class="card p-4 shadow-sm w-100" style="max-width: 900px">
+            <h4 class="fw-bold mb-4">Raise an Issue</h4>
+
+            <div class="mb-3">
+              <label for="name" class="form-label fw-semibold"
+                >Visitor Visitor Name :</label
+              >
+              <input type="text" class="form-control" id="name" />
+            </div>
+
+            <div class="mb-3">
+              <label for="phone" class="form-label fw-semibold"
+                >Visitor Phone no :</label
+              >
+              <input type="text" class="form-control" id="phone" />
+            </div>
+
+            <div class="mb-3">
+              <label for="category" class="form-label fw-semibold"
+                >Visitor type :</label
+              >
+              <select class="form-select" id="category">
+                <option selected disabled>Select any category</option>
+                <option value="electricity">Guest</option>
+                <option value="water">Delivery</option>
+                <option value="cleaning">Service provider</option>
+                <option value="maintenance">Maintenance</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="date" class="form-label fw-semibold"
+                >Date of Visit :</label
+              >
+              <input type="date" class="form-control" id="date" />
+            </div>
+
+            <div class="mb-3">
+              <label for="time" class="form-label fw-semibold">Time :</label>
+              <input type="time" class="form-control" id="time" />
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <button
+                onclick="toggleIssueForm(false)"
+                type="button"
+                class="btn btn-outline-secondary"
+                onmouseover="this.style.backgroundColor='red'"
+                onmouseout="this.style.backgroundColor=''"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary px-4">
+                Submit Issue
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+      function toggleIssueForm(show) {
+        const tableDiv = document.getElementById("issuesTable");
+        const formDiv = document.getElementById("submitIssueForm");
+        const raiseBtn = document.getElementById("Raiseissue");
+
+        if (show) {
+          formDiv.classList.remove("d-none");
+          raiseBtn.classList.add("d-none");
+        } else {
+          formDiv.classList.add("d-none");
+          raiseBtn.classList.remove("d-none");
+          tableDiv.classList.remove("d-none");
+        }
+      }
+    </script>
+  </body>
+</html>
