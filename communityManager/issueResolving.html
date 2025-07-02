@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Issue Management</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #0d6efd;
+        --primary-light: #e8f2ff;
+        --secondary: #ff6b35;
+        --dark: #212529;
+        --light: #f8f9fa;
+        --gray: #6c757d;
+        --success: #198754;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --info: #0dcaf0;
+        --border-radius: 12px;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+      }
+
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Outfit", sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+        width: 100%;
+        overflow-x: hidden;
+        background-color: #f0f7ff;
+        color: #333;
+      }
+
+      nav {
+        border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .bodyContainer {
+        display: grid;
+        grid-template-columns: 1fr 5fr;
+        padding: 20px;
+        gap: 20px;
+      }
+
+      .adCon {
+        height: calc(100vh - 80px);
+        position: sticky;
+        top: 80px;
+      }
+
+      .contentCon {
+        background-color: white;
+        min-height: 90vh;
+        overflow: hidden;
+        padding: 25px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+      }
+
+      .advertisement {
+        height: 100%;
+        width: 100%;
+        border: 3px dashed #8ac5ff;
+        background-color: #45a2ff15;
+        border-radius: var(--border-radius);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: var(--transition);
+      }
+
+      .advertisement:hover {
+        background-color: #45a2ff25;
+        transform: rotate(1deg);
+      }
+
+      .ad-text {
+        transform: rotate(270deg);
+        font-size: 2rem;
+        font-weight: 700;
+        color: #45a2ff;
+        letter-spacing: 3px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Page Header */
+      .page-header {
+        margin-bottom: 30px;
+      }
+
+      .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        position: relative;
+        padding-bottom: 10px;
+      }
+
+      .page-title::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 450px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        border-radius: 4px;
+      }
+
+      /* Tabs */
+      .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+        border-bottom: 1px solid #eaeaea;
+        padding-bottom: 10px;
+      }
+
+      .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        font-weight: 500;
+        border-radius: 30px;
+        transition: var(--transition);
+        color: var(--gray);
+      }
+
+      .tab.active {
+        background-color: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+      }
+
+      .tab:not(.active):hover {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: var(--primary);
+      }
+
+      /* Card Styles */
+      .card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 25px;
+        box-shadow: var(--shadow);
+        margin-bottom: 25px;
+        transition: var(--transition);
+        border: none;
+      }
+
+      .card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 20px;
+        position: relative;
+        padding-bottom: 10px;
+      }
+
+      .card-title::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        border-radius: 3px;
+      }
+
+      /* Form Styles */
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--dark);
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 15px;
+        transition: var(--transition);
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      /* Table Styles */
+      .issues-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      .issues-table th {
+        background-color: var(--primary-light);
+        color: var(--dark);
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .issues-table td {
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .issues-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .issues-table tr:hover {
+        background-color: #f8f9fa;
+      }
+
+      /* Status Badges */
+      .status-pending {
+        background-color: #fff3cd;
+        color: var(--warning);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-block;
+      }
+
+      .status-in-progress {
+        background-color: #cfe2ff;
+        color: var(--primary);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-block;
+      }
+
+      .status-resolved {
+        background-color: #d1e7dd;
+        color: var(--success);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-block;
+      }
+
+      /* Action Buttons */
+      .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 25px;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+      }
+
+      .btn-primary:hover {
+        background-color: #0b5ed7;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+      }
+
+      .btn-secondary {
+        background-color: var(--gray);
+        color: white;
+        border: none;
+      }
+
+      .btn-secondary:hover {
+        background-color: #5c636a;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3);
+      }
+
+      .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.875rem;
+      }
+
+      /* Layout */
+      .issues-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+      }
+
+      /* Responsive Styles */
+      @media (max-width: 992px) {
+        .bodyContainer {
+          grid-template-columns: 1fr;
+        }
+
+        .adCon {
+          height: auto;
+          position: relative;
+          top: 0;
+          margin-bottom: 20px;
+        }
+
+        .ad-text {
+          transform: rotate(0);
+          padding: 30px;
+        }
+
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+
+        .issues-container {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 768px) {
+        nav ul {
+          gap: 10px !important;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+
+        .tabs {
+          flex-direction: column;
+        }
+
+        .tab {
+          width: 100%;
+          text-align: center;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav
+      class="d-flex align-items-center pt-2 bg-white"
+      style="font-size: 22px; padding-left: 100px; gap: 100px"
+    >
+      <div class="pe-5 pb-1">
+        <img src="../Logo copy.png" alt="Logo" height="40px" />
+      </div>
+      <ul class="d-flex pt-3 gap-4 align-items-center list-unstyled">
+        <li class="px-2" style="border-bottom: 5px solid orangered">
+          Dashboard
+        </li>
+        <li class="px-2">Visitor management</li>
+        <li class="px-2">Pre approvals</li>
+        <li class="px-2">Profile</li>
+      </ul>
+    </nav>
+
+    <div class="bodyContainer">
+      <!-- AD SECTION -->
+      <div class="adCon d-flex justify-content-center align-items-center">
+        <div class="advertisement">
+          <p class="ad-text">Advertisement</p>
+        </div>
+      </div>
+
+      <!-- CONTENT SECTION -->
+      <div class="contentCon">
+        <div class="page-header">
+          <div class="page-title">Assign and Resolve Issues</div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <div class="tab active" id="assign-tab">Assign Issues</div>
+          <div class="tab" id="history-tab">Assigned History</div>
+        </div>
+
+        <!-- Assign Issues Card (Visible by default) -->
+        <div class="card" id="assign-card">
+          <div class="issues-container">
+            <div>
+              <h3 class="card-title">Current Issues</h3>
+              <table class="issues-table">
+                <thead>
+                  <tr>
+                    <th>Issue ID</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>ISS-001</td>
+                    <td>
+                      <strong>Leaking Pipe in Common Area</strong><br />
+                      <small>Reported by: John Doe</small>
+                    </td>
+                    <td><span class="status-pending">Pending</span></td>
+                    <td>
+                      <button class="btn btn-primary btn-sm assign-btn">
+                        Assign
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>ISS-002</td>
+                    <td>
+                      <strong>Broken Elevator</strong><br />
+                      <small>Reported by: Jane Smith</small>
+                    </td>
+                    <td><span class="status-pending">Pending</span></td>
+                    <td>
+                      <button class="btn btn-primary btn-sm assign-btn">
+                        Assign
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>ISS-003</td>
+                    <td>
+                      <strong>Garbage Disposal Issue</strong><br />
+                      <small>Reported by: Robert Johnson</small>
+                    </td>
+                    <td><span class="status-in-progress">In Progress</span></td>
+                    <td>
+                      <button class="btn btn-secondary btn-sm" disabled>
+                        Assigned
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>ISS-004</td>
+                    <td>
+                      <strong>Parking Space Dispute</strong><br />
+                      <small>Reported by: Sarah Williams</small>
+                    </td>
+                    <td><span class="status-resolved">Resolved</span></td>
+                    <td>
+                      <button class="btn btn-secondary btn-sm view-btn">View</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div>
+              <h3 class="card-title">Assign Issue</h3>
+              <form id="issueAssignForm">
+                <div class="form-group">
+                  <label for="issueID">Issue ID</label>
+                  <input
+                    type="text"
+                    id="issueID"
+                    class="form-control"
+                    readonly
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="workerAssigned">Assign to Worker</label>
+                  <select id="workerAssigned" class="form-control" required>
+                    <option value="" disabled selected>Select a Worker</option>
+                    <option value="1">Michael Brown - Plumber</option>
+                    <option value="2">David Wilson - Electrician</option>
+                    <option value="3">Lisa Taylor - Handyman</option>
+                    <option value="4">James Anderson - Maintenance</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="deadline">Deadline</label>
+                  <input type="date" id="deadline" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                  <label for="remarks">Remarks</label>
+                  <textarea
+                    id="remarks"
+                    class="form-control"
+                    rows="3"
+                    required
+                  ></textarea>
+                </div>
+
+                <div class="action-buttons">
+                  <button type="reset" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Reset
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-send-check"></i> Assign Task
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assigned History Card (Hidden by default) -->
+        <div class="card" id="history-card" style="display: none;">
+          <div class="card-title">Assigned Issues History</div>
+          <table class="issues-table" id="history-table">
+            <thead>
+              <tr>
+                <th>Issue ID</th>
+                <th>Title</th>
+                <th>Worker Assigned</th>
+                <th>Status</th>
+                <th>Resolution Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ISS-004</td>
+                <td>
+                  <strong>Parking Space Dispute</strong><br />
+                  <small>Reported by: Sarah Williams</small>
+                </td>
+                <td>James Anderson</td>
+                <td><span class="status-resolved">Resolved</span></td>
+                <td>2023-05-15</td>
+                <td>
+                  <button class="btn btn-secondary btn-sm view-btn">View Details</button>
+                </td>
+              </tr>
+              <tr>
+                <td>ISS-005</td>
+                <td>
+                  <strong>Broken Window</strong><br />
+                  <small>Reported by: Mark Davis</small>
+                </td>
+                <td>Lisa Taylor</td>
+                <td><span class="status-resolved">Resolved</span></td>
+                <td>2023-05-10</td>
+                <td>
+                  <button class="btn btn-secondary btn-sm view-btn">View Details</button>
+                </td>
+              </tr>
+              <tr>
+                <td>ISS-006</td>
+                <td>
+                  <strong>Lighting Issue</strong><br />
+                  <small>Reported by: Emily Clark</small>
+                </td>
+                <td>David Wilson</td>
+                <td><span class="status-resolved">Resolved</span></td>
+                <td>2023-05-05</td>
+                <td>
+                  <button class="btn btn-secondary btn-sm view-btn">View Details</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Get all elements
+        const assignTab = document.getElementById("assign-tab");
+        const historyTab = document.getElementById("history-tab");
+        const assignCard = document.getElementById("assign-card");
+        const historyCard = document.getElementById("history-card");
+        const historyTable = document.getElementById("history-table");
+        const assignButtons = document.querySelectorAll(".assign-btn");
+        const viewButtons = document.querySelectorAll(".view-btn");
+        const issueIDField = document.getElementById("issueID");
+        const issueAssignForm = document.getElementById("issueAssignForm");
+
+        // Tab switching functionality
+        assignTab.addEventListener("click", function() {
+          // Set active tab styling
+          assignTab.classList.add("active");
+          historyTab.classList.remove("active");
+          
+          // Show assign card and hide history card
+          assignCard.style.display = "block";
+          historyCard.style.display = "none";
+        });
+
+        historyTab.addEventListener("click", function() {
+          // Set active tab styling
+          historyTab.classList.add("active");
+          assignTab.classList.remove("active");
+          
+          // Show history card and table, hide assign card
+          historyCard.style.display = "block";
+          historyTable.style.display = "table";
+          assignCard.style.display = "none";
+        });
+
+        // Assign button functionality
+        assignButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const row = this.closest("tr");
+            const issueID = row.querySelector("td:first-child").textContent;
+            const issueTitle = row.querySelector("td:nth-child(2) strong").textContent;
+            
+            // Set the issue ID in the form
+            issueIDField.value = issueID;
+            
+            // Scroll to the form
+            document.getElementById("issueAssignForm").scrollIntoView({
+              behavior: "smooth"
+            });
+            
+            // Highlight the form
+            issueAssignForm.style.boxShadow = "0 0 0 3px rgba(13, 110, 253, 0.3)";
+            setTimeout(() => {
+              issueAssignForm.style.boxShadow = "var(--shadow)";
+            }, 2000);
+          });
+        });
+
+        // View button functionality
+        viewButtons.forEach((button) => {
+          button.addEventListener("click", function() {
+            const row = this.closest("tr");
+            const issueID = row.querySelector("td:first-child").textContent;
+            alert(`Viewing details for issue: ${issueID}`);
+          });
+        });
+
+        // Form submission
+        issueAssignForm.addEventListener("submit", function(e) {
+          e.preventDefault();
+          
+          // Get form values
+          const issueID = issueIDField.value;
+          const worker = document.getElementById("workerAssigned").value;
+          const deadline = document.getElementById("deadline").value;
+          const remarks = document.getElementById("remarks").value;
+          
+          // In a real app, you would send this data to the server
+          console.log("Assigning issue:", {
+            issueID,
+            worker,
+            deadline,
+            remarks
+          });
+          
+          // Show success message
+          alert(`Issue ${issueID} has been assigned successfully!`);
+          
+          // Reset form
+          this.reset();
+        });
+
+        // Initialize with Assign Issues tab active
+        assignTab.classList.add("active");
+        assignCard.style.display = "block";
+        historyCard.style.display = "none";
+      });
+    </script>
+  </body>
+</html>

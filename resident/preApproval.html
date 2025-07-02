@@ -1,388 +1,695 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Raise Issue Dashboard</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        font-family: "Outfit", sans-serif;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pre Approvals Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #0d6efd;
+      --primary-light: #e8f2ff;
+      --secondary: #ff6b35;
+      --dark: #212529;
+      --light: #f8f9fa;
+      --gray: #6c757d;
+      --success: #198754;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --info: #0dcaf0;
+      --border-radius: 12px;
+      --shadow: 0 4px 12px rgba(0,0,0,0.08);
+      --transition: all 0.3s ease;
+    }
+    
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Outfit", sans-serif;
+    }
 
-      body {
-        height: 100vh;
-        width: 100vw;
-        background-color: #f5faff;
-      }
+    body {
+      min-height: 100vh;
+      width: 100%;
+      overflow-x: hidden;
+      background-color: #f0f7ff;
+      color: #333;
+    }
 
-      nav {
-        border-bottom: 1px solid rgba(128, 128, 128, 0.547);
-      }
+    nav {
+      border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
 
-      .bodyContainer {
-        display: grid;
-        grid-template-columns: 1fr 4fr;
-        grid-template-rows: auto auto;
-        row-gap: 30px;
-      }
+    .bodyContainer {
+      display: grid;
+      grid-template-columns: 1fr 5fr;
+      padding: 20px;
+      gap: 20px;
+    }
 
-      .item1 {
-        grid-column: 1 / span 2;
-      }
+    .adCon {
+      height: calc(100vh - 80px);
+      position: sticky;
+      top: 80px;
+    }
 
-      .adCon {
-        height: 85vh;
-      }
+    .contentCon {
+      background-color: white;
+      min-height: 90vh;
+      overflow: hidden;
+      padding: 25px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+    }
 
-      .contentCon {
-        min-height: 83vh;
-        background-color: white;
-        position: relative;
-      }
+    .section-title {
+      position: relative;
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+      border-bottom: 2px solid #e9ecef;
+    }
+    
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 120px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 3px;
+    }
+    
+    .card-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 10px 0;
+      letter-spacing: -1px;
+    }
+    
+    .card-label {
+      color: var(--gray);
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    
+    .advertisement {
+      height: 100%;
+      width: 100%;
+      border: 3px dashed #8ac5ff;
+      background-color: #45a2ff15;
+      border-radius: var(--border-radius);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: var(--transition);
+    }
+    
+    .advertisement:hover {
+      background-color: #45a2ff25;
+      transform: rotate(1deg);
+    }
+    
+    .ad-text {
+      transform: rotate(270deg);
+      font-size: 2rem;
+      font-weight: 700;
+      color: #45a2ff;
+      letter-spacing: 3px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 7px 12px 12px 7px;
+      padding: 25px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      transition: var(--transition);
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
 
-      .overlay-form {
-        background-color: rgba(0, 0, 0, 0.3);
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 999;
+    /* Request Card Styles */
+    .request-card {
+      border-left: 4px solid var(--warning);
+      background-color: rgba(255, 193, 7, 0.1);
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: var(--transition);
+      max-width: 800px;
+    }
+    
+    .request-card:hover {
+      background-color: rgba(255, 193, 7, 0.2);
+      transform: translateX(5px);
+    }
+    
+    .request-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .request-title {
+      color: #856404;
+      font-weight: 600;
+    }
+    
+    .request-details {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .request-details p {
+      margin-bottom: 0;
+    }
+    
+    .status-badge {
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .status-approved {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .status-rejected {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .action-btn {
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .action-btn.approve {
+      background-color: var(--success);
+      color: white;
+      border: none;
+      margin-right: 5px;
+    }
+    
+    .action-btn.reject {
+      background-color: var(--danger);
+      color: white;
+      border: none;
+    }
+    
+    .action-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    /* Popup Styles */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(5px);
+      background-color: rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    
+    .popup-content {
+      background: white;
+      padding: 30px;
+      width: 450px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: var(--border-radius);
+      position: relative;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      animation: popupFadeIn 0.3s ease-out;
+    }
+    
+    @keyframes popupFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
       }
-
-      .scroll-container {
-        max-height: 500px;
-        overflow-y: scroll;
-        overflow-x: hidden;
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
-
+    }
+    
+    .form-group {
+      margin-bottom: 18px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: var(--dark);
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: var(--transition);
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+    }
+    
+    .form-button {
+      background-color: var(--success);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      transition: var(--transition);
+      width: 100%;
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .form-button:hover {
+      background-color: #157347;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(25, 135, 84, 0.3);
+    }
+    
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 28px;
+      color: var(--danger);
+      cursor: pointer;
+      transition: var(--transition);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    
+    .close-btn:hover {
+      color: #bd2130;
+      background-color: rgba(220, 53, 69, 0.1);
+      transform: rotate(90deg);
+    }
+    
+    .form-title {
+      text-align: center;
+      margin-bottom: 25px;
+      color: var(--primary);
+      font-weight: 600;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    
+    .form-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 4px;
+    }
+    
+    .scroll-container {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+    
+    .section-header {
+      background-color: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 1.25rem;
+      padding: 15px;
+      border-radius: var(--border-radius);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    @media (max-width: 992px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
       
-    </style>
-  </head>
+      .bodyContainer {
+        grid-template-columns: 1fr;
+      }
+      
+      .adCon {
+        height: auto;
+        position: relative;
+        top: 0;
+        margin-bottom: 20px;
+      }
+      
+      .ad-text {
+        transform: rotate(0);
+        padding: 30px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      nav ul {
+        gap: 10px !important;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .request-details {
+        flex-direction: column;
+        gap: 5px;
+      }
+    }
+  </style>
+</head>
 
-  <body>
-    <div class="bodyContainer">
-      <!-- NAV -->
-      <nav
-        class="d-flex align-items-center pt-2 bg-white item1"
-        style="font-size: 19px; padding-left: 100px; gap: 100px"
-      >
-        <div class="pe-5 pb-1">
-          <img src="../Logo copy.png" alt="Logo" height="40px" />
+<body>
+  <nav class="d-flex align-items-center pt-2 bg-white" style="font-size: 20px; padding-left: 100px; gap: 100px">
+    <div class="pe-5 pb-1">
+      <img src="../Logo copy.png" alt="Logo" height="40px" />
+    </div>
+    <ul class="d-flex pt-3 gap-4 align-items-center list-unstyled">
+      <li class="px-2">Dashboard</li>
+      <li class="px-2" style="border-bottom: 5px solid #ff6b35;">Pre Approvals</li>
+      <li class="px-2">Common Space Bookings</li>
+      <li class="px-2">Payments</li>
+      <li class="px-2">Issue Raising</li>
+    </ul>
+  </nav>
+
+  <div class="bodyContainer">
+    <!-- AD SECTION -->
+    <div class="adCon d-flex justify-content-center align-items-center">
+      <div class="advertisement">
+        <p class="ad-text">
+          Advertisement
+        </p>
+      </div>
+    </div>
+
+    <!-- CONTENT SECTION -->
+    <div class="contentCon">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="section-title">Pre Approvals</h4>
+        <button id="preApproveBtn" class="btn btn-primary" onclick="openForm('preapproval')">
+          <i class="bi bi-plus-lg me-2"></i>Pre Approve
+        </button>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid mb-4">
+        <div class="stat-card" style="border-left: 6px solid var(--success);">
+          <p class="card-label">Approved Requests</p>
+          <h2 class="card-value text-success">12</h2>
         </div>
-        <ul class="d-flex pt-3 gap-4 align-items-center list-unstyled">
-          <li class="nav-link px-2">Dashboard</li>
-          <li class="nav-link px-2" style="border-bottom: 5px solid #f4593c; color: #f4593c">Pre Approvals</li>
-          <li class="nav-link px-2">Common space bookings</li>
-          <li class="nav-link px-2">Payments</li>
-          <li class="nav-link px-2">Issue raising</li>
-          
-        </ul>
-      </nav>
-
-      <!-- AD SECTION -->
-      <div
-        class="item2 p-2 adCon d-flex justify-content-center align-items-center"
-      >
-        <div
-          class="d-flex justify-content-center align-items-center"
-          style="
-            height: 100%;
-            width: 80%;
-            border: 3px dashed #8ac5ff;
-            background-color: #45a2ff35;
-          "
-        >
-          <p
-            style="
-              transform: rotate(270deg);
-              font-size: 30px;
-              font-weight: 700;
-              color: #45a2ff;
-            "
-          >
-            Advertisement
-          </p>
+        <div class="stat-card" style="border-left: 6px solid var(--warning);">
+          <p class="card-label">Pending Requests</p>
+          <h2 class="card-value text-warning">5</h2>
+        </div>
+        <div class="stat-card" style="border-left: 6px solid var(--danger);">
+          <p class="card-label">Rejected Requests</p>
+          <h2 class="card-value text-danger">3</h2>
         </div>
       </div>
 
-      <!-- CONTENT SECTION -->
-      <div class="item3 p-3 contentCon me-3 border">
-        <div class="d-flex justify-content-between align-items-center">
-          <h4 class="fw-bold ps-2 pt-2">Pre Approvals</h4>
-          <button
-            id="Raiseissue"
-            onclick="toggleIssueForm(true)"
-            class="p-2 rounded-2 btn"
-            style="font-size: 20px; background-color: #f4593c; color: white"
-          >
-            Pre Approve
-          </button>
+      <!-- Requests Section -->
+      <div class="table-container">
+        <div class="section-header">
+          Your Visitor Requests
         </div>
-
-        <!-- TABLE -->
-        <div id="issuesTable" class="table-responsive px-2 pt-3">
-          <div>
-            <div
-              class="p-2 text-center"
-              style="
-                background-color: #8ac0f667;
-                font-size: 24px;
-                font-weight: 700;
-              "
-            >
-              Your Requests
+        <div class="scroll-container">
+          <div class="request-card">
+            <div class="request-header">
+              <h5 class="request-title">John Doe</h5>
+              <span class="status-badge status-pending">Pending</span>
             </div>
-            <div class="px-5 py-3 d-flex flex-column scroll-container">
-              <div
-                class="px-3 py-2 mb-3"
-                style="
-                  max-width: 800px;
-                  background-color: rgba(255, 217, 0, 0.309);
-                  border-left: 6px solid gold;
-                  border-radius: 5px 0 0 5px;
-                "
-              >
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 style="color: rgb(93, 79, 0)">Visitor Name</h5>
-                  <span
-                    class="d-flex justify-content-center align-items-center"
-                  >
-                    <p
-                      class="px-3 py-2 rounded-5"
-                      style="background-color: rgba(255, 0, 0, 0.335)"
-                    >
-                      Pending
-                    </p>
-                  </span>
-                </div>
-                <div class="d-flex gap-5 align-items-start">
-                  <p><b class="pe-1">Purpose:</b>Delivery</p>
-                  <p><b class="pe-1">Date:</b>25/08/2025</p>
-                  <p><b class="pe-1">Time:</b>2:30 PM</p>
-                  <p><b class="pe-1">Phone no:</b>9292548730</p>
-                </div>
-              </div>
-
-              <div
-                class="px-3 py-2 mb-3"
-                style="
-                  max-width: 800px;
-                  background-color: rgba(255, 217, 0, 0.309);
-                  border-left: 6px solid gold;
-                  border-radius: 5px 0 0 5px;
-                "
-              >
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 style="color: rgb(93, 79, 0)">Visitor Name</h5>
-                  <span
-                    class="d-flex justify-content-center align-items-center"
-                  >
-                    <p
-                      class="px-3 py-2 rounded-5"
-                      style="background-color: rgba(255, 0, 0, 0.335)"
-                    >
-                      Pending
-                    </p>
-                  </span>
-                </div>
-                <div class="d-flex gap-5 align-items-start">
-                  <p><b class="pe-1">Purpose:</b>Delivery</p>
-                  <p><b class="pe-1">Date:</b>25/08/2025</p>
-                  <p><b class="pe-1">Time:</b>2:30 PM</p>
-                  <p><b class="pe-1">Phone no:</b>9292548730</p>
-                </div>
-              </div>
-
-              <div
-                class="px-3 py-2 mb-3"
-                style="
-                  max-width: 800px;
-                  background-color: rgba(255, 217, 0, 0.309);
-                  border-left: 6px solid gold;
-                  border-radius: 5px 0 0 5px;
-                "
-              >
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 style="color: rgb(93, 79, 0)">Visitor Name</h5>
-                  <span
-                    class="d-flex justify-content-center align-items-center"
-                  >
-                    <p
-                      class="px-3 py-2 rounded-5"
-                      style="background-color: rgba(255, 0, 0, 0.335)"
-                    >
-                      Pending
-                    </p>
-                  </span>
-                </div>
-                <div class="d-flex gap-5 align-items-start">
-                  <p><b class="pe-1">Purpose:</b>Delivery</p>
-                  <p><b class="pe-1">Date:</b>25/08/2025</p>
-                  <p><b class="pe-1">Time:</b>2:30 PM</p>
-                  <p><b class="pe-1">Phone no:</b>9292548730</p>
-                </div>
-              </div>
-
-              <div
-                class="px-3 py-2 mb-3"
-                style="
-                  max-width: 800px;
-                  background-color: rgba(255, 217, 0, 0.309);
-                  border-left: 6px solid gold;
-                  border-radius: 5px 0 0 5px;
-                "
-              >
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 style="color: rgb(93, 79, 0)">Visitor Name</h5>
-                  <span
-                    class="d-flex justify-content-center align-items-center"
-                  >
-                    <p
-                      class="px-3 py-2 rounded-5"
-                      style="background-color: rgba(255, 0, 0, 0.335)"
-                    >
-                      Pending
-                    </p>
-                  </span>
-                </div>
-                <div class="d-flex gap-5 align-items-start">
-                  <p><b class="pe-1">Purpose:</b>Delivery</p>
-                  <p><b class="pe-1">Date:</b>25/08/2025</p>
-                  <p><b class="pe-1">Time:</b>2:30 PM</p>
-                  <p><b class="pe-1">Phone no:</b>9292548730</p>
-                </div>
-              </div>
-
-              <div
-                class="px-3 py-2 mb-3"
-                style="
-                  max-width: 800px;
-                  background-color: rgba(255, 217, 0, 0.309);
-                  border-left: 6px solid gold;
-                  border-radius: 5px 0 0 5px;
-                "
-              >
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 style="color: rgb(93, 79, 0)">Visitor Name</h5>
-                  <span
-                    class="d-flex justify-content-center align-items-center"
-                  >
-                    <p
-                      class="px-3 py-2 rounded-5"
-                      style="background-color: rgba(255, 0, 0, 0.335)"
-                    >
-                      Pending
-                    </p>
-                  </span>
-                </div>
-                <div class="d-flex gap-5 align-items-start">
-                  <p><b class="pe-1">Purpose:</b>Delivery</p>
-                  <p><b class="pe-1">Date:</b>25/08/2025</p>
-                  <p><b class="pe-1">Time:</b>2:30 PM</p>
-                  <p><b class="pe-1">Phone no:</b>9292548730</p>
-                </div>
-              </div>
+            <div class="request-details">
+              <p><b>Purpose:</b> Delivery</p>
+              <p><b>Date:</b> 25/08/2025</p>
+              <p><b>Time:</b> 2:30 PM</p>
+              <p><b>Phone no:</b> 9292548730</p>
+            </div>
+            <div class="mt-3">
+            
+              <button class="action-btn reject">
+                <i class="bi bi-x-circle"></i>Cancel
+              </button>
             </div>
           </div>
-        </div>
 
-        <!-- FORM -->
-        <div
-          id="submitIssueForm"
-          class="d-none overlay-form d-flex justify-content-center align-items-center"
-        >
-          <div class="card p-4 shadow-sm w-100" style="max-width: 900px">
-            <h4 class="fw-bold mb-4">Raise an Issue</h4>
-
-            <div class="mb-3">
-              <label for="name" class="form-label fw-semibold"
-                >Visitor Visitor Name :</label
-              >
-              <input type="text" class="form-control" id="name" />
+          <div class="request-card">
+            <div class="request-header">
+              <h5 class="request-title">Jane Smith</h5>
+              <span class="status-badge status-pending">Pending</span>
             </div>
-
-            <div class="mb-3">
-              <label for="phone" class="form-label fw-semibold"
-                >Visitor Phone no :</label
-              >
-              <input type="text" class="form-control" id="phone" />
+            <div class="request-details">
+              <p><b>Purpose:</b> Guest Visit</p>
+              <p><b>Date:</b> 26/08/2025</p>
+              <p><b>Time:</b> 4:00 PM</p>
+              <p><b>Phone no:</b> 9876543210</p>
             </div>
-
-            <div class="mb-3">
-              <label for="category" class="form-label fw-semibold"
-                >Visitor type :</label
-              >
-              <select class="form-select" id="category">
-                <option selected disabled>Select any category</option>
-                <option value="electricity">Guest</option>
-                <option value="water">Delivery</option>
-                <option value="cleaning">Service provider</option>
-                <option value="maintenance">Maintenance</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label for="date" class="form-label fw-semibold"
-                >Date of Visit :</label
-              >
-              <input type="date" class="form-control" id="date" />
-            </div>
-
-            <div class="mb-3">
-              <label for="time" class="form-label fw-semibold">Time :</label>
-              <input type="time" class="form-control" id="time" />
-            </div>
-
-            <div class="d-flex justify-content-end gap-2">
-              <button
-                onclick="toggleIssueForm(false)"
-                type="button"
-                class="btn btn-outline-secondary"
-                onmouseover="this.style.backgroundColor='red'"
-                onmouseout="this.style.backgroundColor=''"
-              >
-                Cancel
+            <div class="mt-3">
+              
+              <button class="action-btn reject">
+                <i class="bi bi-x-circle"></i>Cancel
               </button>
-              <button type="submit" class="btn btn-primary px-4">
-                Submit Issue
+            </div>
+          </div>
+
+          <div class="request-card">
+            <div class="request-header">
+              <h5 class="request-title">Mike Johnson</h5>
+              <span class="status-badge status-pending">Pending</span>
+            </div>
+            <div class="request-details">
+              <p><b>Purpose:</b> Maintenance</p>
+              <p><b>Date:</b> 27/08/2025</p>
+              <p><b>Time:</b> 10:00 AM</p>
+              <p><b>Phone no:</b> 8765432109</p>
+            </div>
+            <div class="mt-3">
+              
+              <button class="action-btn reject">
+                <i class="bi bi-x-circle"></i>Cancel
               </button>
+            </div>
+          </div>
+
+          <div class="request-card">
+            <div class="request-header">
+              <h5 class="request-title">Sarah Williams</h5>
+              <span class="status-badge status-approved">Approved</span>
+            </div>
+            <div class="request-details">
+              <p><b>Purpose:</b> Delivery</p>
+              <p><b>Date:</b> 20/08/2025</p>
+              <p><b>Time:</b> 11:30 AM</p>
+              <p><b>Phone no:</b> 7654321098</p>
+            </div>
+          </div>
+
+          <div class="request-card">
+            <div class="request-header">
+              <h5 class="request-title">David Brown</h5>
+              <span class="status-badge status-rejected">Rejected</span>
+            </div>
+            <div class="request-details">
+              <p><b>Purpose:</b> Service Provider</p>
+              <p><b>Date:</b> 18/08/2025</p>
+              <p><b>Time:</b> 3:00 PM</p>
+              <p><b>Phone no:</b> 6543210987</p>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- SCRIPT -->
-    <script>
-      function toggleIssueForm(show) {
-        const tableDiv = document.getElementById("issuesTable");
-        const formDiv = document.getElementById("submitIssueForm");
-        const raiseBtn = document.getElementById("Raiseissue");
+  <!-- Pre Approval Form Popup -->
+  <div id="preapprovalFormPopup" class="popup">
+    <div class="popup-content">
+      <span class="close-btn" onclick="closeForm('preapproval')">&times;</span>
+      <h3 class="form-title">Pre Approve Visitor</h3>
+      <form id="preapprovalForm">
+        <div class="form-group">
+          <label for="visitorName">Visitor Name:</label>
+          <input type="text" id="visitorName" name="visitorName" required>
+        </div>
 
-        if (show) {
-          formDiv.classList.remove("d-none");
-          raiseBtn.classList.add("d-none");
-        } else {
-          formDiv.classList.add("d-none");
-          raiseBtn.classList.remove("d-none");
-          tableDiv.classList.remove("d-none");
-        }
-      }
-    </script>
-  </body>
+        <div class="form-group">
+          <label for="visitorPhone">Visitor Phone Number:</label>
+          <input type="text" id="visitorPhone" name="visitorPhone" required>
+        </div>
+
+        <div class="form-group">
+          <label for="visitorType">Visitor Type:</label>
+          <select id="visitorType" name="visitorType" required>
+            <option value="" disabled selected>Select visitor type</option>
+            <option value="guest">Guest</option>
+            <option value="delivery">Delivery</option>
+            <option value="service">Service Provider</option>
+            <option value="maintenance">Maintenance</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="visitDate">Date of Visit:</label>
+          <input type="date" id="visitDate" name="visitDate" required>
+        </div>
+
+        <div class="form-group">
+          <label for="visitTime">Time of Visit:</label>
+          <input type="time" id="visitTime" name="visitTime" required>
+        </div>
+
+        <div class="form-group">
+          <label for="visitPurpose">Purpose of Visit:</label>
+          <textarea id="visitPurpose" name="visitPurpose" rows="3" placeholder="Briefly describe the purpose..."></textarea>
+        </div>
+
+        <button type="submit" class="form-button">
+          <i class="bi bi-check-circle"></i>Submit Request
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Function to open form popup
+    function openForm(type) {
+      document.getElementById(type + 'FormPopup').style.display = 'flex';
+    }
+
+    // Function to close form popup
+    function closeForm(type) {
+      document.getElementById(type + 'FormPopup').style.display = 'none';
+    }
+
+    // Initialize event listeners when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      // Add event listener to pre-approve button
+      document.getElementById('preApproveBtn').addEventListener('click', () => openForm('preapproval'));
+      
+      // Add event listeners to close forms when clicking outside
+      document.querySelectorAll('.popup').forEach(popup => {
+        popup.addEventListener('click', (e) => {
+          if (e.target === popup) {
+            popup.style.display = 'none';
+          }
+        });
+      });
+      
+      // Prevent form submission for demo purposes
+      document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          alert('Pre-approval request submitted successfully!');
+          closeForm('preapproval');
+        });
+      });
+      
+      // Add click handlers for approve/reject buttons
+      document.querySelectorAll('.action-btn.approve').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const card = this.closest('.request-card');
+          card.querySelector('.status-badge').className = 'status-badge status-approved';
+          card.querySelector('.status-badge').textContent = 'Approved';
+          this.parentElement.remove();
+        });
+      });
+      
+      document.querySelectorAll('.action-btn.reject').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const card = this.closest('.request-card');
+          card.querySelector('.status-badge').className = 'status-badge status-rejected';
+          card.querySelector('.status-badge').textContent = 'Rejected';
+          this.parentElement.remove();
+        });
+      });
+      
+      // Animate cards on page load
+      const cards = document.querySelectorAll('.stat-card, .request-card');
+      cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+          card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, 200 + (index * 100));
+      });
+    });
+  </script>
+</body>
 </html>
