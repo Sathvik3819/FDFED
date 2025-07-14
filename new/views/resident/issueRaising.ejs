@@ -17,41 +17,7 @@
       }
     }
 
-    /* Advertisement Section */
-    .advertisement {
-      height: 100%;
-      min-height: 300px;
-      border: 3px dashed #8ac5ff;
-      background: linear-gradient(135deg, #f0f8ff, #e6f2ff);
-      border-radius: var(--border-radius);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: var(--transition);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .advertisement:hover {
-      background: linear-gradient(135deg, #e6f2ff, #d9e9ff);
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(69, 162, 255, 0.1);
-    }
-
-    .advertisement::before {
-      content: "";
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(45deg,
-          transparent,
-          rgba(255, 255, 255, 0.3),
-          transparent);
-      transform: rotate(45deg);
-      animation: shine 3s infinite;
-    }
+  
 
     @keyframes shine {
       0% {
@@ -67,15 +33,7 @@
       }
     }
 
-    .ad-text {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #45a2ff;
-      letter-spacing: 3px;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-      transform: rotate(270deg);
-      z-index: 1;
-    }
+   
 
     /* Content Section */
     .contentCon {
@@ -751,9 +709,20 @@
 
     <div class="bodyContainer">
       <!-- AD SECTION -->
-      <div class="adCon d-flex justify-content-center align-items-center">
-        <div class="advertisement">
+    <div class="adCon d-flex justify-content-center align-items-center">
+        <div class="advertisement" id="ad-slider">
+          <% if (locals.ads && ads.length > 0) { %> <% ads.forEach(ad => { %>
+          <img
+            src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
+            class="ad-slide"
+            alt="Ad"
+            height="100px"
+            width="200px"
+           
+          />
+          <% }) %> <% } else { %>
           <p class="ad-text">Advertisement</p>
+          <% } %>
         </div>
       </div>
 
@@ -1013,6 +982,8 @@
     </div>
 
     <script src="./../js/resident/issueRaising.js"></script>
+        <script src="../../js/sidebar.js"></script>
+
 </body>
 
 </html>

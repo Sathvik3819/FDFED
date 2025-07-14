@@ -173,6 +173,9 @@ app.use(cookieParser());
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+app.use('/uploads', express.static('uploads'));
+
+
 import residentRouter from "./routes/residentRouter.js";
 import securityRouter from "./routes/securityRouter.js";
 import workerRouter from "./routes/workerRouter.js";

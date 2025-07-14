@@ -5,6 +5,7 @@ import Security from "../models/security.js";
 import VisitorPreApproval from "../models/preapproval.js";
 import auth from "../controllers/auth.js";
 import { authorizeS } from "../controllers/authorization.js";
+import Ad from '../models/Ad.js'
 
 import visitor from "../models/visitors.js";
 
@@ -55,8 +56,11 @@ securityRouter.get("/dashboard", async (req, res) => {
     ],
   });
   
+  const ads = await Ad.find({ community: req.user.community });
+
+  console.log(ads);
   
-  res.render("security/dashboard", { path: "d" ,visitors});
+  res.render("security/dashboard", { path: "d" ,visitors,ads});
 });
 
 securityRouter.get("/", (req, res) => {
@@ -69,7 +73,11 @@ securityRouter.get("/preApproval", async (req, res) => {
   }).populate("approvedBy");
   console.log(pa);
 
-  res.render("security/preApproval", { path: "pa", pa });
+  const ads = await Ad.find({ community: req.user.community });
+
+  console.log(ads);
+
+  res.render("security/preApproval", { path: "pa", pa ,ads});
 });
 
 securityRouter.post("/preApproval/action", async (req, res) => {
@@ -125,6 +133,10 @@ securityRouter.get("/visitorManagement", async (req, res) => {
     addedBy: req.user.id,
   });
 
+  const ads = await Ad.find({ community: req.user.community });
+
+  console.log(ads);
+
   visitors.sort((a, b) => {
     const dateA = new Date(
       a.entryDate.split("/").reverse().join("-") + " " + a.entryTime
@@ -144,7 +156,7 @@ securityRouter.get("/visitorManagement", async (req, res) => {
 
   console.log(visitors);
 
-  res.render("security/VisitorManagement", { path: "vm", visitors });
+  res.render("security/VisitorManagement", { path: "vm", visitors,ads });
 });
 
 securityRouter.get("/visitorManagement/:action/:id", async (req, res) => {
@@ -199,8 +211,11 @@ securityRouter.get("/visitorManagement/:action/:id", async (req, res) => {
   }
 });
 
-securityRouter.get("/profile", (req, res) => {
-  res.render("security/Profile", { path: "pr" });
+securityRouter.get("/profile", async (req, res) => {
+  const ads = await Ad.find({ community: req.user.community });
+
+  console.log(ads);
+  res.render("security/Profile", { path: "pr",ads });
 });
 
 export default securityRouter;

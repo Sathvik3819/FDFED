@@ -133,31 +133,6 @@
         font-weight: 500;
       }
 
-      .advertisement {
-        height: 100%;
-        width: 100%;
-        border: 3px dashed #8ac5ff;
-        background-color: #45a2ff15;
-        border-radius: var(--border-radius);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: var(--transition);
-      }
-
-      .advertisement:hover {
-        background-color: #45a2ff25;
-        transform: rotate(1deg);
-      }
-
-      .ad-text {
-        transform: rotate(270deg);
-        font-size: 2rem;
-        font-weight: 700;
-        color: #45a2ff;
-        letter-spacing: 3px;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-      }
 
       .stats-grid {
         display: grid;
@@ -233,9 +208,20 @@
 
     <div class="bodyContainer">
       <!-- AD SECTION -->
-      <div class="adCon d-flex justify-content-center align-items-center">
-        <div class="advertisement">
+    <div class="adCon d-flex justify-content-center align-items-center">
+        <div class="advertisement" id="ad-slider">
+          <% if (locals.ads && ads.length > 0) { %> <% ads.forEach(ad => { %>
+          <img
+            src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
+            class="ad-slide"
+            alt="Ad"
+            height="100px"
+            width="200px"
+           
+          />
+          <% }) %> <% } else { %>
           <p class="ad-text">Advertisement</p>
+          <% } %>
         </div>
       </div>
 
@@ -250,7 +236,7 @@
               class="card-body d-flex flex-column justify-content-center align-items-center py-4"
             >
               <div class="card-label">Total Tasks</div>
-              <div class="card-value text-success">24</div>
+              <div class="card-value text-success"><%= t.length %></div>
               <div><i class="bi bi-list-task fs-2 text-success"></i></div>
             </div>
           </div>
@@ -260,7 +246,9 @@
               class="card-body d-flex flex-column justify-content-center align-items-center py-4"
             >
               <div class="card-label">New Tasks</div>
-              <div class="card-value text-warning">5</div>
+              <div class="card-value text-warning">
+                <%= t.filter((task) => task.status === 'Assigned').length %> 
+              </div>
               <div>
                 <i class="bi bi-exclamation-circle fs-2 text-warning"></i>
               </div>
@@ -272,7 +260,9 @@
               class="card-body d-flex flex-column justify-content-center align-items-center py-4"
             >
               <div class="card-label">Completed Tasks</div>
-              <div class="card-value text-primary">19</div>
+              <div class="card-value text-primary">
+                <%= t.filter((task) => task.status === 'Resolved' || task.status ==='Payment Pending' ).length %> 
+              </div>
               <div><i class="bi bi-check-circle fs-2 text-primary"></i></div>
             </div>
           </div>
@@ -286,30 +276,22 @@
             </h3>
           </div>
           <div class="p-3">
-            <div class="notification-item">
-              <p class="m-0"><b>New task</b> - Lift maintenance at Block-B</p>
-              <small class="text-muted">Today, 10:30 AM</small>
+            <% if (locals.t) { %>
+             <% t.forEach(task => { %>
+              <div class="notification-item">
+              <p class="m-0"><b>New task</b> - <%= task.description %></p>
+              <small class="text-muted"><%= task.createdAt %></small>
             </div>
-            <div class="notification-item">
-              <p class="m-0">
-                <b>New task</b> - Plumbing issue at Apartment 302
-              </p>
-              <small class="text-muted">Today, 11:45 AM</small>
-            </div>
-            <div class="notification-item">
-              <p class="m-0">
-                <b>Task completed</b> - Electrical repair in common area
-              </p>
-              <small class="text-muted">Yesterday, 4:15 PM</small>
-            </div>
-            <div class="notification-item">
-              <p class="m-0"><b>New task</b> - Garden maintenance</p>
-              <small class="text-muted">Yesterday, 2:00 PM</small>
-            </div>
+              
+             <% }) %>
+            <% } %>
+            
           </div>
         </div>
       </div>
     </div>
+
+    <script src="../../js/sidebar.js"></script>
 
     <script>
       // Simple animation for cards on page load

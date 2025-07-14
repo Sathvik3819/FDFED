@@ -19,32 +19,6 @@
     />
 
     <style>
-      .advertisement {
-        height: 100%;
-        width: 100%;
-        border: 3px dashed #8ac5ff;
-        background-color: #45a2ff15;
-        border-radius: var(--border-radius);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: var(--transition);
-      }
-
-      .advertisement:hover {
-        background-color: #45a2ff25;
-        transform: rotate(1deg);
-      }
-
-      .ad-text {
-        transform: rotate(270deg);
-        font-size: 2rem;
-        font-weight: 700;
-        color: #45a2ff;
-        letter-spacing: 3px;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-      }
-
       /* Page Header */
       .page-header {
         margin-bottom: 30px;
@@ -324,8 +298,18 @@
     <div class="bodyContainer">
       <!-- AD SECTION -->
       <div class="adCon d-flex justify-content-center align-items-center">
-        <div class="advertisement">
+        <div class="advertisement" id="ad-slider">
+          <% if (locals.ads && ads.length > 0) { %> <% ads.forEach(ad => { %>
+          <img
+            src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
+            class="ad-slide"
+            alt="Ad"
+            height="100px"
+            width="200px"
+          />
+          <% }) %> <% } else { %>
           <p class="ad-text">Advertisement</p>
+          <% } %>
         </div>
       </div>
 
@@ -344,7 +328,7 @@
         <!-- Create Ad Card (Visible by default) -->
         <form
           class="card"
-          action="/users/communityManager/ad"
+          action="/manager/ad"
           method="POST"
           enctype="multipart/form-data"
         >
@@ -425,11 +409,12 @@
         <div class="card" id="history-card" style="display: none">
           <div class="card-title">Advertisement History</div>
 
+          <% if (locals.ads) { %> <% ads.forEach(ad => { %>
           <div class="ad-list-item">
             <div>
               <div style="font-weight: bold">Summer Pool Party</div>
               <div style="color: var(--gray); font-size: 0.9rem">
-                May 5 - May 15, 2025
+                <%= ad.startDate %> - <%= ad.endDate %>
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 15px">
@@ -439,36 +424,7 @@
               </button>
             </div>
           </div>
-
-          <div class="ad-list-item">
-            <div>
-              <div style="font-weight: bold">Maintenance Notice</div>
-              <div style="color: var(--gray); font-size: 0.9rem">
-                May 10 - May 12, 2025
-              </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 15px">
-              <span class="ad-status status-scheduled">Scheduled</span>
-              <button class="btn btn-secondary btn-sm">
-                <i class="bi bi-pencil"></i> Edit
-              </button>
-            </div>
-          </div>
-
-          <div class="ad-list-item">
-            <div>
-              <div style="font-weight: bold">Community Picnic</div>
-              <div style="color: var(--gray); font-size: 0.9rem">
-                April 15 - April 25, 2025
-              </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 15px">
-              <span class="ad-status status-expired">Expired</span>
-              <button class="btn btn-secondary btn-sm">
-                <i class="bi bi-files"></i> Duplicate
-              </button>
-            </div>
-          </div>
+          <% }) %> <% } %>
         </div>
       </div>
     </div>
@@ -551,5 +507,6 @@
         });
       });
     </script>
+    <script src="../../js/sidebar.js"></script>
   </body>
 </html>

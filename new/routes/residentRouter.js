@@ -29,7 +29,10 @@ residentRouter.get("/commonSpace", async (req, res) => {
 
   console.log("Booking Data:", booking);
 
-  res.render("resident/commonSpace", { path: "cbs", bookings: booking });
+  const ads = await Ad.find({ community: req.user.community });
+
+
+  res.render("resident/commonSpace", { path: "cbs", bookings: booking ,ads});
 });
 
 residentRouter.post("/commonSpace/:id", async (req, res) => {
@@ -123,6 +126,9 @@ const formatDate = (rawDate) => {
 residentRouter.get("/dashboard", async (req, res) => {
   const recents = [];
 
+  const ads = await Ad.find({ community: req.user.community });
+
+
   const issues = await Issue.find({ resident: req.user.id });
   const commonSpaces = await CommonSpaces.find({ bookedBy: req.user.id });
   const payments = await Payment.find({ sender: req.user.id });
@@ -174,6 +180,7 @@ residentRouter.get("/dashboard", async (req, res) => {
   res.render("resident/dashboard", {
     path: "d",
     recents: cleanedRecents,
+    ads
   });
 });
 
@@ -191,8 +198,9 @@ residentRouter.get("/issueRaising", async (req, res) => {
         },
       }
     );
+    const ads = await Ad.find({ community: req.user.community });
 
-    const ad = await Ad.findOne({ status: "active" });
+  console.log(ads);
 
     if (!resident) {
       return res.status(404).json({ error: "Resident not found." });
@@ -200,7 +208,7 @@ residentRouter.get("/issueRaising", async (req, res) => {
 
     const issues = await resident.raisedIssues;
 
-    res.render("resident/issueRaising", { path: "ir", i: issues });
+    res.render("resident/issueRaising", { path: "ir", i: issues ,ads});
   } catch (error) {
     console.error("Error fetching issues:", error);
     return res.status(500).json({ error: "Internal server error." });
@@ -345,6 +353,10 @@ residentRouter.get("/payments", async (req, res) => {
   try {
     const userId = req.user.id;
 
+    const ads = await Ad.find({ community: req.user.community });
+
+  console.log(ads);
+
     const payments = await Payment.find({ sender: userId })
       .populate("receiver", "name")
       .sort({ paymentDeadline: -1 });
@@ -355,7 +367,7 @@ residentRouter.get("/payments", async (req, res) => {
       await p.save();
     });
 
-    res.render("resident/payments", { path: "p", payments });
+    res.render("resident/payments", { path: "p", payments,ads });
   } catch (error) {
     console.error("Error fetching payments:", error);
     req.flash("message", "Failed to load payment data");
@@ -460,12 +472,14 @@ residentRouter.get("/preApprovals", async (req, res) => {
     const resident = await Resident.findById(req.user.id).populate(
       "preApprovedVisitors"
     );
-    const ad = await Ad.findOne({ status: "active" });
+    const ads = await Ad.find({ community: req.user.community });
+
+  console.log(ads);
 
     res.render("resident/preApproval", {
       path: "pa",
       visitors: resident.preApprovedVisitors || [],
-      ad: ad,
+      ads,
     });
   } catch (err) {
     console.error("Error loading visitor history:", err);
@@ -530,8 +544,11 @@ residentRouter.delete("/preapproval/cancel/:id", async (req, res) => {
   }
 });
 
-residentRouter.get("/profile", (req, res) => {
-  res.render("resident/Profile", { path: "pr" });
+residentRouter.get("/profile", async (req, res) => {
+  const ads = await Ad.find({ community: req.user.community });
+
+  console.log(ads);
+  res.render("resident/Profile", { path: "pr",ads });
 });
 
 export default residentRouter;

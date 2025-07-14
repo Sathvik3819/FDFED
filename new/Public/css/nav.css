@@ -71,3 +71,26 @@
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
         }
+
+
+        .advertisement {
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+      }
+
+      .advertisement img.ad-slide {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity .3s ease-in-out;
+        border-radius: var(--border-radius);
+      }
+
+      .advertisement img.ad-slide.active {
+        opacity: 1;
+        z-index: 2;
+      }

@@ -111,32 +111,7 @@
         font-weight: 500;
       }
 
-      .advertisement {
-        height: 100%;
-        width: 100%;
-        border: 3px dashed #8ac5ff;
-        background-color: #45a2ff15;
-        border-radius: var(--border-radius);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: var(--transition);
-      }
-
-      .advertisement:hover {
-        background-color: #45a2ff25;
-        transform: rotate(1deg);
-      }
-
-      .ad-text {
-        transform: rotate(270deg);
-        font-size: 2rem;
-        font-weight: 700;
-        color: #45a2ff;
-        letter-spacing: 3px;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-      }
-
+      
       .stats-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -482,8 +457,19 @@
     <div class="bodyContainer">
       <!-- AD SECTION -->
       <div class="adCon d-flex justify-content-center align-items-center">
-        <div class="advertisement">
+        <div class="advertisement" id="ad-slider">
+          <% if (locals.ads && ads.length > 0) { %> <% ads.forEach(ad => { %>
+          <img
+            src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
+            class="ad-slide"
+            alt="Ad"
+            height="100px"
+            width="200px"
+           
+          />
+          <% }) %> <% } else { %>
           <p class="ad-text">Advertisement</p>
+          <% } %>
         </div>
       </div>
 
@@ -1023,5 +1009,7 @@
         });
       });
     </script>
+        <script src="../../js/sidebar.js"></script>
+
   </body>
 </html>

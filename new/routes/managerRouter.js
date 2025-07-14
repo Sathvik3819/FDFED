@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import passport from "passport";
 import session from "express-session";
 import bcrypt from "bcrypt";
+import multer from "multer";
 
 import Issue from "../models/issues.js";
 import Worker from "../models/workers.js";
@@ -18,11 +19,26 @@ import CommunityManager from "../models/cManager.js";
 import Ad from "../models/Ad.js";
 import Payment from "../models/payment.js";
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + ".png";
+    cb(null, uniqueName);
+  },
+});
+const upload = multer({ storage: storage });
+
 managerRouter.get("/commonSpace", async (req, res) => {
   const c = req.user.community;
   const csb = await CommonSpaces.find({ community: c });
 
-  res.render("communityManager/CSB", { path: "cbs", csb });
+  const ads = await Ad.find({ community: req.user.community });
+
+  console.log(ads);
+
+  res.render("communityManager/CSB", { path: "cbs", csb ,ads});
 });
 
 function mergeBusySlots(slots) {
@@ -182,12 +198,16 @@ managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
   }
 });
 
-managerRouter.get("/userManagement", (req, res) => {
-  res.render("communityManager/userManagement", { path: "um" });
+managerRouter.get("/userManagement", async (req, res) => {
+  const ads = await Ad.find({ community: req.user.community });
+
+  res.render("communityManager/userManagement", { path: "um" ,ads});
 });
 
-managerRouter.get("/dashboard", (req, res) => {
-  res.render("communityManager/dashboard", { path: "d" });
+managerRouter.get("/dashboard", async (req, res) => {
+  const ads = await Ad.find({ community: req.user.community });
+
+  res.render("communityManager/dashboard", { path: "d",ads });
 });
 
 managerRouter.get("/", (req, res) => {
@@ -198,6 +218,10 @@ managerRouter.get("/issueResolving", async (req, res) => {
   try {
     const managerId = req.user.id;
     const manager = await CommunityManager.findById(managerId);
+
+    const ads = await Ad.find({ community: req.user.community });
+
+
 
     if (!manager) {
       return res.status(404).json({ message: "Community manager not found" });
@@ -217,6 +241,7 @@ managerRouter.get("/issueResolving", async (req, res) => {
       path: "ir",
       issues: issues,
       workers: workers,
+      ads
     });
   } catch (error) {
     console.error(error);
@@ -267,16 +292,50 @@ managerRouter.get("/issueResolving/:id", async (req, res) => {
   res.status(200).json({ issue, success: true });
 });
 
-managerRouter.get("/payments", (req, res) => {
-  res.render("communityManager/Payments", { path: "p" });
+managerRouter.get("/payments", async (req, res) => {
+  const ads = await Ad.find({ community: req.user.community });
+
+  res.render("communityManager/Payments", { path: "p" ,ads});
 });
 
-managerRouter.get("/ad", (req, res) => {
-  res.render("communityManager/Advertisement", { path: "ad" });
+managerRouter.get("/ad", async (req, res) => {
+  const ads = await Ad.find({ community: req.user.community });
+
+  console.log(ads);
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
 });
 
-managerRouter.get("/profile", (req, res) => {
-  res.render("communityManager/Profile", { path: "pr" });
+managerRouter.post("/ad", upload.single("image"), async (req, res) => {
+  const { title, sdate, edate, link } = req.body;
+  const file = req.file.path;
+
+  const ad = await Ad.create({
+    title,
+    startDate: new Date(sdate).toLocaleDateString("en-IN",{
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }),
+    endDate: new Date(edate).toLocaleDateString("en-IN",{
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }),
+    link,
+    imagePath: file,
+    community: req.user.community,
+  });
+
+  console.log("new ad : ", ad);
+
+  res.redirect("ad");
+});
+
+managerRouter.get("/profile", async (req, res) => {
+  const ads = await Ad.find({ community: req.user.community });
+
+  res.render("communityManager/Profile", { path: "pr",ads });
 });
 
 export default managerRouter;

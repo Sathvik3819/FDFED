@@ -1,8 +1,14 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const toggleButton = document.querySelector(".menu-toggle");
-    const sidebar = document.querySelector(".sidebar");
+  const slides = document.querySelectorAll(".ad-slide");
+  let currentSlide = 0;
 
-    toggleButton.addEventListener("click", function () {
-        sidebar.classList.toggle("inactive");
-    });
+  if (slides.length > 0) {
+    slides[currentSlide].classList.add("active");
+
+    setInterval(() => {
+      slides[currentSlide].classList.remove("active");
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add("active");
+    }, 3000);
+  }
 });
