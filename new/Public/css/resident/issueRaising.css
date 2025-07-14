@@ -1,0 +1,109 @@
+/* Issue Management Styles - Unique to third file */
+#container3 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+#container1,
+#container2 {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+#container1 {
+    flex: 1;
+    min-width: 300px;
+}
+
+#container2 {
+    flex: 2;
+    min-width: 500px;
+}
+
+h2 {
+    color: black;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+#issue-status {
+    margin-top: 15px;
+    font-weight: 600;
+    color: var(--active-green);
+}
+
+input , select , textarea{
+    margin: 5px;
+}
+
+.pay{
+    background-color: var(--pending-orange);
+}
+
+.payment-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin:10px 0;
+    border: 1px solid var(--light-gray);
+}
+
+/* Issue Table Styles - Unique to third file */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table th,
+table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: var(--light-gray);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+table tr:hover {
+    background-color: rgba(106, 147, 203, 0.1);
+}
+
+/* Status Labels - Unique to third file */
+.status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pending {
+    background-color: #fff3e0;
+    color: var(--pending-orange);
+}
+
+.inprogress {
+    background-color: #e3f2fd;
+    color: var(--secondary-color);
+}
+
+.review-pending { background-color: rgb(233, 172, 76); color: #fff; }
+
+.resolved {
+    background-color: #e8f5e9;
+    color: var(--active-green);
+}
+
+/* Search and Filter - Unique to third file */
+#search {
+    width: 250px;
+    margin-right: 10px;
+}

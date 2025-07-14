@@ -1,0 +1,159 @@
+
+
+
+
+.table-container {
+    overflow-x: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+thead {
+    background-color: #f0f0f0;
+}
+
+th, td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+tbody tr {
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.pending { background-color: orange; color: #fff; }
+.worker-assigned { background-color: green; color: #fff; }
+.resolved { background-color: green; color: #fff; }
+.review-pending { background-color: blue; color: #fff; }
+
+h3{
+    margin-bottom: 10px;
+}
+
+.issue-details {
+    display: none;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.issue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+#issueIdDisplay {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+
+.issue-info-container {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 5px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 10px;
+    margin-left: 10px;
+}
+
+
+.info-item {
+    display: flex;
+    align-items: center;
+}
+
+.info-item label {
+    font-weight: bold;
+    color: #555;
+    min-width: 120px;
+}
+
+.info-item span {
+    color: #222;
+}
+
+/* Description */
+.description {
+    grid-column: span 2;
+}
+
+.description p {
+    margin: 0;
+    padding: 5px;
+    background: #eee;
+    border-radius: 5px;
+}
+
+button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.resolve-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.resolve-btn:hover {
+    background-color: #218838;
+}
+
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .issue-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

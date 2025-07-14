@@ -1,0 +1,889 @@
+:root {
+  --primary: #274C77;
+  --primary-light: #6096BA;
+  --primary-dark: #1A365A;
+  --secondary: #FF5A3C;
+  --secondary-light: #FF7A63;
+  --secondary-dark: #E04A2F;
+  --light: #F2F1F1; 
+  --dark: #212121;
+  --gray: #757575;
+  --light-gray: #F2F1F1;
+  --accent: #A3CEF1;
+  --navbar-height: 60px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.gap {
+  height: var(--navbar-height);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--dark);
+  line-height: 1.5;
+  overflow-x: hidden;
+  background-color: var(--light);
+  margin: 0;
+}
+
+section {
+  scroll-margin-top: 60px;
+}
+
+h1 {
+  font-size: clamp(1.5rem, 4vw, 2.625rem);
+}
+
+h2 {
+  font-size: clamp(1.3rem, 3vw, 2.25rem);
+}
+
+h3 {
+  font-size: clamp(1.125rem, 2.25vw, 1.875rem);
+}
+
+h4 {
+  font-size: clamp(0.94rem, 1.875vw, 1.5rem);
+}
+
+h5 {
+  font-size: clamp(0.75rem, 1.5vw, 1.125rem);
+}
+
+h6 {
+  font-size: clamp(0.66rem, 1.125vw, 0.94rem);
+}
+
+p {
+  font-size: clamp(0.75rem, 1.35vw, 0.94rem);
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: var(--primary-light);
+}
+
+.navbar-brand img{
+  height: 40px;
+  width: 170px;
+}
+
+.btn {
+  padding: 0.45rem 1.125rem;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  border: 1.5px solid var(--primary);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--primary-dark);
+  border: 1.5px solid var(--secondary-dark);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: var(--secondary-dark);
+  border-color: var(--light-dark);
+  transform: translateY(-1.5px);
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary);
+  border-color: var(--secondary);
+  transform: translateY(-1.5px);
+}
+
+.btn-outline-primary {
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--secondary-light);
+  color: var(--primary-dark);
+  border-color: var(--secondary);
+  transform: translateY(-1.5px);
+}
+
+.section-padding {
+  padding: 75px 0;
+}
+
+/* Navbar */
+.navbar {
+  background-color: var(--primary-dark);
+  box-shadow: 0 1.5px 7.5px rgba(0, 0, 0, 0.1);
+  height: var(--navbar-height);
+  display: flex;
+  align-items: center;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  width: 100%;
+  transition: padding 0.3s ease, box-shadow 0.3s ease;
+  padding: 1rem 2rem;
+}
+
+
+
+.nav-link {
+  font-weight: 600;
+  color: var(--dark-gray) !important;
+  margin: 0 0.375rem;
+  position: relative;
+  padding: 0.375rem 0 !important;
+  display: inline-block;
+}
+
+.navbar-nav .nav-link {
+  color: var(--light-gray) !important;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 1.5px;
+  bottom: 0;
+  left: 0;
+  background-color: var(--primary);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.navbar-toggler-icon {
+  filter: invert(1);
+}
+
+.navbar .container-fluid{
+  background-color: var(--primary-dark);
+}
+/* Hero Section */
+.hero {
+  position: relative;
+  background: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(8, 8, 8);
+  text-align: center;
+  margin-top: 0px;
+  width: 100%;
+  height: calc(100vh - var(--navbar-height));
+}
+
+.hero .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(39, 76, 119, 0.7);
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  width: 100%;
+}
+
+.hero h1 {
+  font-size: 2.625rem;
+  margin-bottom: 1.125rem;
+  animation: fadeInUp 1s ease;
+  color: white;
+}
+
+.hero p {
+  font-size: 0.94rem;
+  margin-bottom: 1.5rem;
+  animation: fadeInUp 1.2s ease;
+  color: white;
+}
+
+.hero .btn {
+  animation: fadeInUp 1.4s ease;
+}
+
+/* Search Section */
+#search .card {
+  border-radius: 7.5px;
+  overflow: hidden;
+  border: none;
+  transition: all 0.3s ease;
+  background-color: white;
+  box-shadow: 0 3px 4.5px rgba(0, 0, 0, 0.1);
+}
+
+#search .card:hover {
+  transform: translateY(-3.75px);
+  box-shadow: 0 7.5px 22.5px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Header Custom */
+.card-header-custom {
+  background-color: var(--primary);
+  color: white;
+  padding: 1.125rem;
+  border-top-left-radius: 7.5px;
+  border-top-right-radius: 7.5px;
+}
+
+/* Benefits Section */
+.feature-icon {
+  width: 52.5px;
+  height: 52.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.125rem;
+  border-radius: 50%;
+  background-color: rgba(39, 76, 119, 0.1);
+  color: var(--primary);
+}
+
+.benefits-stats {
+  border-radius: 7.5px;
+  background-color: var(--light);
+  padding: 1.5rem;
+}
+
+.container-fluid {
+  width: 100%;
+  padding-right: 2.25rem;
+  padding-left: 2.25rem;
+  margin-right: auto;
+  margin-left: auto;
+  min-height: fit-content;
+  height: auto;
+}
+
+.community-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.community-wrapper {
+  width: 83.333333%;
+  max-width: 900px;
+}
+
+.community-card {
+  background: white;
+  border-radius: 0.375rem;
+  box-shadow: 0 3px 4.5px -0.75px rgba(0, 0, 0, 0.1), 0 1.5px 3px -0.75px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.community-card:hover {
+  transform: translateY(-3.75px);
+  box-shadow: 0 7.5px 22.5px rgba(0, 0, 0, 0.1);
+}
+
+.community-card .badge {
+  background-color: var(--gray) !important;
+}
+
+.card-body {
+  padding: 1.125rem;
+}
+
+.search-title {
+  text-align: center;
+  margin-bottom: 1.125rem;
+  font-size: 1.406rem;
+  font-weight: 600;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.125rem;
+}
+
+@media (max-width: 768px) {
+  .search-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.56rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.28rem;
+  background-color: white;
+  font-size: 0.75rem;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  max-width: 375px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .button-group {
+    flex-direction: column;
+  }
+}
+
+.search-button {
+  padding: 0.56rem 1.125rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.28rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex: 1;
+}
+
+.search-button:hover {
+  background-color: #2563eb;
+}
+
+/* Multi-select dropdown container */
+.dropdown-multiselect {
+  position: relative;
+  width: 100%;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+  width: 100%;
+  max-height: 150px;
+  overflow-y: auto;
+  border-radius: 3.75px;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Selected items container */
+.selected-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3.75px;
+  margin-top: 0px;
+  transition: margin-top 0.3s ease-in-out;
+}
+
+/* When dropdown is open, increase the gap */
+.dropdown-hover:hover + .selected-options {
+  margin-top: 11.25px;
+}
+
+/* Individual selected item */
+.selected-tag {
+  background-color: var(--accent) !important;
+  color: var(--primary-dark);
+  padding: 3.75px 7.5px;
+  border-radius: 11.25px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  margin: 3.75px 3.75px 0 0;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Remove button inside selected items */
+.remove-tag {
+  margin-left: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: color 0.2s ease-in-out;
+}
+
+.remove-tag:hover {
+  color: #ff4d4d;
+}
+
+/* Ensure dropdown menu remains visible on hover */
+.dropdown-hover:hover .dropdown-menu {
+  display: block;
+  margin-top: 3.75px;
+}
+
+/* Fix for Bootstrap dropdown flickering */
+.dropdown-menu {
+  display: none;
+}
+
+.dropdown-hover:hover > .dropdown-menu {
+  display: block;
+}
+
+/* Carousel Styles */
+.carousel {
+  position: relative;
+  overflow: hidden;
+}
+
+.carousel-inner {
+  display: flex;
+  transition: transform 0.3s ease-in-out;
+}
+
+.carousel-item {
+  flex: 0 0 100%;
+  padding: 0.75rem;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+  width: 5%;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  padding: 11.25px;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.carousel-control-prev:hover .carousel-control-prev-icon,
+.carousel-control-next:hover .carousel-control-next-icon {
+  background-color: black;
+}
+
+/* Custom arrows for carousel */
+.custom-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 37.5px;
+  height: 37.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary);
+  border-radius: 50%;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.custom-arrow:hover {
+  opacity: 1;
+  background-color: var(--primary-dark);
+}
+
+.community-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  padding: 0.75rem;
+}
+
+@media (max-width: 1024px) {
+  .community-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .community-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card-img-top {
+  height: 150px;
+  width: 100%;
+  object-fit: cover;
+}
+
+/* Price badge */
+.price-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background-color: var(--secondary);
+  color: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: 3.75px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Amenity badge */
+.amenity-badge {
+  background-color: var(--accent);
+  color: var(--primary-dark);
+  padding: 0.375rem 0.75rem;
+  border-radius: 11.25px;
+  font-size: 0.7rem;
+  margin-right: 0.375rem;
+  margin-bottom: 0.375rem;
+  display: inline-block;
+}
+
+/* Location badge */
+.location-badge {
+  color: var(--gray);
+  font-size: 0.84rem;
+}
+
+/* Services Section */
+.services .nav-tabs .nav-link {
+  font-size: 0.825rem;
+  font-weight: 600;
+  padding: 12px 24px !important;
+  border-radius: 6px;
+  transition: all 0.3s ease-in-out;
+  color: #333;
+  border: none;
+}
+
+.services .nav-tabs .nav-link.active {
+  box-shadow: 0 3px 4.5px rgba(0, 0, 0, 0.1);
+}
+
+.services .nav-tabs {
+  border-bottom: 1.5px solid #ddd;
+}
+
+.feature-icon {
+  width: 37.5px;
+  height: 37.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 123, 255, 0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Testimonials Section */
+.testimonial-card {
+  border-radius: 7.5px;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-3.75px);
+  box-shadow: 0 7.5px 22.5px rgba(0, 0, 0, 0.1);
+}
+
+.text-warning {
+  color: var(--secondary) !important;
+}
+
+.text-primary {
+  color: var(--primary) !important;
+}
+
+/* CTA Section */
+#cta {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  padding: 60px 0;
+  text-align: center;
+}
+
+.btn-light {
+  background-color: var(--light);
+  color: var(--primary);
+}
+
+.btn-light:hover {
+  background-color: white;
+  color: var(--primary-dark);
+}
+
+.btn-outline-light {
+  border: 1.5px solid var(--light);
+  color: var(--light);
+  background-color: transparent;
+}
+
+.btn-outline-light:hover {
+  color: var(--primary);
+  background-color: var(--light);
+}
+
+/* Contact Section */
+.contact-form .form-control,
+.contact-form .form-select {
+  padding: 0.56rem 0.75rem;
+  border-radius: 3.75px;
+  border: 1px solid #ddd;
+}
+
+.contact-form .form-control:focus,
+.contact-form .form-select:focus {
+  box-shadow: 0 0 0 0.1875rem rgba(39, 76, 119, 0.25);
+  border-color: var(--primary-light);
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: rgba(39, 76, 119, 0.05);
+  color: var(--primary);
+}
+
+.accordion-button:focus {
+  box-shadow: none;
+  border-color: rgba(39, 76, 119, 0.1);
+}
+
+/* Footer */
+footer {
+  background-color: var(--primary-dark);
+  padding: 60px 0 30px;
+}
+
+footer a:hover {
+  color: var(--secondary) !important;
+}
+
+.footer-title {
+  margin-bottom: 1.125rem;
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+
+.footer-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 45px;
+  height: 2px;
+  background-color: var(--secondary);
+}
+
+.footer-link {
+  display: block;
+  margin-bottom: 0.6rem;
+  transition: all 0.3s ease;
+}
+
+.footer-link:hover {
+  transform: translateX(5px);
+}
+
+.social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 37.5px;
+  height: 37.5px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  margin-right: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  background-color: var(--secondary);
+}
+
+.newsletter-form {
+  position: relative;
+}
+
+.newsletter-input {
+  border: none;
+  border-radius: 3.75px;
+  padding: 0.75rem;
+  padding-right: 84px;
+}
+
+.newsletter-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background-color: var(--secondary);
+  color: white;
+  border: none;
+  border-radius: 0 3.75px 3.75px 0;
+  padding: 0 1.125rem;
+  transition: all 0.3s ease;
+}
+
+.newsletter-btn:hover {
+  background-color: var(--secondary-dark);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Benefits section cards */
+.benefit-card {
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 7.5px;
+  box-shadow: 0 3px 4.5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.benefit-card:hover {
+  transform: translateY(-3.75px);
+  box-shadow: 0 7.5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.benefit-icon {
+  font-size: 1.5rem;
+  color: var(--primary);
+  margin-bottom: 0.75rem;
+  display: inline-block;
+  width: 45px;
+  height: 45px;
+  line-height: 45px;
+  text-align: center;
+  background-color: rgba(39, 76, 119, 0.1);
+  border-radius: 50%;
+}
+
+/* Service card */
+.service-card {
+  background-color: white;
+  border-radius: 7.5px;
+  overflow: hidden;
+  box-shadow: 0 3px 4.5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-3.75px);
+  box-shadow: 0 7.5px 22.5px rgba(0, 0, 0, 0.1);
+}
+
+.service-icon {
+  font-size: 1.8rem;
+  color: var(--primary);
+  margin-bottom: 0.75rem;
+}
+
+.service-title {
+  margin-bottom: 0.75rem;
+  color: var(--primary-dark);
+}
+
+/* Testimonial quote */
+.testimonial-quote {
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+}
+
+.testimonial-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--accent);
+}
+
+.testimonial-name {
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.testimonial-position {
+  font-size: 0.84rem;
+  color: var(--gray);
+}
+
+/* Media Queries */
+@media (max-width: 992px) {
+  :root {
+    --navbar-height: 52.5px;
+  }
+
+  .hero h1 {
+    font-size: 1.875rem;
+  }
+
+  .nav-pills .nav-link {
+    margin: 0 0.1875rem 0.375rem;
+    padding: 0.375rem 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar .container {
+    justify-content: center !important;
+  }
+
+  .navbar-brand {
+    margin-right: auto;
+  }
+
+  .navbar-toggler {
+    position: absolute;
+    right: 11.25px;
+    top: 7.5px;
+  }
+
+  .collapse.navbar-collapse {
+    width: 100%;
+  }
+
+  .navbar-nav {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .btn {
+    padding: 0.375rem 0.94rem;
+  }
+
+  .hero-content {
+    padding: 0.75rem;
+  }
+
+  .hero h1 {
+    font-size: 1.3125rem;
+  }
+}

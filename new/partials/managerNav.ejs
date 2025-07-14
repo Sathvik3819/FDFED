@@ -1,0 +1,17 @@
+<nav
+  class="d-flex align-items-center pt-2 bg-white"
+  style="font-size: 18px; padding-left: 20px; gap: 60px"
+>
+  <div class="pe-5 pb-1">
+    <img src="../imgs//Logo copy.png" alt="Logo" height="40px" />
+  </div>
+  <ul class="d-flex pt-3 gap-4 align-items-center list-unstyled">
+    <li class="px-2 h <%= path ==='d' ? "Nactive" : "" %>"><a   style="text-decoration: none;color: inherit;"   href="/manager/dashboard">Dashboard</a></li>
+    <li class="px-2 h <%= path ==='um' ? "Nactive" : "" %>"><a  style="text-decoration: none;color: inherit;"    href="/manager/userManagement">user management</a></li>
+    <li class="px-2 h <%= path ==='ir' ? "Nactive" : "" %>"><a  style="text-decoration: none;color: inherit;"    href="/manager/issueResolving">Issue resolving</a></li>
+    <li class="px-2 h <%= path ==='p' ? "Nactive" : "" %>"><a   style="text-decoration: none;color: inherit;"   href="/manager/payments">Payments</a></li>
+    <li class="px-2 h <%= path ==='ad' ? "Nactive" : "" %>"><a  style="text-decoration: none;color: inherit;"    href="/manager/ad">Advertisement</a></li>
+    <li class="px-2 h <%= path ==='cbs' ? "Nactive" : "" %>"><a style="text-decoration: none;color: inherit;"   href="/manager/commonSpace">Common space bookings</a></li>
+    <li class="px-2 h <%= path ==='pr' ? "Nactive" : "" %>"><a  style="text-decoration: none;color: inherit;" href="/manager/profile">Profile</a></li>
+  </ul>
+</nav>

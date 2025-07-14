@@ -1,0 +1,12 @@
+<nav class="d-flex align-items-center pt-2 bg-white" style="font-size: 22px; padding-left: 100px; gap: 100px">
+    <div class="pe-5 pb-1">
+      <img src="../imgs//Logo copy.png" alt="Logo" height="40px" />
+    </div>
+    <ul class="d-flex pt-3 gap-4 align-items-center list-unstyled">
+      <li class="px-2  <%= path ==='d' ? "Nactive" : "" %>"><a href="/security/dashboard" style="text-decoration: none;color: inherit;">Dashboard</a></li>
+      <li class="px-2  <%= path ==='vm' ? "Nactive" : "" %>"><a href="/security/visitorManagement" style="text-decoration: none;color: inherit;">Visitor management</a></li>
+      <li class="px-2  <%= path ==='pa' ? "Nactive" : "" %>"><a href="/security/preApproval" style="text-decoration: none;color: inherit;">Pre Approvals</a></li>
+      <li class="px-2  <%= path ==='pr' ? "Nactive" : "" %>"><a href="/security/profile" style="text-decoration: none;color: inherit;">Profile</a></li>
+      
+    </ul> 
+  </nav>

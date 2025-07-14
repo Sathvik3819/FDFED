@@ -1,0 +1,200 @@
+:root {
+    --primary-color: #2c4b7c;
+    --secondary-color: #6a93cb;
+    --light-blue: #a1c4fd;
+    --white: #ffffff;
+    --light-gray: #f5f7fa;
+    --text-dark: #333;
+    --text-light: #666;
+    --active-green: #4caf50;
+    --pending-orange: #ff7043;
+    --checked-gray: #9e9e9e;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --border-radius: 10px;
+}
+
+@font-face {
+    font-family: 'MyFont';
+    src: url('../imgs/Poppins/Poppins-Medium.ttf') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: var(--secondary-color);
+    color: var(--text-dark);
+    min-height: 100vh;
+    font-size: 18px;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Container Layout */
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 250px;
+    flex: 1;
+    padding: 20px;
+    background-color: var(--light-gray);
+    transition: 0.3s;
+}
+
+.page-header {
+    margin-bottom: 25px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--text-dark);
+    border-bottom: 2px solid #b9b9b9;
+    padding-bottom: 5px;
+}
+
+/* Issue Assignment Containers */
+#container3 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+#container1,
+#container2 {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+#container1 {
+    flex: 1;
+    min-width: 300px;
+}
+
+#container2 {
+    flex: 2;
+    min-width: 500px;
+}
+
+/* Forms */
+h2 {
+    color: black;
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+input,
+select,
+textarea {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    width: 100%;
+    font-size: 16px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+button {
+    background-color: var(--secondary-color);
+    color: var(--white);
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: var(--primary-color);
+}
+
+/* Issues Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table th,
+table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: var(--light-gray);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+table tr:hover {
+    background-color: rgba(106, 147, 203, 0.1);
+}
+
+/* Static Issues */
+.issues-table tbody {
+    content: "";
+}
+
+.issues-table tbody::after {
+    content: "1. Water Leak - Pending | 2. Elevator Issue - Assigned | 3. Street Light Repair - Completed";
+    display: block;
+    color: var(--text-light);
+    font-style: italic;
+    padding: 10px;
+}
+
+/* Status Labels */
+.status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pending {
+    background-color: #fff3e0;
+    color: var(--pending-orange);
+}
+
+.assigned {
+    background-color: #e3f2fd;
+    color: var(--secondary-color);
+}
+
+.completed {
+    background-color: #e8f5e9;
+    color: var(--active-green);
+}

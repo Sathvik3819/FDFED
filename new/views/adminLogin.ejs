@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Management System - Admin Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f4f8;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .login-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 420px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-header h1 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .login-header p {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+
+        .system-logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .system-logo i {
+            font-size: 2.5rem;
+            color: #3498db;
+        }
+        
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #34495e;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 1.5rem;
+        }
+        
+        .forgot-password a {
+            color: #3498db;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+            color: #2980b9;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 0.85rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .login-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .alert {
+            padding: 0.85rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .alert-danger {
+            background-color: #fdf2f2;
+            color: #e53e3e;
+            border: 1px solid #feb2b2;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 1rem;
+            top: 2.4rem;
+            color: #95a5a6;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .login-button-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="system-logo">
+            <i class="fas fa-building"></i>
+        </div>
+        
+        <div class="login-header">
+            <h1>Admin Portal</h1>
+            <p>Sign in to manage your community system</p>
+        </div>
+        
+        <% if (message) { %>
+        <div class="alert alert-danger">
+            <%= message %>
+        </div>
+        <% } %>
+        
+        <form id="login-form" action="/AdminLogin" method="POST">
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="admin@example.com" required>
+                <i class="fas fa-envelope input-icon"></i>
+                <div class="error-message" id="email-error">Please enter a valid email</div>
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                <i class="fas fa-lock input-icon"></i>
+                <div class="error-message" id="password-error">Please enter your password</div>
+            </div>
+            
+            <div class="forgot-password">
+                <a href="#">Forgot password?</a>
+            </div>
+            
+            <button type="submit" class="login-button">
+                <div class="login-button-content">
+                    <span>Login</span>
+                    <div class="spinner" id="login-spinner"></div>
+                </div>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            // Don't prevent default form submission
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Reset error messages
+            document.getElementById('email-error').style.display = 'none';
+            document.getElementById('password-error').style.display = 'none';
+            
+            // Basic validation
+            let valid = true;
+            
+            if (!email) {
+                document.getElementById('email-error').style.display = 'block';
+                valid = false;
+                event.preventDefault();
+            } else {
+                document.getElementById('email-error').style.display = 'none';
+            }
+            
+            if (!password) {
+                document.getElementById('password-error').style.display = 'block';
+                valid = false;
+                event.preventDefault();
+            } else {
+                document.getElementById('password-error').style.display = 'none';
+            }
+            
+            if (valid) {
+                // Show loading spinner
+                document.getElementById('login-spinner').style.display = 'inline-block';
+                document.querySelector('.login-button').disabled = true;
+                // The form will be submitted normally to the server
+            }
+        });
+
+        // Toggle password visibility
+        document.querySelector('.input-group .fa-lock').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this;
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-lock');
+                icon.classList.add('fa-lock-open');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-lock-open');
+                icon.classList.add('fa-lock');
+            }
+        });
+    </script>
+</body>
+</html>

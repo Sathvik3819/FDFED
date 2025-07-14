@@ -1,0 +1,233 @@
+
+
+:root {
+    --primary-color: #2c4b7c;
+    --secondary-color: #6a93cb;
+    --light-blue: #a1c4fd;
+    --white: #ffffff;
+    --light-gray: #f5f7fa;
+    --text-dark: #333;
+    --text-light: #666;
+    --active-green: #4caf50;
+    --pending-orange: #ff7043;
+    --checked-gray: #9e9e9e;
+    --button-red: #ff5722;
+}
+
+
+header {
+    margin-bottom: 30px;
+    border-bottom: 3px solid #e0e0e0;
+    padding-bottom: 15px;
+}
+
+header h1 {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+/* Stats Cards */
+.stats-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    flex: 1;
+    min-width: 200px;
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    border: 0.5px solid rgb(159, 159, 159);
+}
+
+.stat-title {
+    color: var(--text-light);
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.stat-value {
+    font-size: 3.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-weight: bolder;
+}
+
+.stat-value.pending {
+    color: var(--pending-orange);
+}
+
+.stat-value.active {
+    color: var(--active-green);
+}
+
+/* Add Visitor Container */
+.add-visitor-container {
+    background-color: #ffefee;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border: 2px solid #ff5722;
+}
+
+.add-visitor-container p {
+    color: #ff5722;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+#add-visitor-btn {
+    background-color: #ff5722;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    width: 60px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+#add-visitor-btn:hover {
+    background-color: #e64a19;
+}
+
+#add-visitor-btn img {
+    width: 25px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
+/* Recent Activity */
+.recent-activity {
+    background-color: var(--white);
+    border-radius: 8px;
+    height: 400px;
+    overflow-y: auto;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: .5px solid rgb(159, 159, 159);
+}
+
+.recent-activity h2 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+thead {
+    background-color: var(--light-gray);
+}
+
+th,
+td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    font-weight: 500;
+    color: var(--text-light);
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-block;
+    text-align: center;
+    min-width: 100px;
+}
+
+.status-active {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: var(--active-green);
+}
+
+.status-pending {
+    background-color: rgba(255, 112, 67, 0.1);
+    color: var(--pending-orange);
+}
+
+.status-checked {
+    background-color: rgba(158, 158, 158, 0.1);
+    color: var(--checked-gray);
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+    .stat-card {
+        min-width: 150px;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+    }
+}
+
+/* Horizontal sidebar for tablets */
+
+/* Stack vertically for smaller screens */
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 24px;
+    }
+
+
+    .stat-value {
+        font-size: 2rem;
+    }
+
+    .stats-container {
+        flex-direction: column;
+    }
+
+    .stat-card {
+        width: 100%;
+    }
+
+    .add-visitor-container {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    #add-visitor-btn {
+        width: 100%;
+    }
+
+    .status-badge {
+        min-width: 80px;
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+
+    th,
+    td {
+        padding: 10px;
+    }
+}
+

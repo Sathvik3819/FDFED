@@ -1,0 +1,305 @@
+/* Common Font Face */
+@font-face {
+    font-family: 'MyFont';
+    src: url('../imgs/Poppins/Poppins-Medium.ttf') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Universal Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'MyFont', 'Inter', sans-serif;
+}
+
+/* Body Styling */
+body {
+    background-color: #f5f5f5;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Alert (from first file only) */
+.alert {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    z-index: 1000;
+    min-width: 300px;
+    max-width: 600px;
+    background-color: rgba(231, 30, 30, 0.849);
+    color: white;
+    box-shadow: 0px 4px 6px rgba(215, 85, 85, 0.1);
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Main Container */
+.container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    max-width: 1000px;
+    width: 90%;
+    height: 600px;
+    overflow: hidden;
+}
+
+/* Left Panel */
+.left-panel {
+    background-image: url("../imgs/image.png");
+    background-size: cover;
+    padding: 40px;
+    width: 45%;
+    position: relative;
+}
+
+/* Logo */
+.logo h1 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Tagline */
+.tagline {
+    color: #262525;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-top: 10px;
+    margin-bottom: 40px;
+}
+
+/* Right Panel */
+.right-panel {
+    padding: 40px;
+    width: 55%;
+}
+
+/* Headings */
+h2 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* Divider Line */
+.div1 {
+    width: 2px;
+    height: 100%;
+    background-color: #7e7e7e2c;
+}
+
+/* Subtitle */
+.subtitle {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+<<<<<<< HEAD
+
+.alert {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 500px;
+    z-index: 9999;
+    padding: 15px 20px;
+    background-color: #fa958f;
+    color: #b10000;
+    font-weight: bolder;
+    border-radius: 8px;
+    font-size: 18px;
+    text-align: center;
+}
+
+
+
+=======
+/* Social Buttons Container */
+>>>>>>> 2bffba2f5b5040ed39ac2d6cbf6c64c6fdb88d30
+.social-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Individual Social Button */
+.social-btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.social-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.social-btn:hover {
+    background-color: #f5f5f5;
+}
+
+/* Text Divider */
+.divider {
+    text-align: center;
+    margin: 20px 0;
+    color: #666;
+    position: relative;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    background-color: #ddd;
+}
+
+.divider::before {
+    left: 0;
+}
+
+.divider::after {
+    right: 0;
+}
+
+/* Input Fields */
+input[type="password"]::after {
+    content: 'hello';
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #3b44f0;
+}
+
+/* Form input spacing from second file */
+.right-panel form .input {
+    margin-bottom: 5%;
+}
+
+/* Password Wrap */
+.password-wrap {
+    width: 100%;
+    position: relative;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.password-wrap input {
+    position: absolute;
+    top: 0;
+}
+
+.password-wrap img {
+    position: absolute;
+    right: 0;
+    color: #262525;
+}
+
+/* Select Dropdown */
+select {
+    width: 100%;
+    padding: 12px;
+    color: rgb(125, 125, 125);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+select:hover {
+    border-color: #6a5acd;
+}
+
+select:focus {
+    outline: none;
+    border-color: #3b44f0;
+    box-shadow: 0 0 5px rgba(59, 68, 240, 0.4);
+}
+
+option {
+    font-size: 16px;
+    font-weight: 500;
+    color: #565656;
+    height: 30px;
+    padding: 12px;
+    background: #fff;
+}
+
+select::-ms-expand {
+    display: none;
+}
+
+/* Continue Button */
+.continue-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #ec3636;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.continue-btn:hover {
+    background-color: #f33918;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .left-panel,
+    .right-panel {
+        width: 100%;
+    }
+
+    .left-panel {
+        padding: 20px;
+    }
+}

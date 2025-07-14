@@ -1,0 +1,182 @@
+/* Tabs */
+.main-content .tabs {
+    width: 100%;
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tab {
+    padding: 15px;
+    flex: 1;
+    text-align: center;
+    background-color: #e6e9ed;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.tab.active {
+    background-color: #214c79;
+    color: white;
+}
+
+/* Profile Form */
+.content-area {
+    border: 1px solid #b8b8b8;
+    margin-top: 5px;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    min-height: calc(100vh - 130px);
+    overflow-y: auto;
+}
+
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.form-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80%;
+    padding: 20px;
+}
+
+.form-group{
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+label {
+    width: 30%;
+    font-size: 16px;
+    color: #333;
+}
+
+.profile-pic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.profile-pic img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.profile-icon {
+    font-size: 60px;
+    color: #333;
+}
+
+.upload-btn {
+    width: 20%;
+    text-align: center;
+    padding: 8px 20px;
+    background-color: #5a9bd5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.upload-btn:hover {
+    background-color: #4a8ac5;
+}
+
+.password-info {
+    background-color: #d9d9d9;
+    margin-top: 20px;
+    color: #333;
+    padding: 20px;
+    border-radius: 10px;
+    width: 100%;
+}
+
+.password-info .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #008000;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.password-info p {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.save-btn{
+    margin-top: 20px;
+}
+
+.acc-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.acc-container .b {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    width: 100%;
+}
+
+.acc-container .b .b1 {
+    height: auto;
+    min-height: 140px;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 20px;
+    border: 1px solid #b8b8b8;
+    border-radius: 5px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.acc-container .b .b1 .info {
+    margin-bottom: 10px;
+}
+
+.acc-container .b .b1 button {
+    padding: 6px 15px;
+    height: 50px;
+    background-color: #5a9bd5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.acc-container .btn-group {
+    margin-top: 30px;
+}
+
+/* Password Form and Account Management (hidden by default) */
+#passwordContent,
+#accountContent {
+    display: none;
+}

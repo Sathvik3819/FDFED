@@ -1,0 +1,356 @@
+
+/* Stats Cards */
+.stats-container {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    flex: 1;
+    min-width: 200px;
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    border: 0.5px solid rgb(159, 159, 159);
+}
+.stat-title {
+    color: var(--text-light);
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.stat-value {
+    font-size: 3.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.stat-value.pending {
+    color: var(--pending-orange);
+}
+
+.stat-value.active {
+    color: var(--active-green);
+}
+
+.add-visitor-btn-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-new-visitor-btn {
+    background-color: var(--button-red);
+    color: white;
+    border: none;
+    /* height: 70px; */
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+    height: 45px;
+}
+
+.add-new-visitor-btn:hover {
+    background-color: #d32f2f;
+}
+
+.add-new-visitor-btn img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    filter: brightness(0) invert(1);
+}
+
+.add-new-visitor-btn a {
+    text-decoration: none;
+    color: white;
+}
+
+
+/* Search and Filter Container */
+.search-filter-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.search-container {
+    flex: 1;
+}
+
+#search-input {
+    width: 100%;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 30px;
+    font-size: 1rem;
+    outline: none;
+}
+
+#search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(44, 75, 124, 0.1);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-btn,
+.export-btn {
+    padding: 10px 10px;
+    width: 80px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.filter-btn {
+    background-color: #e0e0e0;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-btn:hover {
+    background-color: #d5d5d5;
+}
+
+.export-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.export-btn:hover {
+    background-color: #1e3a6a;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.filter-tab {
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex: 1;
+    text-align: center;
+}
+
+.filter-tab:hover {
+    background-color: #d5d5d5;
+}
+
+.filter-tab.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Visitors Table */
+.visitors-table-container {
+    background-color: var(--white);
+    border-radius: 8px;
+    height: 400px;
+    overflow-y: scroll;
+    overflow-x: auto;
+    padding: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background-color: var(--light-gray);
+}
+
+th,
+td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    font-weight: 500;
+    color: var(--text-light);
+    text-transform: capitalize;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-block;
+    text-align: center;
+    min-width: 100px;
+}
+
+.status-active {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: var(--active-green);
+}
+
+.status-pending {
+    background-color: rgba(255, 112, 67, 0.1);
+    color: var(--pending-orange);
+}
+
+.status-checked {
+    background-color: rgba(158, 158, 158, 0.1);
+    color: var(--checked-gray);
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f5f5f5;
+    color: var(--text-dark);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.action-btn:hover {
+    background-color: #e0e0e0;
+}
+
+/* Filter Dropdown Styles */
+.filter-dropdown {
+    position: absolute;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 300px;
+    z-index: 1000;
+    padding: 15px;
+}
+
+.filter-section {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.filter-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.filter-section h3 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-options label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.filter-options label:hover {
+    background-color: var(--light-gray);
+}
+
+.filter-options input[type="radio"] {
+    cursor: pointer;
+}
+
+.filter-actions {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.reset-filter-btn {
+    width: 100%;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    background-color: #e0e0e0;
+    color: var(--text-dark);
+}
+
+.reset-filter-btn:hover {
+    background-color: #d5d5d5;
+}
+
+
+
+
+/* Media query for screens less than 400px - Column layout for sidebar items */
+@media screen and (max-width: 400px) {
+    
+
+    /* Adjust other UI elements for very small screens */
+    .stats-container {
+        flex-direction: column;
+    }
+
+    .stat-card {
+        margin-bottom: 15px;
+    }
+
+    .search-filter-container {
+        flex-direction: column;
+    }
+
+    .action-buttons {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+
+    .filter-tabs {
+        flex-wrap: wrap;
+    }
+
+    .filter-tab {
+        flex-basis: 50%;
+    }
+}

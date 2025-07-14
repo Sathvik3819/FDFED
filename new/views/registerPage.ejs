@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Ease - Register</title>
+    <link rel="stylesheet" href="../CSS/registerPage.css">
+</head>
+
+<body>
+    <% if (message.length > 0) { %>
+     <div class="alert">
+        <%= message %>
+     </div>
+    <% } %>
+    <div class="container">
+        <div class="left-panel">
+            <div class="logo">
+                <img src="../imgs/Logo.png" alt="URBAN EASE" height="30px" width="130px">
+            </div>
+            <p class="tagline">Community is built on care and trust. We're here to keep your community safe, clean, and
+                thriving.</p>
+        </div>
+
+        <div class="div1"></div>
+
+        <div class="right-panel">
+            <h2>Register Now!</h2>
+            <p class="subtitle">Enter your information to register</p>
+
+            <div class="social-buttons">
+                <button class="social-btn google">
+                    <img src="../imgs/google.ico" alt="Google">
+                    Google
+                </button>
+                <button class="social-btn facebook">
+                    <img src="../imgs/facebook.png" alt="Facebook">
+                    Facebook
+                </button>
+            </div>
+
+            <div class="divider">or</div>
+
+            <form id="registerForm" method="POST" action="/register">
+                <div class="input-group">
+                    <input type="text" id="firstName" placeholder="First Name" name="firstName" required>
+                    <input type="text" id="lastName" placeholder="Last Name" name="lastName" required>
+                </div>
+                <input type="email" id="email" placeholder="Email Address" name="email" required>
+
+                <div class="password-wrap">
+                    <input type="password" id="password" placeholder="Password" name="password" required>
+                    <img src="../imgs/hidePass.svg" id="img" alt="" height="20px" width="40px">
+                </div>
+
+                <select name="userType" id="userType" name="userType" required>
+                    <option value="Resident">Resident</option>
+                    <option value="Security">Security</option>
+                    <option value="Worker">Worker</option>
+                    <option value="Community admin">Community Admin</option>
+                </select>
+
+                <button type="submit" class="continue-btn">Continue</button>
+            </form>
+            <style>
+                .login-link {
+                  font-size: 14px;
+                  color: black;
+                  text-decoration: none;
+                  font-weight: bold;
+                }
+              
+                .login-link:hover {
+                  text-decoration: underline;
+                }
+              </style>
+              
+              <div style="text-align: right; margin-top: 5px;">
+                <a href="/login" class="login-link">
+                  Already registered? Login here
+                </a>
+              </div>
+              
+        </div>
+    </div>
+    <script src="../JS/Registerpage.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,196 @@
+
+.header {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.content-area {
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
+    align-items: flex-start;
+    width: 100%;
+    margin-top: 5%;
+
+}
+
+.table-card {
+    background-color: white;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: auto;
+    max-width: 100%;
+    transition: width 0.3s ease;
+}
+
+.approval-card {
+    background-color: white;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 30%;
+    max-width: 400px;
+    display: none;
+    font-size: 12px;
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.tab {
+    padding: 10px 15px;
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+    border: 1px solid #ddd;
+    min-width: 100px;
+}
+
+.tab.active {
+    background-color: #2c4f7c;
+    color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+th,
+td {
+    padding: 4px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:nth-child(even) {
+    background-color: #f7f7f7;
+}
+
+tbody tr {
+    cursor: pointer;
+}
+
+tr.selected {
+    background-color: #8dc6f3;
+}
+
+.visitor-info {
+    margin-bottom: 15px;
+}
+
+.info-item {
+    margin-bottom: 15px;
+    word-break: break-word;
+}
+
+.label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+}
+
+.btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+}
+
+.btn-approve {
+    background-color: #ff6347;
+    color: white;
+}
+
+.btn-decline {
+    background-color: #2c4f7c;
+    color: white;
+}
+
+.btn-blacklist {
+    background-color: #daa520;
+    color: white;
+}
+
+/* Tablet Responsive */
+@media screen and (max-width: 1024px) {
+    .content-area {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .table-card,
+    .approval-card {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .page-title {
+        font-size: 24px;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    .container {
+        flex-direction: column;
+    }
+
+}
+
+/* Small screens */
+@media screen and (max-width: 400px) {
+    
+    th,
+    td {
+        padding: 8px 5px;
+        font-size: 12px;
+    }
+
+    .btn {
+        padding: 10px;
+    }
+
+    .info-item {
+        font-size: 14px;
+    }
+
+    .page-title {
+        font-size: 18px;
+    }
+
+    .tabs {
+        flex-direction: row;
+    }
+
+    .tab {
+        font-size: 12px;
+        padding: 8px;
+    }
+}

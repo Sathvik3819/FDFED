@@ -1,0 +1,537 @@
+import express from "express";
+const residentRouter = express.Router();
+
+import Issue from "../models/issues.js";
+import Resident from "../models/resident.js";
+import CommonSpaces from "../models/commonSpaces.js";
+import Payment from "../models/payment.js";
+import VisitorPreApproval from "../models/preapproval.js";
+import auth from "../controllers/auth.js";
+import { authorizeR } from "../controllers/authorization.js";
+import Ad from "../models/Ad.js";
+import communities from "../models/communities.js";
+
+import multer from "multer";
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "=profImg.png";
+    cb(null, uniqueName);
+  },
+});
+const upload = multer({ storage: storage });
+
+residentRouter.get("/commonSpace", async (req, res) => {
+  const booking = await CommonSpaces.find({ bookedBy: req.user.id });
+
+  console.log("Booking Data:", booking);
+
+  res.render("resident/commonSpace", { path: "cbs", bookings: booking });
+});
+
+residentRouter.post("/commonSpace/:id", async (req, res) => {
+  const issueId = req.params.id;
+
+  const commonspace = await CommonSpaces.findById(issueId);
+  if (!commonspace) {
+    return res.status(404).send("commonspace not found");
+  }
+
+  console.log("Commonspace Data:", commonspace);
+
+  res.status(200).json({ commonspace: commonspace });
+});
+
+residentRouter.post("/commonSpace", async (req, res) => {
+  try {
+    const uid = req.user.id;
+    const { facility, purpose, date, from, to } = req.body;
+    console.log(facility, purpose, date, from, to);
+
+    if (!facility || !purpose || !date || !from || !to) {
+      req.flash("message", "All fields are required.");
+      console.log("Missing fields in request body:", req.body);
+      return res.redirect("commonSpace");
+    }
+
+    const formattedDate = formatDate(date);
+    console.log("Formatted Date:", formattedDate);
+
+    const space = await CommonSpaces.create({
+      name: facility,
+      description: purpose,
+      Date: formattedDate,
+      from,
+      to,
+      status: "Pending",
+      availability: null,
+      bookedBy: uid,
+      community: req.user.community,
+    });
+
+    console.log("New Common Space Created:", space);
+
+    const user = await Resident.findById(uid);
+    if (!user) {
+      console.log("User not found");
+      req.flash("message", "User not found.");
+      return res.redirect("/login");
+    }
+
+    user.bookedCommonSpaces.push(space._id);
+    await user.save();
+
+    req.flash("message", "Booking request submitted successfully");
+    return res.redirect("commonSpace");
+  } catch (error) {
+    console.error("Error:", error);
+    req.flash("message", "Something went wrong.");
+    res.redirect("commonSpace");
+  }
+});
+
+residentRouter.get("/commonSpace/cancelled/:id", async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+
+    const booking = await CommonSpaces.deleteOne({
+      _id: bookingId,
+      bookedBy: req.user.id,
+    });
+
+    console.log(bookingId, req.user.id);
+
+    return res.json({ result: "Booking cancelled successfully" });
+  } catch (error) {
+    console.error("Error fetching cancellation reason:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+const formatDate = (rawDate) => {
+  return new Date(rawDate).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  });
+};
+
+residentRouter.get("/dashboard", async (req, res) => {
+  const recents = [];
+
+  const issues = await Issue.find({ resident: req.user.id });
+  const commonSpaces = await CommonSpaces.find({ bookedBy: req.user.id });
+  const payments = await Payment.find({ sender: req.user.id });
+
+  // Add issues
+  recents.push(
+    ...issues.map((issue) => ({
+      type: "Issue",
+      title: issue.issueID,
+      dateRaw: new Date(issue.createdAt),
+      date: formatDate(issue.createdAt),
+    }))
+  );
+
+  // Add common space bookings
+  recents.push(
+    ...commonSpaces.map((space) => ({
+      type: "CommonSpace",
+      title: space.name,
+      dateRaw: new Date(space.createdAt),
+      date: formatDate(space.createdAt),
+    }))
+  );
+
+  // Add payments
+  recents.push(
+    ...payments.map((payment) => ({
+      type: "Payment",
+      title: payment.title,
+      dateRaw: new Date(payment.paymentDate),
+      date: formatDate(payment.paymentDate),
+    }))
+  );
+
+  console.log(recents);
+
+  // Sort by dateRaw descending
+  recents.sort((a, b) => b.dateRaw - a.dateRaw);
+
+  // Remove dateRaw for display
+  const cleanedRecents = recents.map(({ dateRaw, ...rest }) => rest);
+
+  // Log for debugging
+  cleanedRecents.forEach((r) => {
+    console.log(`${r.type} — ${r.title} — ${r.date}`);
+  });
+
+  // Render with recent data
+  res.render("resident/dashboard", {
+    path: "d",
+    recents: cleanedRecents,
+  });
+});
+
+residentRouter.get("/", (req, res) => {
+  res.redirect("dashboard");
+});
+
+residentRouter.get("/issueRaising", async (req, res) => {
+  try {
+    const resident = await Resident.findOne({ email: req.user.email }).populate(
+      {
+        path: "raisedIssues",
+        populate: {
+          path: "workerAssigned",
+        },
+      }
+    );
+
+    const ad = await Ad.findOne({ status: "active" });
+
+    if (!resident) {
+      return res.status(404).json({ error: "Resident not found." });
+    }
+
+    const issues = await resident.raisedIssues;
+
+    res.render("resident/issueRaising", { path: "ir", i: issues });
+  } catch (error) {
+    console.error("Error fetching issues:", error);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+residentRouter.post("/issueRaising/feedback", async (req, res) => {
+  try {
+    const { id, rating, feedback } = req.body;
+
+    const issue = await Issue.findById(id).populate("workerAssigned");
+    if (!issue) {
+      req.flash("message", "Issue not found.");
+      console.log("Issue not found for ID:", id);
+      return res.redirect("/resident/issueRaising");
+    }
+
+    issue.rating = rating;
+    issue.feedback = feedback;
+    issue.status = "Payment Pending";
+    await issue.save();
+
+    const payment = await Payment.create({
+      title: issue.issueID,
+      sender: req.user.id,
+      receiver: issue.workerAssigned.communityAssigned,
+      amount: 100,
+      paymentDeadline: new Date().toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
+      paymentDate: null,
+      paymentMethod: "None",
+      status: "Pending",
+      remarks: null,
+      ID: issue._id,
+      belongTo: "Issue",
+      belongToId: issue._id,
+      communityId: issue.workerAssigned.communityAssigned,
+    });
+
+    res.redirect("/resident/issueRaising");
+  } catch (error) {
+    console.error("Error submitting feedback:", error);
+    req.flash("message", "Something went wrong.");
+    return res.redirect("issueRaising");
+  }
+});
+
+residentRouter.post("/issueRaising", async (req, res) => {
+  try {
+    const { category, description } = req.body;
+    console.log("Received Issue Data:", req.body);
+    if (!category || !description) {
+      req.flash("message", "All fields are required.");
+      console.log("Missing fields in request body:", req.body);
+      return res.redirect("issueRaising");
+    }
+    const resident = await Resident.findById(req.user.id);
+    if (!resident) {
+      req.flash("message", "Resident not found.");
+      console.log("Resident not found for ID:", req.user.id);
+      return res.redirect("issueRaising");
+    }
+    console.log("Resident Found:", resident);
+
+    const timestamp = Date.now().toString().slice(-8);
+    const issueID = `UE-${timestamp}`;
+    console.log("Generated Issue ID:", issueID);
+    const creat = new Date().toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    // Create the new issue document
+    const newIssue = await Issue.create({
+      issueID: issueID,
+      resident: resident._id,
+      title: category,
+      description: description,
+      status: "Pending",
+      createdAt: creat,
+      workerAssigned: null,
+    });
+    console.log("New Issue Created:", newIssue);
+    resident.raisedIssues.push(newIssue._id);
+    await resident.save();
+    console.log("Resident's raisedIssues updated:", resident.raisedIssues);
+
+    return res.redirect("issueRaising");
+  } catch (error) {
+    console.error("Error raising issue:", error);
+    req.flash("message", "Something went wrong.");
+    return res.redirect("issueRaising");
+  }
+});
+
+residentRouter.delete("/deleteIssue/:issueID", async (req, res) => {
+  try {
+    const { issueID } = req.params;
+
+    const issue = await Issue.findOneAndDelete({ _id: issueID });
+
+    if (!issue) {
+      return res.status(404).json({ error: "Issue not found." });
+    }
+
+    await Resident.updateOne(
+      { raisedIssues: issue._id },
+      { $pull: { raisedIssues: issue._id } }
+    );
+
+    res.json({ message: "Issue deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting issue:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+residentRouter.get("/getIssueData/:issueID", async (req, res) => {
+  try {
+    const { issueID } = req.params;
+    console.log("Fetching issue data for ID:", issueID);
+    const issue = await Issue.findById(issueID)
+      .populate("resident")
+      .populate("workerAssigned");
+    if (!issue) {
+      return res.status(404).json({ error: "Issue not found." });
+    }
+    console.log("Issue data found:", issue);
+
+    res.status(200).json(issue);
+  } catch (error) {
+    console.error("Error fetching issue data:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+// Payment routes - corrected version
+residentRouter.get("/payments", async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const payments = await Payment.find({ sender: userId })
+      .populate("receiver", "name")
+      .sort({ paymentDeadline: -1 });
+
+    payments.forEach(async (p) => {
+      p.paymentDate = formatDate(p.paymentDate);
+      p.paymentDeadline = formatDate(p.paymentDeadline);
+      await p.save();
+    });
+
+    res.render("resident/payments", { path: "p", payments });
+  } catch (error) {
+    console.error("Error fetching payments:", error);
+    req.flash("message", "Failed to load payment data");
+    res.redirect("/dashboard");
+  }
+});
+
+residentRouter.get("/payment/receipt/:id", async (req, res) => {
+  const Id = req.params.id;
+  console.log("Payment ID:", Id);
+
+  const payment = await Payment.findById(Id)
+    .populate("receiver")
+    .populate("sender");
+
+  console.log("Payment Details:", payment);
+
+  res.render("resident/receipt", { path: "p", payment });
+});
+
+residentRouter.get("/payment/:paymentId", async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const paymentId = req.params.paymentId;
+
+    const payment = await Payment.findOne({
+      _id: paymentId,
+      sender: userId,
+    });
+
+    if (!payment) {
+      return res.status(404).json({ error: "Payment receipt not found" });
+    }
+    res.status(200).json({
+      success: true,
+      payment,
+    });
+  } catch (error) {
+    console.error("Error fetching receipt:", error);
+    res.status(500).json({ error: "Failed to fetch receipt" });
+  }
+});
+
+residentRouter.post("/payment/post", async (req, res) => {
+  try {
+    const {
+      paymentId,
+      bill,
+      amount,
+      paymentMethod,
+      cardNumber,
+      expiryDate,
+      cvv,
+    } = req.body;
+
+    const payment = await Payment.findById(paymentId).populate("");
+    if (!payment) {
+      req.flash("message", "Payment not found.");
+      console.log("Payment not found for ID:", paymentId);
+      return res.redirect("/resident/payments");
+    }
+
+    payment.status = "Completed";
+    payment.paymentMethod = paymentMethod;
+    payment.amount = amount;
+
+    payment.paymentDate = new Date().toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      timeZone: "Asia/Kolkata",
+    });
+
+    await payment.save();
+
+    const type = payment.belongTo;
+
+    let ob = null;
+
+    if (type === "Issue") {
+      ob = await Issue.findById(payment.belongToId);
+    } else if (type === "commonSpaces") {
+      ob = await CommonSpaces.findById(payment.belongToId);
+    }
+    ob.status = "Resolved";
+    ob.paymentStatus = "Completed";
+    ob.payment = payment._id;
+    await ob.save();
+
+    console.log("Payment updated successfully:", payment);
+
+    res.redirect("/resident/payments");
+  } catch (error) {
+    console.error("Error in payment processing:", error);
+    req.flash("message", "Something went wrong.");
+    return res.redirect("/resident/payments");
+  }
+});
+
+residentRouter.get("/preApprovals", async (req, res) => {
+  try {
+    const resident = await Resident.findById(req.user.id).populate(
+      "preApprovedVisitors"
+    );
+    const ad = await Ad.findOne({ status: "active" });
+
+    res.render("resident/preApproval", {
+      path: "pa",
+      visitors: resident.preApprovedVisitors || [],
+      ad: ad,
+    });
+  } catch (err) {
+    console.error("Error loading visitor history:", err);
+    res.render("users/resident/preapproval", { visitors: [] });
+  }
+});
+
+//pre approval routes
+residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
+  try {
+    const { visitorName, contactNumber, dateOfVisit, timeOfVisit, purpose } =
+      req.body;
+
+    const resident = await Resident.findById(req.user.id).populate("community");
+    if (!resident) {
+      return res.status(404).json({ message: "Resident not found" });
+    }
+
+    const date = formatDate(dateOfVisit);
+    console.log("Formatted Date:", date);
+
+    console.log(resident._id);
+    console.log(resident.community._id);
+
+    const newVisitor = await VisitorPreApproval.create({
+      visitorName,
+      contactNumber,
+      dateOfVisit: date,
+      timeOfVisit,
+      purpose,
+      approvedBy: resident._id,
+      community: resident.community._id,
+    });
+
+    resident.preApprovedVisitors.push(newVisitor._id);
+    await resident.save();
+
+    return res.redirect("/resident/preApprovals");
+  } catch (err) {
+    console.error("Error in pre-approving visitor:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+residentRouter.delete("/preapproval/cancel/:id", async (req, res) => {
+  const requestId = req.params.id;
+  console.log("Canceling request with ID:", requestId);
+
+  try {
+    const result = await VisitorPreApproval.findByIdAndDelete(requestId);
+    if (!result) {
+      console.log("Request not found for ID:", requestId);
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Request canceled successfully", ok: true });
+  } catch (error) {
+    console.error("Error canceling request:", error);
+    return res.status(500).json({ error: "Failed to cancel request" });
+  }
+});
+
+residentRouter.get("/profile", (req, res) => {
+  res.render("resident/Profile", { path: "pr" });
+});
+
+export default residentRouter;

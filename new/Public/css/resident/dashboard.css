@@ -1,0 +1,217 @@
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.main-content{
+    padding-top: 10px;
+}
+
+/* Card styles */
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 20px;
+    height: 100%;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: #f7f9fc;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eaedf3;
+}
+
+.card-title {
+    margin: 0;
+    font-size: 18px;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* Notification styles */
+.notification {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eaedf3;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.notification:last-child {
+    border-bottom: none;
+}
+
+.notification:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-icon {
+    margin-right: 15px;
+    width: 36px;
+    height: 36px;
+    background-color: #e3f2fd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1976d2;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #37474f;
+    font-weight: 500;
+}
+
+.notification-date {
+    font-size: 12px;
+    color: #78909c;
+}
+
+/* Payment alerts */
+.payment-alert {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #fff8e1;
+    border-left: 4px solid #ffc107;
+    margin: 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.payment-alert:hover {
+    background-color: #fff3cd;
+}
+
+.payment-alert-icon {
+    margin-right: 15px;
+    color: #ff9800;
+    flex-shrink: 0;
+}
+
+/* Emergency contacts */
+.emergency-contacts {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+}
+
+.emergency-contact {
+    display: flex;
+    align-items: center;
+    width: 30%;
+    padding: 12px 10px;
+    border-bottom: 1px solid #eaedf3;
+    transition: background-color 0.2s;
+}
+
+.emergency-contact:last-child {
+    border-bottom: none;
+}
+
+.emergency-contact:hover {
+    background-color: #f8f9fa;
+}
+
+.contact-icon {
+    margin-right: 15px;
+    width: 40px;
+    height: 40px;
+    background-color: #ffebee;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f44336;
+    flex-shrink: 0;
+}
+
+.contact-details {
+    flex: 1;
+}
+
+.contact-label {
+    font-weight: 600;
+    margin-bottom: 3px;
+    color: #37474f;
+}
+
+.contact-number {
+    color: #546e7a;
+    font-size: 14px;
+}
+
+/* Page title */
+.page-title {
+    margin-bottom: 25px;
+    color: #2c3e50;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+/* Menu toggle button */
+.menu-toggle {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+    color: #2c3e50;
+    transition: color 0.2s;
+}
+
+.menu-toggle:hover {
+    color: #3498db;
+}
+
+
+
+@media (min-width: 992px) {
+    .menu-toggle {
+        display: none;
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 576px) {
+    .grid-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .page-title {
+        font-size: 22px;
+        margin-top: 10px;
+    }
+    
+    .card {
+        margin-bottom: 15px;
+    }
+    
+    .notification, .emergency-contact {
+        padding: 12px 15px;
+    }
+}

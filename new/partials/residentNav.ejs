@@ -1,0 +1,16 @@
+<nav class="d-flex align-items-center pt-2 bg-white" style="font-size: 20px; padding-left: 100px; gap: 80px">
+    <div class="pe-5 pb-1">
+      <img src="/imgs/Logo.png" alt="Logo" height="40px" />
+    </div>
+    <ul class="d-flex pt-3 gap-4 align-items-center list-unstyled">
+      <li class="px-2 nav-link <%= path ==='d' ? "Nactive" : "" %>"><a style="text-decoration: none;color: inherit;" href="/resident/dashboard">Dashboard</a></li>
+      <li class="px-2 nav-link <%= path ==='pa' ? "Nactive" : "" %>"><a style="text-decoration: none;color: inherit;" href="/resident/preApprovals">Pre Approvals</a></li>
+      <li class="px-2 nav-link <%= path ==='cbs' ? "Nactive" : "" %>"><a style="text-decoration: none;color: inherit;" href="/resident/commonSpace">Common Space Bookings</a></li>
+      <li class="px-2 nav-link <%= path ==='p' ? "Nactive" : "" %>"><a style="text-decoration: none;color: inherit;" href="/resident/payments">Payments</a></li>
+      <li class="px-2 nav-link <%= path ==='ir' ? "Nactive" : "" %>"><a style="text-decoration: none;color: inherit;" href="/resident/issueRaising">Issue Raising</a></li>
+      <li class="px-2 nav-link <%= path ==='pr' ? "Nactive" : "" %>"><a style="text-decoration: none;color: inherit;" href="/resident/profile">Profile</a></li>
+      
+    </ul>
+  </nav>
+
+  

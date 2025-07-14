@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tasks Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/nav.css" />
+
+    <style>
+      .section-title {
+        position: relative;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+        border-bottom: 2px solid #e9ecef;
+      }
+
+      .section-title::after {
+        content: "";
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 300px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        border-radius: 3px;
+      }
+
+      .advertisement {
+        height: 100%;
+        width: 100%;
+        border: 3px dashed #8ac5ff;
+        background-color: #45a2ff15;
+        border-radius: var(--border-radius);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: var(--transition);
+      }
+
+      .advertisement:hover {
+        background-color: #45a2ff25;
+        transform: rotate(1deg);
+      }
+
+      .ad-text {
+        transform: rotate(270deg);
+        font-size: 2rem;
+        font-weight: 700;
+        color: #45a2ff;
+        letter-spacing: 3px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Tasks Table Styles */
+      .tasks-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .tasks-table thead th {
+        background-color: var(--primary-light);
+        color: var(--dark);
+        font-weight: 600;
+        padding: 15px;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .tasks-table tbody tr {
+        transition: var(--transition);
+      }
+
+      .tasks-table tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .tasks-table td {
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        vertical-align: middle;
+      }
+
+      .tasks-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .status-badge {
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.85rem;
+      }
+
+      .status-pending {
+        background-color: #fff3cd;
+        color: var(--warning);
+      }
+
+      .status-overdue {
+        background-color: #f8d7da;
+        color: var(--danger);
+      }
+
+      .status-completed {
+        background-color: #d1e7dd;
+        color: var(--success);
+      }
+
+      .action-btn {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 500;
+        transition: var(--transition);
+      }
+
+      @media (max-width: 992px) {
+        .bodyContainer {
+          grid-template-columns: 1fr;
+        }
+
+        .adCon {
+          height: auto;
+          position: relative;
+          top: 0;
+        }
+
+        .ad-text {
+          transform: rotate(0);
+          padding: 30px;
+        }
+
+        .tasks-table {
+          display: block;
+          overflow-x: auto;
+        }
+      }
+
+      @media (max-width: 768px) {
+        nav ul {
+          gap: 10px !important;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <%- include('../../partials/workerNav.ejs') %>
+
+    <div class="bodyContainer">
+      <!-- AD SECTION -->
+      <div class="adCon d-flex justify-content-center align-items-center">
+        <div class="advertisement">
+          <p class="ad-text">Advertisement</p>
+        </div>
+      </div>
+
+      <!-- TASKS SECTION -->
+      <div class="contentCon">
+        <div class="section-title">
+          <h1>Assigned Issues</h1>
+        </div>
+
+        <div class="table-responsive">
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th>Issue ID</th>
+                <th>Title</th>
+                <th>Resident Details</th>
+                <th>Created At</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (locals.tasks) { %> <% tasks.forEach(t => { %> <% if
+              (t.status === "Assigned" ) { %>
+              <tr>
+                <td><%= t.issueID %></td>
+                <td><%= t.title %></td>
+                <td>
+                  <%= t.resident.residentFirstname %> <%=
+                  t.resident.residentLastname %>, <%= t.resident.blockNo %>,
+                  Flat <%= t.resident.flatNo %>
+                </td>
+                <td><%= t.createdAt %></td>
+                <td>
+                  <span class="status-badge status-pending"
+                    ><%= t.status %></span
+                  >
+                </td>
+                <td><%= t.deadline %></td>
+                <td>
+                  <button
+                    class="action-btn btn btn-primary btn-sm"
+                    data-id="<%= t._id %>"
+                  >
+                    <i class="bi bi-check-circle me-1"></i> Resolve
+                  </button>
+                </td>
+              </tr>
+
+              <% } %> <% }) %> <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../js/worker/tasks.js"></script>
+  </body>
+</html>

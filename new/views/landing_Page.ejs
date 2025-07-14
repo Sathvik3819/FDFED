@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="icon" type="image/png" href="/imgs/icon-logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>URBAN EASE - Premium Gated Community Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/Landing_Page.css">
+</head>
+
+<body>
+  <!-- Navigation -->
+
+
+  <nav class="navbar navbar-expand-lg fixed-top w-100 p-0">
+    <div class="container-fluid d-flex align-items-between mx-2 px-0">
+      <!-- Logo on the Left -->
+      <a class="navbar-brand mx-2" href="#">
+        <img src="/imgs/URBAN_EASE.png" alt="xxxx" >
+      </a>
+  
+      <!-- Navbar Toggler (for Mobile) -->
+      <button class="navbar-toggler ms-auto text-white border-white my-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+  
+      <!-- Navbar Items (Right-Aligned & Full-Width on Collapse) -->
+      <div class="collapse navbar-collapse w-100 justify-content-end" id="navbarNav">
+        <ul class="navbar-nav d-flex align-items-lg-center align-items-start flex-lg-row flex-column">
+          <li class="nav-item px-3 py-2"><a class="nav-link" href="#home">Home</a></li>
+          <li class="nav-item px-3 py-2"><a class="nav-link" href="#benefits">Benefits</a></li>
+          <li class="nav-item px-3 py-2"><a class="nav-link" href="#services">Services</a></li>
+          <li class="nav-item px-3 py-2"><a class="nav-link" href="#testimonials">Testimonials</a></li>
+          <li class="nav-item px-3 py-2"><a class="nav-link" href="#contact">Contact</a></li>
+          <li class="nav-item px-3 py-2"><a class="btn btn-primary" href="/login">Login</a></li>
+          <li class="nav-item px-3 py-2"><a class="btn btn-secondary" href="/Register">Register</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="gap">
+
+  </div>
+
+  <!-- Hero Section -->
+  <section id="home" class="hero">
+    <div class="overlay"></div>
+    <div class="container text-center">
+      <div class="hero-content">
+        <h1 class="display-4 fw-bold mb-4">Find the Perfect Gated Community for You</h1>
+        <p class="lead mb-5">Experience premium living with enhanced security, exclusive amenities, and a vibrant
+          community lifestyle.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+          <a href="#Registered_Commmunities" class="btn btn-primary btn-lg">Explore Communities</a>
+         
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="benefits" class="py-5">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold">Why Choose a Gated Community?</h2>
+        <p class="lead text-muted">Discover the advantages of exclusive community living</p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+              <div class="feature-icon mb-3">
+                <i class="fas fa-shield-alt fa-3x text-primary"></i>
+              </div>
+              <h3 class="h4 mb-3">Enhanced Security</h3>
+              <p class="text-muted">24/7 security personnel, surveillance systems, and controlled access points ensure
+                your family's safety.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+              <div class="feature-icon mb-3">
+                <i class="fas fa-swimming-pool fa-3x text-primary"></i>
+              </div>
+              <h3 class="h4 mb-3">Premium Amenities</h3>
+              <p class="text-muted">Enjoy exclusive access to swimming pools, fitness centers, parks, and recreational
+                facilities.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+              <div class="feature-icon mb-3">
+                <i class="fas fa-users fa-3x text-primary"></i>
+              </div>
+              <h3 class="h4 mb-3">Community Living</h3>
+              <p class="text-muted">Build meaningful connections with neighbors who share similar values and lifestyles.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+              <div class="feature-icon mb-3">
+                <i class="fas fa-bolt fa-3x text-primary"></i>
+              </div>
+              <h3 class="h4 mb-3">Seamless Utilities</h3>
+              <p class="text-muted">Enjoy uninterrupted power, a reliable water supply, and well-maintained
+                infrastructure for a stress-free living experience.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <div class="container-fluid px-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="community card shadow">
+          <div class="card-body d-flex flex-column flex-lg-row align-items-center justify-content-between p-4">
+            <h3 class="text-center text-lg-start mb-3 mb-lg-0 fw-bold">Registered Communities</h3>
+           
+          </div>
+
+
+
+          <div id="communityCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+              <% for (let i=0; i < communities.length; i +=3) { %>
+                <div class="carousel-item <%= i === 0 ? 'active' : '' %>">
+                  <div class="row d-flex justify-content-center gx-4 gy-4"> <!-- Increased horizontal spacing -->
+                    <% for (let j=i; j < i + 3 && j < communities.length; j++) { %>
+                      <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card community-card h-100 border-0 shadow-sm p-3"> <!-- Padding inside card -->
+                          <img src="<%= communities[j].image %>" class="card-img-top" alt="<%= communities[j].name %>">
+                          <div class="card-body p-4">
+                            <h3 class="h4 mb-2">
+                              <%= communities[j].name %>
+                            </h3> <!-- Added margin bottom -->
+
+                            <!-- Updated Amenities Section -->
+                            <div class="d-flex flex-wrap justify-content-start mb-3 gap-2">
+                              <% if (Array.isArray(communities[j].amenities)) { %>
+                                <% communities[j].amenities.forEach(amenity=> { %>
+                                  <span class="badge bg-primary px-3 py-2 fs-6 text-truncate">
+                                    <%= amenity %>
+                                  </span>
+                                  <% }); %>
+                                    <% } else { %>
+                                      <span class="badge bg-primary px-3 py-2 fs-6 text-truncate">
+                                        <%= communities[j].amenities %>
+                                      </span>
+                                      <% } %>
+                            </div>
+
+                            <p class="text-muted mb-3">
+                              <i class="fas fa-map-marker-alt me-2"></i>
+                              <%= communities[j].location %>
+                            </p>
+
+                            <p class="card-text">
+                              <%= communities[j].description %>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <% } %>
+                  </div>
+                </div>
+                <% } %>
+            </div>
+          </div>
+
+
+
+          <!-- Navigation Arrows -->
+          <button class="carousel-control-prev custom-arrow" type="button" data-bs-target="#communityCarousel"
+            data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          </button>
+          <button class="carousel-control-next custom-arrow" type="button" data-bs-target="#communityCarousel"
+            data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+
+
+  >
+
+  <!-- Services & Features -->
+  <section class="services" id="services" class="py-5 ">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold">Services & Features</h2>
+        <p class="lead text-muted">Comprehensive solutions for residents and property managers</p>
+      </div>
+
+      <ul class="nav nav-tabs mb-4 justify-content-center border-bottom" id="servicesTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active px-10 sec" id="security-tab" data-bs-toggle="tab" data-bs-target="#security"
+            type="button" role="tab" aria-controls="security" aria-selected="true">
+            Security
+          </button>
+        </li>
+
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="management-tab" data-bs-toggle="tab" data-bs-target="#management" type="button"
+            role="tab" aria-controls="management" aria-selected="false">
+            Management
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="servicesTabContent">
+        <!-- Security Tab -->
+        <div class="tab-pane fade show active" id="security" role="tabpanel" aria-labelledby="security-tab">
+          <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+              <img
+                src="https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                alt="Security Features" class="img-fluid rounded shadow">
+            </div>
+            <div class="col-lg-6">
+              <h3 class="mb-4">State-of-the-Art Security</h3>
+              <div class="d-flex mb-4">
+                <div class="feature-icon me-3">
+                  <i class="fas fa-video text-primary fa-2x"></i>
+                </div>
+                <div>
+                  <h4 class="h5">24/7 CCTV Surveillance</h4>
+                  <p class="text-muted">Advanced camera systems monitoring all common areas and entry points.</p>
+                </div>
+              </div>
+              <div class="d-flex mb-4">
+                <div class="feature-icon me-3">
+                  <i class="fas fa-key text-primary fa-2x"></i>
+                </div>
+                <div>
+                  <h4 class="h5">Digital Access Control</h4>
+                  <p class="text-muted">Secure entry with key cards, biometric systems, or mobile app access.</p>
+                </div>
+              </div>
+              <div class="d-flex mb-4">
+                <div class="feature-icon me-3">
+                  <i class="fas fa-user-check text-primary fa-2x"></i>
+                </div>
+                <div>
+                  <h4 class="h5">Visitor Management</h4>
+                  <p class="text-muted">Digital pre-approval system for visitors with real-time notifications.</p>
+                </div>
+              </div>
+              <div class="d-flex">
+                <div class="feature-icon me-3">
+                  <i class="fas fa-shield-alt text-primary fa-2x"></i>
+                </div>
+                <div>
+                  <h4 class="h5">Professional Security Staff</h4>
+                  <p class="text-muted">Trained personnel providing round-the-clock security and assistance.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amenities Tab -->
+
+
+        <!-- Management Tab -->
+        <div class="tab-pane fade" id="management" role="tabpanel" aria-labelledby="management-tab">
+          <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+              <img
+                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                alt="Community Management" class="img-fluid rounded shadow">
+            </div>
+            <div class="col-lg-6">
+              <h3 class="mb-4">Smart Community Management</h3>
+
+              <div class="d-flex mb-4">
+                <div class="feature-icon me-3">
+                  <i class="fas fa-calendar-alt text-primary fa-2x"></i>
+                </div>
+                <div>
+                  <h4 class="h5">Smart Scheduling System</h4>
+                  <p class="text-muted">Book amenities, event spaces, and maintenance appointments with ease.</p>
+                </div>
+              </div>
+
+              <div class="d-flex mb-4">
+                <div class="feature-icon me-3">
+                  <i class="fas fa-credit-card text-primary fa-2x"></i>
+                </div>
+                <div>
+                  <h4 class="h5">Online Payments</h4>
+                  <p class="text-muted">Convenient payment system for HOA fees and community services.</p>
+                </div>
+              </div>
+
+              <div class="d-flex mb-4">
+                <div class="feature-icon me-3">
+                  <i class="fas fa-clipboard-list text-primary fa-2x"></i>
+                </div>
+                <div>
+                  <h4 class="h5">Maintenance Requests</h4>
+                  <p class="text-muted">Easy submission and tracking of maintenance issues.</p>
+                </div>
+              </div>
+
+              <div class="d-flex">
+                <div class="feature-icon me-3">
+                  <i class="fas fa-bell text-primary fa-2x"></i>
+                </div>
+                <div>
+                  <h4 class="h5">Automated Resident Notifications</h4>
+                  <p class="text-muted">Get instant updates on community announcements, events, and alerts.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials & Reviews -->
+  <section id="testimonials" class="py-5 bg-light">
+    <div class="container-fluid">
+      <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold">What Our Residents Say</h2>
+        <p class="lead text-muted">Hear from the people who call our communities home</p>
+      </div>
+  
+      <!-- Modified row structure for better responsiveness -->
+      <div class="row">
+        <!-- First testimonial -->
+        <div class="col-12 col-md-4 mb-4">
+          <div class="card testimonial-card h-100 border-0 shadow-sm">
+            <div class="card-body d-flex flex-column justify-content-between p-4">
+              <div>
+                <div class="d-flex mb-4">
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star text-warning"></i>
+                </div>
+                <p class="card-text mb-4">"Moving to Prestige Lakeside Habitat in Bengaluru was the best decision for
+                  our family. The security, open spaces, and friendly neighbors make it feel like home."
+                </p>
+              </div>
+              <div class="d-flex align-items-center">
+                <img src="/imgs/OIP.jpeg" alt="Aditi Sharma" class="rounded-circle me-3" width="50" height="50">
+                <div>
+                  <h5 class="mb-0">Aditi Sharma</h5>
+                  <p class="text-muted mb-0">Resident since 2021</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Second testimonial -->
+        <div class="col-12 col-md-4 mb-4">
+          <div class="card testimonial-card h-100 border-0 shadow-sm">
+            <div class="card-body d-flex flex-column justify-content-between p-4">
+              <div>
+                <div class="d-flex mb-4">
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star text-warning"></i>
+                </div>
+                <p class="card-text mb-4">"The amenities at Lodha Belmondo in Pune are top-notch. From the clubhouse to
+                  the jogging track, everything is well-maintained. We enjoy living here every day!"
+                </p>
+              </div>
+              <div class="d-flex align-items-center">
+                <img src="/imgs/OIP.jpeg" alt="Rajiv Mehta" class="rounded-circle me-3" width="50" height="50">
+                <div>
+                  <h5 class="mb-0">Rajiv Mehta</h5>
+                  <p class="text-muted mb-0">Resident since 2018</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Third testimonial -->
+        <div class="col-12 col-md-4 mb-4">
+          <div class="card testimonial-card h-100 border-0 shadow-sm">
+            <div class="card-body d-flex flex-column justify-content-between p-4">
+              <div>
+                <div class="d-flex mb-4">
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star text-warning"></i>
+                  <i class="fas fa-star-half-alt text-warning"></i>
+                </div>
+                <p class="card-text mb-4">"As a property manager, the Urban Ease has transformed our operations at
+                  Rustomjee Paramount, Mumbai. Residents find it easy to use, and our security has improved
+                  significantly."
+                </p>
+              </div>
+              <div class="d-flex align-items-center">
+                <img src="/imgs/OIP.jpeg" alt="Neha Iyer" class="rounded-circle me-3" width="50" height="50">
+                <div>
+                  <h5 class="mb-0">Neha Iyer</h5>
+                  <p class="text-muted mb-0">Property Manager</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Contact & Support -->
+  <section id="contact" class="py-5 bg-light">
+    <div class="container">
+      <div class="row g-5 d-flex justify-content-center">
+        <div class="col-lg-6">
+          <div class="card h-100 border-0 shadow rounded-4 overflow-hidden">
+            <div class="card-body p-4 p-lg-5">
+              <h3 class="mb-4 fw-bold text-primary">Frequently Asked Questions</h3>
+              
+              <div class="accordion" id="faqAccordion">
+                <div class="accordion-item border-0 mb-3 rounded-3 shadow-sm">
+                  <h2 class="accordion-header" id="headingOne">
+                    <button class="accordion-button collapsed rounded-3 fw-semibold" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                      <i class="fas fa-calendar-alt text-primary me-2"></i> How do I schedule a community tour?
+                    </button>
+                  </h2>
+                  <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
+     data-bs-parent="#faqAccordion">
+    <div class="accordion-body bg-light">
+        What are the available tour options? We offer both in-person and virtual tours  
+        to help you explore the community at your convenience.  
+        Our team is available to guide you through the process and answer any questions.
+    </div>
+</div>
+
+                </div>
+  
+                <div class="accordion-item border-0 mb-3 rounded-3 shadow-sm">
+                  <h2 class="accordion-header" id="headingTwo">
+                    <button class="accordion-button collapsed rounded-3 fw-semibold" type="button" data-bs-toggle="collapse" 
+                      data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                      <i class="fas fa-tools text-primary me-2"></i> How can residents report maintenance issues?
+                    </button>
+                  </h2>
+                  <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body bg-light">
+                      Residents can report issues through the dedicated issue raising page on our portal. 
+                      Once submitted, your community administrator will review the complaint and help resolve it. 
+                      You can track the status of your reported issues through your resident dashboard.
+                    </div>
+                  </div>
+                </div>
+  
+                <div class="accordion-item border-0 mb-3 rounded-3 shadow-sm">
+                  <h2 class="accordion-header" id="headingThree">
+                    <button class="accordion-button collapsed rounded-3 fw-semibold" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                      <i class="fas fa-shield-alt text-primary me-2"></i> How does the security system work?
+                    </button>
+                  </h2>
+                  <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree"
+                    data-bs-parent="#faqAccordion">
+                    <div class="accordion-body bg-light">
+                      Our communities feature 24/7 security with gated entrances, surveillance cameras, and professional
+                      security personnel. Residents can manage visitor access through our mobile app.
+                    </div>
+                  </div>
+                </div>
+  
+                <div class="accordion-item border-0 rounded-3 shadow-sm">
+                  <h2 class="accordion-header" id="headingFour">
+                    <button class="accordion-button collapsed rounded-3 fw-semibold" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                      <i class="fas fa-building text-primary me-2"></i> Can I list my property on your platform?
+                    </button>
+                  </h2>
+                  <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour"
+                    data-bs-parent="#faqAccordion">
+                    <div class="accordion-body bg-light">
+                      Yes! Property managers and community developers can list their properties on our platform. Contact
+                      our business development team for more information on listing requirements and pricing.
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <div class="mt-5 p-4 bg-primary bg-opacity-10 rounded-4">
+                <h4 class="h5 mb-3 fw-bold"><i class="fas fa-headset me-2 text-primary"></i> Contact Information</h4>
+                <div class="d-flex align-items-center mb-2">
+                  <i class="fas fa-map-marker-alt me-3 text-primary"></i>
+                  <p class="mb-0">456 Green Avenue, Koramangala, Bengaluru, Karnataka 560034, India</p>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                  <i class="fas fa-phone me-3 text-primary"></i>
+                  <p class="mb-0">+91 98765 43210</p>
+                </div>
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-envelope me-3 text-primary"></i>
+                  <p class="mb-0">info@urban-ease.in</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white py-4">
+    <div class="container">
+        <div class="row g-4">
+            <!-- About Section -->
+            <div class="col-md-4">
+                <h5 class="mb-3">URBAN EASE</h5>
+                <p class="mb-3">The premier platform for gated community management and discovery.</p>
+            </div>
+
+            <!-- Resources Section -->
+            <div class="col-md-2">
+                <h5 class="mb-3">Resources</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">FAQ</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Privacy Policy</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            
+        </div>
+
+        <hr class="my-4">
+
+        <!-- Copyright Section -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <p class="mb-md-0">© 2025 URBAN EASE. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/Landing_Page.js"></script>
+
+</body>
+
+</html>
