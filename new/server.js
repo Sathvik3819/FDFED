@@ -140,7 +140,7 @@ const communities = [
   },
 ];
 
-mongoose.connect(process.env.MONGO_URI).then(() => {
+mongoose.connect(process.env.MONGO_URI1).then(() => {
   console.log("database connected");
 });
 
@@ -173,13 +173,14 @@ app.use(cookieParser());
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-app.use('/uploads', express.static('uploads'));
-
+app.use("/uploads", express.static("uploads"));
 
 import residentRouter from "./routes/residentRouter.js";
 import securityRouter from "./routes/securityRouter.js";
 import workerRouter from "./routes/workerRouter.js";
 import managerRouter from "./routes/managerRouter.js";
+
+import Ad from "./models/Ad.js";
 
 // Routes
 app.use("/resident", auth, authorizeR, residentRouter);
@@ -329,6 +330,23 @@ app.get("/logout", (req, res) => {
   res.redirect("/login");
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  const ads = await Ad.find({});
+  ads.forEach(async (ad) => {
+    const d = new Date(Date.now()).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+   
+
+    if (d === ad.startDate) {
+      ad.status = "active";
+    }else if(d>ad.endDate){
+      ad.status = "expired"
+    }
+    await ad.save();
+  });
+
   console.log(`Server running at http://localhost:${PORT}`);
 });

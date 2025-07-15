@@ -18,7 +18,6 @@
     />
     <link rel="stylesheet" href="../../css/nav.css" />
 
-
     <style>
       .activity-entry {
         border-left: 4px solid var(--primary);
@@ -111,7 +110,6 @@
         font-weight: 500;
       }
 
-      
       .stats-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -465,7 +463,6 @@
             alt="Ad"
             height="100px"
             width="200px"
-           
           />
           <% }) %> <% } else { %>
           <p class="ad-text">Advertisement</p>
@@ -509,54 +506,27 @@
               </tr>
             </thead>
             <tbody id="residentTableBody">
+              <% if (locals.R) { %> <% R.forEach(r => { %>
               <tr>
-                <td>John</td>
-                <td>Doe</td>
-                <td>john.doe@example.com</td>
-                <td>A</td>
-                <td>101</td>
-                <td>9876543210</td>
+                <td><%= r.residentFirstname %></td>
+                <td><%= r.residentLastname %></td>
+                <td><%= r.email %></td>
+                <td><%= r.blockNo %></td>
+                <td><%= r.flatNo %></td>
+                <td><%= r.contact %></td>
                 <td>
-                  <button class="action-btn edit">
+                  <button
+                    class="action-btn resident-edit edit"
+                    data-id="<%= r._id %>"
+                  >
                     <i class="bi bi-pencil"></i>Edit
                   </button>
-                  <button class="action-btn delete">
+                  <button class="action-btn delete" data-id="<%= r._id %>">
                     <i class="bi bi-trash"></i>Delete
                   </button>
                 </td>
               </tr>
-              <tr>
-                <td>Jane</td>
-                <td>Smith</td>
-                <td>jane.smith@example.com</td>
-                <td>B</td>
-                <td>205</td>
-                <td>9876543211</td>
-                <td>
-                  <button class="action-btn edit">
-                    <i class="bi bi-pencil"></i>Edit
-                  </button>
-                  <button class="action-btn delete">
-                    <i class="bi bi-trash"></i>Delete
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>Robert</td>
-                <td>Johnson</td>
-                <td>robert.j@example.com</td>
-                <td>C</td>
-                <td>310</td>
-                <td>9876543212</td>
-                <td>
-                  <button class="action-btn edit">
-                    <i class="bi bi-pencil"></i>Edit
-                  </button>
-                  <button class="action-btn delete">
-                    <i class="bi bi-trash"></i>Delete
-                  </button>
-                </td>
-              </tr>
+              <% }) %> <% } %>
             </tbody>
           </table>
         </div>
@@ -574,45 +544,36 @@
                 <th>Name</th>
                 <th>Email</th>
                 <th>Contact</th>
-                <th>Address</th>
+
                 <th>Shift</th>
                 <th>Joining Date</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody id="securityTableBody">
+              <% if (locals.S) { %> <% S.forEach(s => { %>
               <tr>
-                <td>Michael Brown</td>
-                <td>michael@example.com</td>
-                <td>9876543220</td>
-                <td>123 Main St</td>
-                <td>Day</td>
-                <td>2023-01-15</td>
+                <td><%= s.name %></td>
+                <td><%= s.email %></td>
+                <td><%= s.contact %></td>
+
+                <td><%= s.Shift %> shift at <%= s.workplace %></td>
                 <td>
-                  <button class="action-btn edit">
+                  <%= new Date(s.joiningDate).toLocaleDateString('en-GB') %>
+                </td>
+                <td>
+                  <button
+                    class="action-btn security-edit edit"
+                    data-id="<%= s._id %>"
+                  >
                     <i class="bi bi-pencil"></i>Edit
                   </button>
-                  <button class="action-btn delete">
+                  <button class="action-btn delete" data-id="<%= s._id %>">
                     <i class="bi bi-trash"></i>Delete
                   </button>
                 </td>
               </tr>
-              <tr>
-                <td>David Wilson</td>
-                <td>david@example.com</td>
-                <td>9876543221</td>
-                <td>456 Oak Ave</td>
-                <td>Night</td>
-                <td>2023-03-22</td>
-                <td>
-                  <button class="action-btn edit">
-                    <i class="bi bi-pencil"></i>Edit
-                  </button>
-                  <button class="action-btn delete">
-                    <i class="bi bi-trash"></i>Delete
-                  </button>
-                </td>
-              </tr>
+              <% }) %> <% } else { %> no security <% } %>
             </tbody>
           </table>
         </div>
@@ -631,64 +592,36 @@
                 <th>Email</th>
                 <th>Job Role</th>
                 <th>Contact</th>
-                <th>Address</th>
-                <th>Salary</th>
+
                 <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody id="workerTableBody">
+              <% if (locals.W) { %> <% W.forEach(w => { %>
               <tr>
-                <td>James Taylor</td>
-                <td>james@example.com</td>
-                <td>Plumber</td>
-                <td>9876543230</td>
-                <td>789 Pine Rd</td>
-                <td>₹25,000</td>
-                <td>Available</td>
+                <td><%= w.name %></td>
+                <td><%= w.email %></td>
+                <td><%= w.jobRole %></td>
+                <td><%= w.contact %></td>
+
+                <td><%= w.availabilityStatus %></td>
                 <td>
-                  <button class="action-btn edit">
+                  <button
+                    class="action-btn worker-edit edit"
+                    data-id="<%= w._id %>"
+                  >
                     <i class="bi bi-pencil"></i>Edit
                   </button>
-                  <button class="action-btn delete">
+                  <button
+                    class="action-btn worker-delete delete"
+                    data-id="<%= w._id %>"
+                  >
                     <i class="bi bi-trash"></i>Delete
                   </button>
                 </td>
               </tr>
-              <tr>
-                <td>William Clark</td>
-                <td>william@example.com</td>
-                <td>Electrician</td>
-                <td>9876543231</td>
-                <td>321 Elm Blvd</td>
-                <td>₹28,000</td>
-                <td>Busy</td>
-                <td>
-                  <button class="action-btn edit">
-                    <i class="bi bi-pencil"></i>Edit
-                  </button>
-                  <button class="action-btn delete">
-                    <i class="bi bi-trash"></i>Delete
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>Thomas White</td>
-                <td>thomas@example.com</td>
-                <td>Cleaner</td>
-                <td>9876543232</td>
-                <td>654 Birch Ln</td>
-                <td>₹18,000</td>
-                <td>Available</td>
-                <td>
-                  <button class="action-btn edit">
-                    <i class="bi bi-pencil"></i>Edit
-                  </button>
-                  <button class="action-btn delete">
-                    <i class="bi bi-trash"></i>Delete
-                  </button>
-                </td>
-              </tr>
+              <% }) %> <% } %>
             </tbody>
           </table>
         </div>
@@ -700,7 +633,12 @@
       <div class="popup-content">
         <span class="close-btn" onclick="closeForm('resident')">&times;</span>
         <h3 class="form-title">Add Resident</h3>
-        <form id="residentForm">
+        <form
+          id="residentForm"
+          action="/manager/userManagement/resident"
+          method="POST"
+        >
+          <input type="text" id="Rid" name="Rid" value="" hidden />
           <div class="form-group">
             <label for="residentFirstname">First Name:</label>
             <input
@@ -778,7 +716,13 @@
       <div class="popup-content">
         <span class="close-btn" onclick="closeForm('security')">&times;</span>
         <h3 class="form-title">Add Security</h3>
-        <form id="securityForm">
+        <form
+          id="securityForm"
+          action="/manager/userManagement/security"
+          method="POST"
+        >
+            <input type="text" id="Sid" name="Sid" value="" />
+
           <div class="form-group">
             <label for="securityName">Full Name:</label>
             <input
@@ -834,6 +778,11 @@
             </select>
           </div>
 
+          <div class="form-group">
+            <label for="gate">Gate :</label>
+            <input id="gate" name="gate" placeholder="Ex : Gate A" required />
+          </div>
+
           <button type="submit" class="form-button">
             <i class="bi bi-check-circle"></i>Submit
           </button>
@@ -845,7 +794,13 @@
       <div class="popup-content">
         <span class="close-btn" onclick="closeForm('worker')">&times;</span>
         <h3 class="form-title">Add Worker</h3>
-        <form id="workerForm">
+        <form
+          id="workerForm"
+          action="/manager/userManagement/worker"
+          method="POST"
+        >
+            <input type="text" id="Wid" name="Wid" value=""  />
+
           <div class="form-group">
             <label for="workerName">Full Name:</label>
             <input
@@ -933,83 +888,7 @@
       </div>
     </div>
 
-    <script>
-      // Function to show/hide tabs
-      function showTab(tabName) {
-        // Hide all table-containers
-        document.querySelectorAll(".table-container").forEach((container) => {
-          container.style.display = "none";
-        });
-
-        // Show the selected tab
-        document.getElementById(tabName).style.display = "block";
-
-        // Update active button
-        document.querySelectorAll(".tab-btn").forEach((btn) => {
-          btn.classList.remove("active");
-        });
-        document
-          .querySelector(`.tab-btn[onclick="showTab('${tabName}')"]`)
-          .classList.add("active");
-      }
-
-      // Function to open form popups
-      function openForm(type) {
-        document.getElementById(type + "FormPopup").style.display = "flex";
-      }
-
-      // Function to close form popups
-      function closeForm(type) {
-        document.getElementById(type + "FormPopup").style.display = "none";
-      }
-
-      // Initialize event listeners when DOM is loaded
-      document.addEventListener("DOMContentLoaded", () => {
-        // Add event listeners to each "Add" button
-        document
-          .getElementById("addResidentBtn")
-          .addEventListener("click", () => openForm("resident"));
-        document
-          .getElementById("addSecurityBtn")
-          .addEventListener("click", () => openForm("security"));
-        document
-          .getElementById("addWorkerBtn")
-          .addEventListener("click", () => openForm("worker"));
-
-        // Add event listeners to close forms when clicking outside
-        document.querySelectorAll(".popup").forEach((popup) => {
-          popup.addEventListener("click", (e) => {
-            if (e.target === popup) {
-              popup.style.display = "none";
-            }
-          });
-        });
-
-        // Prevent form submission for demo purposes
-        document.querySelectorAll("form").forEach((form) => {
-          form.addEventListener("submit", (e) => {
-            e.preventDefault();
-            alert("Form submitted successfully!");
-            const type = form.id.replace("Form", "");
-            closeForm(type);
-          });
-        });
-
-        // Animate cards on page load
-        const cards = document.querySelectorAll(".info-card, .table-container");
-        cards.forEach((card, index) => {
-          card.style.opacity = "0";
-          card.style.transform = "translateY(20px)";
-
-          setTimeout(() => {
-            card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-            card.style.opacity = "1";
-            card.style.transform = "translateY(0)";
-          }, 200 + index * 100);
-        });
-      });
-    </script>
-        <script src="../../js/sidebar.js"></script>
-
+    <script src="../../js/communityManager/userManagement.js"></script>
+    <script src="../../js/sidebar.js"></script>
   </body>
 </html>

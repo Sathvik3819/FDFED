@@ -1,49 +1,52 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const SecuritySchema = new mongoose.Schema({
+const SecuritySchema = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: true,
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
     email: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        lowercase: true
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
     },
-    image:String,
-    password:{
-        type:String
+    image: String,
+    password: {
+      type: String,
     },
     contact: {
-        type: String,
-        required: true,
-        unique: true
+      type: String,
+      required: true,
+      unique: true,
     },
     address: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
-    communityAssigned: {
-        type: String,
-        
-        required: true
+    community: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Community",
+      required: true,
     },
     Shift: {
-        type: String,
-        enum: ["Day", "Night"],
-        default: "Day"
+      type: String,
+      enum: ["Day", "Night"],
+      default: "Day",
     },
-    workplace:String,
+    workplace: String,
     joiningDate: {
-        type: Date,
-        default: Date.now
+      type: Date,
+      default: Date.now,
     },
-    community: { type: mongoose.Schema.Types.ObjectId, ref: 'Community', required: true } // Linked to Community
-}, { timestamps: true });
+    // Linked to Community
+  },
+  { timestamps: true }
+);
 
-const Security = mongoose.model('Security', SecuritySchema);
+const Security = mongoose.model("Security", SecuritySchema);
 
 export default Security;

@@ -10,7 +10,7 @@ const advertisementSchema = new mongoose.Schema(
     link: { type: String },
     status: {
       type: String,
-      default: "active",
+      default: "Pending",
     },
     community: {
       type: mongoose.Schema.Types.ObjectId,
