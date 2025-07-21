@@ -185,7 +185,7 @@ securityRouter.get("/visitorManagement/:action/:id", async (req, res) => {
     }
 
     if (action === "checked-in") {
-      v.status = "checkedIn";
+      v.status = "active";
       v.entryTime = new Date().toLocaleTimeString("en-IN", {
         hour: "2-digit",
         minute: "2-digit",

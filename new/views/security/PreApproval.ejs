@@ -18,6 +18,13 @@
     />
     <link rel="stylesheet" href="/../../css/nav.css" />
     <style>
+     
+
+      body {
+        font-family: 'Outfit', sans-serif;
+        background-color: #f5f7fa;
+      }
+
       .section-title {
         position: relative;
         padding-bottom: 15px;
@@ -36,12 +43,17 @@
         border-radius: 3px;
       }
 
-
       /* Tab Styles */
       .approval-tabs {
         display: flex;
         margin-bottom: 20px;
         border-bottom: 1px solid #dee2e6;
+        overflow-x: auto;
+        scrollbar-width: none; /* Firefox */
+      }
+
+      .approval-tabs::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
       }
 
       .approval-tab {
@@ -53,6 +65,8 @@
         border-bottom: 3px solid transparent;
         text-align: center;
         flex: 1;
+        min-width: 150px;
+        white-space: nowrap;
       }
 
       .approval-tab.active {
@@ -65,32 +79,85 @@
         background-color: rgba(0, 0, 0, 0.03);
       }
 
-      /* Table Styles */
-      .table-container {
+      /* Card Styles */
+      .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
         margin-bottom: 2rem;
-        padding: 1.5rem;
+      }
+
+      .visitor-card {
         background: #fff;
         border-radius: var(--border-radius);
         box-shadow: var(--shadow);
         border: 1px solid #eaeaea;
         transition: var(--transition);
+        overflow: hidden;
       }
 
-      .table-container:hover {
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      .visitor-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
       }
 
-      .table th {
-        background: var(--primary);
+      .card-header {
+        background: rgb(127, 204, 234);
         color: white;
+        padding: 15px;
         font-weight: 500;
-        position: sticky;
-        top: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
 
-      .table-hover tbody tr:hover {
-        background-color: rgba(13, 110, 253, 0.05);
-        cursor: pointer;
+      .card-body {
+        padding: 20px;
+      }
+
+      .detail-row {
+        display: flex;
+        margin-bottom: 12px;
+      }
+
+      .detail-label {
+        font-weight: 500;
+        color: var(--gray);
+        min-width: 120px;
+      }
+
+      .detail-value {
+        flex: 1;
+      }
+
+      .card-footer {
+        padding: 15px 20px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #eaeaea;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .badge-pending {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+
+      .badge-approved {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .badge-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
       }
 
       .action-btn {
@@ -154,7 +221,6 @@
           opacity: 0;
           transform: translateY(-20px);
         }
-
         to {
           opacity: 1;
           transform: translateY(0);
@@ -224,6 +290,32 @@
         font-size: 1.1rem;
       }
 
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+      }
+
+      .empty-state i {
+        font-size: 60px;
+        color: var(--gray);
+        margin-bottom: 20px;
+        opacity: 0.5;
+      }
+
+      .empty-state h4 {
+        color: var(--gray);
+        margin-bottom: 10px;
+      }
+
+      .empty-state p {
+        color: var(--gray);
+        opacity: 0.8;
+      }
+
       @media (max-width: 992px) {
         .bodyContainer {
           grid-template-columns: 1fr;
@@ -250,16 +342,41 @@
         }
 
         .approval-tabs {
+          flex-direction: row;
+          overflow-x: auto;
+        }
+
+        .cards-container {
+          grid-template-columns: 1fr;
+        }
+
+        .visitor-card {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .popup-content {
+          width: 95%;
+          padding: 20px 15px;
+        }
+
+        .detail-row {
           flex-direction: column;
         }
 
-        .approval-tab {
-          border-bottom: none;
-          border-left: 3px solid transparent;
+        .detail-label {
+          margin-bottom: 5px;
         }
 
-        .approval-tab.active {
-          border-left-color: var(--primary);
+        .card-footer {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .action-btn {
+          width: 100%;
+          justify-content: center;
         }
       }
     </style>
@@ -279,7 +396,6 @@
             alt="Ad"
             height="100px"
             width="200px"
-           
           />
           <% }) %> <% } else { %>
           <p class="ad-text">Advertisement</p>
@@ -300,119 +416,131 @@
           <div class="approval-tab" data-tab="rejected">Rejected</div>
         </div>
 
-        <!-- Requests Table -->
-        <div class="table-container" id="tab-requests">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Requested By</th>
-                <th>Purpose</th>
-                <th>Visit Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (locals.pa) { %> <% pa.forEach(p=> { %> <% if
-              (p.status==="pending" ) { %>
-              <tr
-                class="visitor-row"
-                data-id="<%= p._id %>"
-                data-name="<%= p.visitorName %>"
-                data-contact="<%= p.contactNumber %>"
-                data-date="<%= p.dateOfVisit %>"
-                data-ID="<%= p._id %>"
-                data-requested="<%= p.approvedBy.residentFirstname + ' ' + p.approvedBy.residentLastname %>"
-                data-purpose="<%= p.purpose %>"
-              >
-                <td><%= p.visitorName %></td>
-                <td>
-                  <%= p.approvedBy.residentFirstname %> <%=
-                  p.approvedBy.residentLastname %>
-                </td>
-                <td><%= p.purpose %></td>
-                <td><%= p.dateOfVisit %>, <%= p.timeOfVisit %></td>
-                <td>
-                  <button class="action-btn approve">
-                    <i class="bi bi-check-circle"></i> Approve
-                  </button>
-                  <button class="action-btn reject">
-                    <i class="bi bi-x-circle"></i> Reject
-                  </button>
-                </td>
-              </tr>
-              <% } %> <% }) %> <% } %>
-            </tbody>
-          </table>
+        <!-- Requests Cards -->
+        <div id="tab-requests">
+          <div class="cards-container">
+            <% if (locals.pa && pa.filter(v => v.status === 'Pending').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="pending" ) { %>
+            <div class="visitor-card"
+              data-id="<%= p._id %>"
+              data-name="<%= p.visitorName %>"
+              data-contact="<%= p.contactNumber %>"
+              data-date="<%= p.dateOfVisit %>"
+              data-time="<%= p.timeOfVisit %>"
+              data-ID="<%= p._id %>"
+              data-requested="<%= p.approvedBy.residentFirstname + ' ' + p.approvedBy.residentLastname %>"
+              data-purpose="<%= p.purpose %>"
+              data-vehicle="<%= p.vehicleNumber %>">
+              <div class="card-header">
+                <span><i class="bi bi-person-fill"></i> <%= p.visitorName %></span>
+                <span class="status-badge badge-pending">Pending</span>
+              </div>
+              <div class="card-body">
+                <div class="detail-row">
+                  <div class="detail-label">Requested By:</div>
+                  <div class="detail-value"><%= p.approvedBy.residentFirstname %> <%= p.approvedBy.residentLastname %></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Purpose:</div>
+                  <div class="detail-value"><%= p.purpose %></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Visit Date:</div>
+                  <div class="detail-value"><%= p.dateOfVisit %>, <%= p.timeOfVisit %></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Contact:</div>
+                  <div class="detail-value"><%= p.contactNumber %></div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <button class="action-btn approve">
+                  <i class="bi bi-check-circle"></i> Approve
+                </button>
+                <button class="action-btn reject">
+                  <i class="bi bi-x-circle"></i> Reject
+                </button>
+              </div>
+            </div>
+            <% } %> <% }) %> <% } else { %>
+            <div class="empty-state w-100" style="grid-column-start: 1;grid-column-end: 4; " >
+              <i class="bi bi-people"></i>
+              <h4>No Pending Requests</h4>
+              <p>There are currently no pending pre-approval requests.</p>
+            </div>
+            <% } %>
+          </div>
         </div>
 
-        <!-- Approved Table -->
-        <div class="table-container d-none" id="tab-approved">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Requested By</th>
-                <th>Purpose</th>
-                <th>Visit Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (locals.pa) { %> <% pa.forEach(p=> { %> <% if
-              (p.status==="approved" ) { %>
-              <tr class="visitor-row">
-                <td><%= p.visitorName %></td>
-                <td>
-                  <%= p.approvedBy.residentFirstname %> <%=
-                  p.approvedBy.residentLastname %>
-                </td>
-                <td><%= p.purpose %></td>
-                <td><%= p.dateOfVisit %> , <%= p.timeOfVisit %></td>
-                <td><span class="badge bg-success">Approved</span></td>
-              </tr>
-              <% } %> <% }) %> <% } %>
-            </tbody>
-          </table>
+        <!-- Approved Cards -->
+        <div id="tab-approved" class="d-none">
+          <div class="cards-container">
+            <% if (locals.pa && pa.filter(v => v.status === 'approved').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="approved" ) { %>
+            <div class="visitor-card">
+              <div class="card-header">
+                <span><i class="bi bi-person-fill"></i> <%= p.visitorName %></span>
+                <span class="status-badge badge-approved">Approved</span>
+              </div>
+              <div class="card-body">
+                <div class="detail-row">
+                  <div class="detail-label">Requested By:</div>
+                  <div class="detail-value"><%= p.approvedBy.residentFirstname %> <%= p.approvedBy.residentLastname %></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Purpose:</div>
+                  <div class="detail-value"><%= p.purpose %></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Visit Date:</div>
+                  <div class="detail-value"><%= p.dateOfVisit %>, <%= p.timeOfVisit %></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Vehicle:</div>
+                  <div class="detail-value"><%= p.vehicleNumber || 'N/A' %></div>
+                </div>
+              </div>
+            </div>
+            <% } %> <% }) %> <% } else { %>
+            <div class="empty-state w-100" style="grid-column-start: 1;grid-column-end: 4; " >
+              <i class="bi bi-people"></i>
+              <h4>No Approved Requests</h4>
+              <p>There are currently no approved pre-approval requests.</p>
+            </div>
+            <% } %>
+          </div>
         </div>
 
-        <!-- Rejected Table -->
-        <div class="table-container d-none" id="tab-rejected">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Requested By</th>
-                <th>Purpose</th>
-                <th>Visit Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (locals.pa) { %> <% pa.forEach(p=> { %> <% if
-              (p.status==="rejected" ) { %>
-              <tr
-                class="visitor-row"
-                data-id="<%= p._id %>"
-                data-name="<%= p.visitorName %>"
-                data-contact="<%= p.contactNumber %>"
-                data-requested="<%= p.approvedBy.residentFirstname %> <%= p.approvedBy.residentLastname %>"
-                data-purpose="<%= p.purpose %>"
-                data-date="<%= p.dateOfVisit %>"
-                data-vehicle="<%= p.vehicleNumber %>"
-              >
-                <td><%= p.visitorName %></td>
-                <td>
-                  <%= p.approvedBy.residentFirstname %> <%=
-                  p.approvedBy.residentLastname %>
-                </td>
-                <td><%= p.purpose %></td>
-                <td><%= p.dateOfVisit %> , <%= p.timeOfVisit %></td>
-                <td><span class="badge bg-danger">Rejected</span></td>
-              </tr>
-              <% } %> <% }) %> <% } %>
-            </tbody>
-          </table>
+        <!-- Rejected Cards -->
+        <div id="tab-rejected" class="d-none">
+          <div class="cards-container">
+            <% if (locals.pa && pa.filter(v => v.status === 'rejected').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="rejected" ) { %>
+            <div class="visitor-card">
+              <div class="card-header">
+                <span><i class="bi bi-person-fill"></i> <%= p.visitorName %></span>
+                <span class="status-badge badge-rejected">Rejected</span>
+              </div>
+              <div class="card-body">
+                <div class="detail-row">
+                  <div class="detail-label">Requested By:</div>
+                  <div class="detail-value"><%= p.approvedBy.residentFirstname %> <%= p.approvedBy.residentLastname %></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Purpose:</div>
+                  <div class="detail-value"><%= p.purpose %></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Visit Date:</div>
+                  <div class="detail-value"><%= p.dateOfVisit %>, <%= p.timeOfVisit %></div>
+                </div>
+              </div>
+            </div>
+            <% } %> <% }) %> <% } else { %>
+            <div class="empty-state w-100" style="grid-column-start: 1;grid-column-end: 4; " >
+              <i class="bi bi-people"></i>
+              <h4>No Rejected Requests</h4>
+              <p>There are currently no rejected pre-approval requests.</p>
+            </div>
+            <% } %>
+          </div>
         </div>
       </div>
     </div>
@@ -455,7 +583,7 @@
 
         <div class="detail-item">
           <div class="detail-label">Vehicle Number</div>
-          <input class="detail-value" id="popupVehicle" type="text" />
+          <input class="form-control" id="popupVehicle" type="text" placeholder="Enter vehicle number if any" />
         </div>
 
         <div class="d-flex justify-content-between mt-4">
@@ -470,7 +598,7 @@
     </div>
 
     <script src="../../js/security/preApproval.js"></script>
-        <script src="../../js/sidebar.js"></script>
-
+    <script src="../../js/sidebar.js"></script>
+    
   </body>
 </html>

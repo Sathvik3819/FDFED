@@ -37,39 +37,22 @@
         border-radius: 3px;
       }
 
-      .card-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin: 10px 0;
-        letter-spacing: -1px;
-      }
-
-      .card-label {
-        color: var(--gray);
-        font-size: 1.1rem;
-        font-weight: 500;
-      }
-
+      /* Stats Grid */
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 20px;
         margin-bottom: 30px;
       }
 
       .stat-card {
         background: white;
-        border-radius: 7px 12px 12px 7px;
+        border-radius: var(--border-radius);
         padding: 25px;
         box-shadow: var(--shadow);
         text-align: center;
         transition: var(--transition);
         border-left: 5px solid;
-      }
-
-      .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
       }
 
       .stat-card:nth-child(1) {
@@ -84,15 +67,71 @@
         border-left-color: var(--primary);
       }
 
+      .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 10px 0;
+        letter-spacing: -1px;
+      }
+
+      .card-label {
+        color: var(--gray);
+        font-size: 1.1rem;
+        font-weight: 500;
+      }
+
+      /* Add Visitor Section */
+      .add-visitor-section {
+        background: linear-gradient(135deg, #fff8f5, #fff0e8);
+        border: 2px solid var(--secondary);
+        border-radius: var(--border-radius);
+        font-size: 1.25rem;
+        padding: 20px;
+        font-weight: 600;
+        color: #e65100;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: var(--transition);
+        cursor: pointer;
+        margin-bottom: 30px;
+        text-decoration: none !important;
+      }
+
+      .add-visitor-section:hover {
+        background: linear-gradient(135deg, #fff0e8, #ffe8e0);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(255, 107, 53, 0.2);
+      }
+
+      .add-visitor-section i {
+        background: var(--secondary);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+      }
+
       /* Search and Filter Section */
       .search-section {
         display: flex;
         gap: 15px;
         margin-bottom: 25px;
+        flex-wrap: wrap;
       }
 
       .search-input {
-        flex-grow: 1;
+        flex: 1;
+        min-width: 250px;
         padding: 12px 20px;
         border: 1px solid #ced4da;
         border-radius: var(--border-radius);
@@ -115,6 +154,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        white-space: nowrap;
       }
 
       .filter-btn:hover {
@@ -132,6 +172,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        white-space: nowrap;
       }
 
       .export-btn:hover {
@@ -140,11 +181,17 @@
         box-shadow: var(--shadow);
       }
 
-      /* Tab Styles */
+      /* Visitor Tabs */
       .visitor-tabs {
         display: flex;
         margin-bottom: 20px;
         border-bottom: 1px solid #dee2e6;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      .visitor-tabs::-webkit-scrollbar {
+        display: none;
       }
 
       .visitor-tab {
@@ -156,6 +203,8 @@
         border-bottom: 3px solid transparent;
         text-align: center;
         flex: 1;
+        min-width: max-content;
+        white-space: nowrap;
       }
 
       .visitor-tab.active {
@@ -168,93 +217,153 @@
         background-color: rgba(0, 0, 0, 0.03);
       }
 
-      .add-visitor-section {
-        background: linear-gradient(135deg, #fff8f5, #fff0e8);
-        border: 2px solid var(--secondary);
+      /* Visitor Cards Container */
+      .visitor-cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+        display: none; /* Hide all containers by default */
+      }
+
+      .visitor-cards-container.active {
+        display: grid; /* Show active container */
+      }
+
+      /* Visitor Card */
+      .visitor-card {
+        background: white;
         border-radius: var(--border-radius);
-        font-size: 1.25rem;
         padding: 20px;
-        font-weight: 600;
-        color: #e65100;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        transition: var(--transition);
-        cursor: pointer;
-        margin-bottom: 30px;
-      }
-
-      .add-visitor-section:hover {
-        background: linear-gradient(135deg, #fff0e8, #ffe8e0);
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(255, 107, 53, 0.2);
-      }
-
-      .add-visitor-section i {
-        background: var(--secondary);
-        color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-      }
-
-      /* Table Styles */
-      .table-container {
-        margin-bottom: 2rem;
-        padding: 1.5rem;
-        background: #fff;
-        border-radius: var(--border-radius);
         box-shadow: var(--shadow);
-        border: 1px solid #eaeaea;
         transition: var(--transition);
+        border-top: 4px solid;
+        position: relative;
       }
 
-      .table-container:hover {
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      .visitor-card.pending {
+        border-top-color: var(--warning);
       }
 
-      .table th {
-        background: var(--primary);
-        color: white;
-        font-weight: 500;
-        position: sticky;
-        top: 0;
+      .visitor-card.active {
+        border-top-color: var(--success);
       }
 
-      .table-hover tbody tr:hover {
-        background-color: rgba(13, 110, 253, 0.05);
+      .visitor-card.checkedOut {
+        border-top-color: var(--danger);
       }
 
-      .badge {
+      .visitor-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .visitor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+      }
+
+      .visitor-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--dark);
+      }
+
+      .visitor-status {
         padding: 6px 12px;
         border-radius: 20px;
+        font-size: 0.85rem;
         font-weight: 500;
       }
 
-      .badge-pending {
+      .status-pending {
         background-color: #fff3cd;
         color: #856404;
       }
 
-      .badge-active {
+      .status-active {
         background-color: #d1e7dd;
         color: #0f5132;
       }
 
-      .badge-checkedOut {
+      .status-checkedOut {
         background-color: #f8d7da;
         color: #842029;
       }
 
-      @media (max-width: 992px) {
-        .stats-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
+      .visitor-details {
+        margin: 15px 0;
+      }
 
+      .detail-row {
+        display: flex;
+        margin-bottom: 10px;
+      }
+
+      .detail-label {
+        font-weight: 500;
+        color: var(--dark);
+        min-width: 100px;
+      }
+
+      .detail-value {
+        color: var(--gray);
+        flex: 1;
+      }
+
+      .visitor-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px dashed var(--light-gray);
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 500;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.9rem;
+      }
+
+      .btn i {
+        font-size: 0.9rem;
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        grid-column: 1 / -1;
+      }
+
+      .empty-state i {
+        font-size: 3rem;
+        color: var(--light-gray);
+        margin-bottom: 15px;
+      }
+
+      .empty-state h3 {
+        color: var(--gray);
+        margin-bottom: 10px;
+      }
+
+      .empty-state p {
+        color: var(--gray);
+        opacity: 0.8;
+      }
+
+      /* Responsive Styles */
+      @media (max-width: 992px) {
         .bodyContainer {
           grid-template-columns: 1fr;
         }
@@ -270,17 +379,9 @@
           transform: rotate(0);
           padding: 30px;
         }
-
-        .search-section {
-          flex-direction: column;
-        }
       }
 
       @media (max-width: 768px) {
-        .stats-grid {
-          grid-template-columns: 1fr;
-        }
-
         nav ul {
           gap: 10px !important;
           flex-wrap: wrap;
@@ -289,16 +390,103 @@
 
         .visitor-tabs {
           flex-direction: column;
+          border-bottom: none;
         }
 
         .visitor-tab {
           border-bottom: none;
           border-left: 3px solid transparent;
+          text-align: left;
         }
 
         .visitor-tab.active {
           border-left-color: var(--primary);
+          border-bottom-color: transparent;
         }
+
+        .search-section {
+          flex-direction: column;
+        }
+
+        .search-input,
+        .filter-btn,
+        .export-btn {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .visitor-cards-container {
+          grid-template-columns: 1fr;
+        }
+
+        .visitor-card {
+          padding: 15px;
+        }
+
+        .visitor-name {
+          font-size: 1.1rem;
+        }
+
+        .detail-row {
+          flex-direction: column;
+          gap: 5px;
+        }
+
+        .detail-label {
+          min-width: auto;
+        }
+
+        .visitor-actions {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+
+      /* Animation */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .visitor-card {
+        opacity: 0;
+        animation: fadeInUp 0.5s ease forwards;
+      }
+
+      .visitor-card:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .visitor-card:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .visitor-card:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .visitor-card:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+      .visitor-card:nth-child(5) {
+        animation-delay: 0.5s;
+      }
+      .visitor-card:nth-child(6) {
+        animation-delay: 0.6s;
+      }
+      .visitor-card:nth-child(7) {
+        animation-delay: 0.7s;
+      }
+      .visitor-card:nth-child(8) {
+        animation-delay: 0.8s;
       }
     </style>
   </head>
@@ -308,7 +496,7 @@
 
     <div class="bodyContainer">
       <!-- AD SECTION -->
-     <div class="adCon d-flex justify-content-center align-items-center">
+      <div class="adCon d-flex justify-content-center align-items-center">
         <div class="advertisement" id="ad-slider">
           <% if (locals.ads && ads.length > 0) { %> <% ads.forEach(ad => { %>
           <img
@@ -317,7 +505,6 @@
             alt="Ad"
             height="100px"
             width="200px"
-           
           />
           <% }) %> <% } else { %>
           <p class="ad-text">Advertisement</p>
@@ -337,9 +524,7 @@
             >
               <div class="card-label">Total Visitors Today</div>
               <div class="card-value text-success">
-                <% if (locals.visitors) { %>
-                 <%= visitors.length %>
-                <% } %>
+                <% if (locals.visitors) { %> <%= visitors.length %> <% } %>
               </div>
               <div><i class="bi bi-people-fill fs-2 text-success"></i></div>
             </div>
@@ -351,10 +536,8 @@
             >
               <div class="card-label">Checked out visitors</div>
               <div class="card-value text-warning">
-                <% if (locals.visitors) { %>
-                 
-<%= visitors.filter(v => v.status === 'checkedOut').length %>
-                <% } %>
+                <% if (locals.visitors) { %> <%= visitors.filter(v => v.status
+                === 'checkedOut').length %> <% } %>
               </div>
               <div><i class="bi bi-hourglass-split fs-2 text-warning"></i></div>
             </div>
@@ -366,21 +549,17 @@
             >
               <div class="card-label">Active Visitors</div>
               <div class="card-value text-primary">
-                <% if (locals.visitors) { %>
-                 <%= visitors.filter(v => v.status === 'active').length %>
-                <% } %>
-                
+                <% if (locals.visitors) { %> <%= visitors.filter(v => v.status
+                === 'active').length %> <% } %>
               </div>
               <div><i class="bi bi-person-check fs-2 text-primary"></i></div>
             </div>
           </div>
         </div>
 
-        <a href="/security/addVisitor" style="text-decoration: none">
-          <div class="add-visitor-section">
-            <i class="bi bi-plus-lg"></i>
-            <div>Add New Visitor</div>
-          </div>
+        <a href="/security/addVisitor" class="add-visitor-section">
+          <i class="bi bi-plus-lg"></i>
+          <div>Add New Visitor</div>
         </a>
 
         <!-- Search and Filter Section -->
@@ -405,125 +584,149 @@
           <div class="visitor-tab" data-tab="checked-out">Checked Out</div>
         </div>
 
-        <!-- All Visitors Table -->
-        <div class="table-container" id="tab-all">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Visitor</th>
-                <th>Purpose</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (locals.visitors) { %> <% visitors.forEach(v => { %>
-              <tr>
-                <td><%= v.name %></td>
-                <td><%= v.purpose %></td>
-                <td><%= v.entryDate %></td>
-                <td><%= v.entryTime %></td>
-                <td>
-                  <span class="badge badge-<%= v.status %>">
-                    <%= v.status %></span
-                  >
-                </td>
-                <% if (v.status === "active") { %>
-                <td>
-                  <button
-                    class="btn btn-secondary check-btn"
-                    data-id=<%=
-                    v._id
-                    %>
-                  
-                    data-action="checked-out" >Check out
-                  </button>
-                </td>
-                <% } else if(v.status ==="pending"){ %>
-                <button
-                  class="btn btn-secondary check-btn"
-                  data-id="<%=
-                  v._id
-                  %>
-                
-                  data-action="checked-in" >Check In
-                </button>
-                <% } %>
-              </tr>
-              <% }) %> <% } %>
-            </tbody>
-          </table>
+        <!-- All Visitors Container -->
+        <div class="visitor-cards-container active" id="all-visitors">
+          <% if (locals.visitors && visitors.length > 0) { %> <%
+          visitors.forEach(v => { %>
+          <div class="visitor-card <%= v.status %>">
+            <div class="visitor-header">
+              <div class="visitor-name"><%= v.name %></div>
+              <div class="visitor-status status-<%= v.status %>">
+                <%= v.status.charAt(0).toUpperCase() + v.status.slice(1) %>
+              </div>
+            </div>
+
+            <div class="visitor-details">
+              <div class="detail-row">
+                <div class="detail-label">Purpose:</div>
+                <div class="detail-value"><%= v.purpose %></div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Date:</div>
+                <div class="detail-value"><%= v.entryDate %></div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Time:</div>
+                <div class="detail-value"><%= v.entryTime %></div>
+              </div>
+            </div>
+
+            <div class="visitor-actions">
+              <% if (v.status === "active") { %>
+              <button
+                class="btn btn-secondary check-btn"
+                data-id="<%= v._id %>"
+                data-action="checked-out"
+              >
+                <i class="bi bi-box-arrow-right"></i> Check Out
+              </button>
+              <% } else if (v.status === "pending") { %>
+              <button
+                class="btn btn-primary check-btn"
+                data-id="<%= v._id %>"
+                data-action="checked-in"
+              >
+                <i class="bi bi-box-arrow-in-right"></i> Check In
+              </button>
+              <% } %>
+            </div>
+          </div>
+          <% }) %> <% } else { %>
+          <div class="empty-state">
+            <i class="bi bi-person-x"></i>
+            <h3>No Visitors Found</h3>
+            <p>Add new visitors to see them listed here</p>
+          </div>
+          <% } %>
         </div>
 
-        <!-- Active Visitors Table -->
-        <div class="table-container d-none" id="tab-active">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Visitor</th>
-                <th>Purpose</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (locals.visitors) { %> <% visitors.forEach(v => { %> <% if
-              (v.status === "active") { %>
+        <!-- Active Visitors Container -->
+        <div class="visitor-cards-container" id="active-visitors">
+          <% if (locals.visitors && visitors.filter(v => v.status ===
+          'active').length > 0) { %> <% visitors.filter(v => v.status ===
+          'active').forEach(v => { %>
+          <div class="visitor-card <%= v.status %>">
+            <div class="visitor-header">
+              <div class="visitor-name"><%= v.name %></div>
+              <div class="visitor-status status-<%= v.status %>">
+                <%= v.status.charAt(0).toUpperCase() + v.status.slice(1) %>
+              </div>
+            </div>
 
-              <tr>
-                <td><%= v.name %></td>
-                <td><%= v.purpose %></td>
-                <td><%= v.entryDate %></td>
-                <td><%= v.entryTime %></td>
-                <td><span class="badge badge-active">Active</span></td>
-                <% if (v.status === "active") { %>
-                <td>
-                  <button class="btn btn-secondary check-btn">
-                    Checke out
-                  </button>
-                </td>
-                <% } %>
-              </tr>
-              <% } %> <% }) %> <% } %>
-            </tbody>
-          </table>
+            <div class="visitor-details">
+              <div class="detail-row">
+                <div class="detail-label">Purpose:</div>
+                <div class="detail-value"><%= v.purpose %></div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Date:</div>
+                <div class="detail-value"><%= v.entryDate %></div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Time:</div>
+                <div class="detail-value"><%= v.entryTime %></div>
+              </div>
+            </div>
+
+            <div class="visitor-actions">
+              <button
+                class="btn btn-secondary check-btn"
+                data-id="<%= v._id %>"
+                data-action="checked-out"
+              >
+                <i class="bi bi-box-arrow-right"></i> Check Out
+              </button>
+            </div>
+          </div>
+          <% }) %> <% } else { %>
+          <div class="empty-state">
+            <i class="bi bi-person-x"></i>
+            <h3>No Active Visitors</h3>
+            <p>There are currently no active visitors</p>
+          </div>
+          <% } %>
         </div>
 
-        <!-- Checked Out Visitors Table -->
-        <div class="table-container d-none" id="tab-checked-out">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Visitor</th>
-                <th>Purpose</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (locals.visitors) { %> <% visitors.forEach(v => { %> <% if
-              (v.status === "checkedOut") { %>
-              <tr>
-                <td><%= v.name %></td>
-                <td><%= v.purpose %></td>
-                <td><%= v.entryDate %></td>
-                <td><%= v.entryTime %></td>
-                <td><span class="badge badge-checkedOut">Checked Out</span></td>
-              </tr>
-              <% } %> <% }) %> <% } %>
-            </tbody>
-          </table>
+        <!-- Checked Out Visitors Container -->
+        <div class="visitor-cards-container" id="checked-out-visitors">
+          <% if (locals.visitors && visitors.filter(v => v.status ===
+          'checkedOut').length > 0) { %> <% visitors.filter(v => v.status ===
+          'checkedOut').forEach(v => { %>
+          <div class="visitor-card <%= v.status %>">
+            <div class="visitor-header">
+              <div class="visitor-name"><%= v.name %></div>
+              <div class="visitor-status status-<%= v.status %>">
+                <%= v.status.charAt(0).toUpperCase() + v.status.slice(1) %>
+              </div>
+            </div>
+
+            <div class="visitor-details">
+              <div class="detail-row">
+                <div class="detail-label">Purpose:</div>
+                <div class="detail-value"><%= v.purpose %></div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Date:</div>
+                <div class="detail-value"><%= v.entryDate %></div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Time:</div>
+                <div class="detail-value"><%= v.entryTime %></div>
+              </div>
+            </div>
+          </div>
+          <% }) %> <% } else { %>
+          <div class="empty-state">
+            <i class="bi bi-person-x"></i>
+            <h3>No Checked Out Visitors</h3>
+            <p>There are currently no checked out visitors</p>
+          </div>
+          <% } %>
         </div>
       </div>
     </div>
 
-    <script src="../../js/security/visitorManagement.js" ></script>
-        <script src="../../js/sidebar.js"></script>
-
+    <script src="../../js/security/visitorManagement.js"></script>
+    <script src="../../js/sidebar.js"></script>
   </body>
 </html>

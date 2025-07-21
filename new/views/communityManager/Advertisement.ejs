@@ -19,6 +19,8 @@
     />
 
     <style>
+     
+
       /* Page Header */
       .page-header {
         margin-bottom: 30px;
@@ -37,7 +39,8 @@
         position: absolute;
         bottom: 0;
         left: 0;
-        width: 450px;
+        width: 100%;
+        max-width: 450px;
         height: 4px;
         background: linear-gradient(90deg, var(--primary), var(--secondary));
         border-radius: 4px;
@@ -50,6 +53,12 @@
         margin-bottom: 25px;
         border-bottom: 1px solid #eaeaea;
         padding-bottom: 10px;
+        overflow-x: auto;
+        scrollbar-width: none; /* Firefox */
+      }
+
+      .tabs::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
       }
 
       .tab {
@@ -59,6 +68,8 @@
         border-radius: 30px;
         transition: var(--transition);
         color: var(--gray);
+        white-space: nowrap;
+        flex-shrink: 0;
       }
 
       .tab.active {
@@ -77,7 +88,7 @@
       .card {
         background: white;
         border-radius: var(--border-radius);
-        padding: 25px;
+        padding: 20px;
         box-shadow: var(--shadow);
         margin-bottom: 25px;
         transition: var(--transition);
@@ -149,7 +160,7 @@
       .preview-area {
         border: 2px dashed #ddd;
         border-radius: var(--border-radius);
-        padding: 30px;
+        padding: 20px;
         text-align: center;
         background-color: #f9f9f9;
         min-height: 150px;
@@ -165,6 +176,7 @@
         justify-content: flex-end;
         gap: 15px;
         margin-top: 25px;
+        flex-wrap: wrap;
       }
 
       .btn {
@@ -175,6 +187,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
+        white-space: nowrap;
       }
 
       .btn-primary {
@@ -209,6 +222,8 @@
         padding: 15px;
         border-bottom: 1px solid #eee;
         transition: var(--transition);
+        flex-wrap: wrap;
+        gap: 10px;
       }
 
       .ad-list-item:hover {
@@ -242,6 +257,12 @@
       }
 
       /* Responsive Styles */
+      @media (max-width: 1200px) {
+        .page-title {
+          font-size: 1.8rem;
+        }
+      }
+
       @media (max-width: 992px) {
         .bodyContainer {
           grid-template-columns: 1fr;
@@ -262,6 +283,10 @@
         .form-row {
           grid-template-columns: 1fr;
         }
+
+        .card {
+          padding: 15px;
+        }
       }
 
       @media (max-width: 768px) {
@@ -271,23 +296,101 @@
           justify-content: center;
         }
 
-        .tabs {
-          flex-direction: column;
+        .page-title {
+          font-size: 1.6rem;
         }
 
-        .tab {
-          width: 100%;
-          text-align: center;
+        .card-title {
+          font-size: 1.3rem;
         }
 
         .action-buttons {
-          flex-direction: column;
+          justify-content: stretch;
         }
 
         .btn {
-          width: 100%;
-          justify-content: center;
+          flex: 1;
+          min-width: 120px;
         }
+
+        .ad-list-item {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .ad-list-item > div:last-child {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          margin-top: 10px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .page-title {
+          font-size: 1.4rem;
+        }
+
+        .card-title {
+          font-size: 1.2rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+          padding: 10px;
+        }
+
+        .btn {
+          padding: 10px 15px;
+          font-size: 0.9rem;
+        }
+
+        .ad-status {
+          font-size: 0.75rem;
+        }
+      }
+
+      /* Animation */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .card {
+        opacity: 0;
+        animation: fadeInUp 0.5s ease forwards;
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+      }
+
+      .empty-state i {
+        font-size: 3rem;
+        color: var(--light-gray);
+        margin-bottom: 15px;
+      }
+
+      .empty-state h3 {
+        color: var(--gray);
+        margin-bottom: 10px;
+      }
+
+      .empty-state p {
+        color: var(--gray);
+        opacity: 0.8;
       }
     </style>
   </head>
@@ -400,7 +503,7 @@
               <i class="bi bi-x-circle"></i> Reset
             </button>
             <button type="submit" class="btn btn-primary">
-              <i class="bi bi-send-check"></i> Publish Advertisement
+              <i class="bi bi-send-check"></i> Publish
             </button>
           </div>
         </form>
@@ -409,22 +512,34 @@
         <div class="card" id="history-card" style="display: none">
           <div class="card-title">Advertisement History</div>
 
-          <% if (locals.ads) { %> <% ads.forEach(ad => { %>
+          <% if (locals.ads && ads.length > 0) { %> <% ads.forEach(ad => { %>
           <div class="ad-list-item">
             <div>
-              <div style="font-weight: bold">Summer Pool Party</div>
+              <div style="font-weight: bold"><%= ad.title %></div>
               <div style="color: var(--gray); font-size: 0.9rem">
                 <%= ad.startDate %> - <%= ad.endDate %>
               </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 15px">
-              <span class="ad-status status-active">Active</span>
+            <div>
+              <% const status = new Date() > new Date(ad.endDate) ?
+              'status-expired' : new Date() < new Date(ad.startDate) ?
+              'status-scheduled' : 'status-active' %>
+              <span class="ad-status <%= status %>">
+                <%= status.replace('status-', '').charAt(0).toUpperCase() +
+                status.replace('status-', '').slice(1) %>
+              </span>
               <button class="btn btn-secondary btn-sm">
                 <i class="bi bi-pencil"></i> Edit
               </button>
             </div>
           </div>
-          <% }) %> <% } %>
+          <% }) %> <% } else { %>
+          <div class="empty-state">
+            <i class="bi bi-megaphone"></i>
+            <h3>No Advertisements Found</h3>
+            <p>Create your first advertisement to get started</p>
+          </div>
+          <% } %>
         </div>
       </div>
     </div>
@@ -456,31 +571,13 @@
           });
         });
 
-        // Image preview functionality
-        const imageInput = document.getElementById("ad-image");
-        const imagePreview = document.getElementById("image-preview");
-        const previewPlaceholder = document.getElementById(
-          "preview-placeholder"
-        );
-
-        imageInput.addEventListener("change", function () {
-          const file = this.files[0];
-          if (file) {
-            const reader = new FileReader();
-
-            reader.onload = function (e) {
-              imagePreview.src = e.target.result;
-              imagePreview.style.display = "block";
-              previewPlaceholder.style.display = "none";
-            };
-
-            reader.readAsDataURL(file);
-          }
-        });
-
         // Form validation for dates
         const startDate = document.getElementById("start-date");
         const endDate = document.getElementById("end-date");
+
+        // Set minimum date for start date to today
+        const today = new Date().toISOString().split("T")[0];
+        startDate.min = today;
 
         startDate.addEventListener("change", function () {
           endDate.min = this.value;

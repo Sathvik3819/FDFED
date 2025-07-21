@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   // Tab switching functionality
   const tabs = document.querySelectorAll(".approval-tab");
-  const tabContents = document.querySelectorAll(".table-container");
 
   tabs.forEach((tab) => {
     tab.addEventListener("click", function () {
@@ -11,21 +10,25 @@ document.addEventListener("DOMContentLoaded", function () {
       this.classList.add("active");
 
       // Hide all tab contents
-      tabContents.forEach((content) => content.classList.add("d-none"));
+      document
+        .querySelectorAll("#tab-requests, #tab-approved, #tab-rejected")
+        .forEach((content) => {
+          content.classList.add("d-none");
+        });
+
       // Show selected tab content
       const tabId = this.getAttribute("data-tab");
       document.getElementById(`tab-${tabId}`).classList.remove("d-none");
     });
   });
 
-  document.getElementById("approveBtn").addEventListener("click", () => {
-    console.log("btn clicked");
-
-    handleVisitorAction("Approved");
+  // Handle approve/reject buttons in the popup
+  document.getElementById("approveBtn")?.addEventListener("click", () => {
+    handleVisitorAction("approved");
   });
 
-  document.getElementById("rejectBtn").addEventListener("click", () => {
-    handleVisitorAction("Rejected");
+  document.getElementById("rejectBtn")?.addEventListener("click", () => {
+    handleVisitorAction("rejected");
   });
 
   async function handleVisitorAction(action) {
@@ -40,59 +43,83 @@ document.addEventListener("DOMContentLoaded", function () {
     const ID = document.getElementById("popupID").textContent.trim();
     const status = action;
 
-    console.log("ID : ", ID);
+    try {
+      const response = await fetch("/security/preApproval/action", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          contact,
+          requestedBy,
+          purpose,
+          date,
+          vehicleNumber,
+          ID,
+          status,
+        }),
+      });
 
-    const response = await fetch("/security/preApproval/action", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        contact,
-        requestedBy,
-        purpose,
-        date,
-        vehicleNumber,
-        ID,
-        status,
-      }),
-    });
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
 
-    const res = await response.json();
+      const res = await response.json();
+      console.log("Response from server:", res);
 
-    console.log("sent to backend");
-
-    window.location.reload();
+      // Close popup and refresh the page
+      closePopup();
+      window.location.reload();
+    } catch (error) {
+      console.error("Error:", error);
+      alert(
+        "An error occurred while processing your request. Please try again."
+      );
+    }
   }
 
-  // Visitor row click handler
-  const visitorRows = document.querySelectorAll(".visitor-row");
-  const popup = document.getElementById("visitorPopup");
+  // Card click handlers for pending requests
+  document.querySelectorAll("#tab-requests .visitor-card").forEach((card) => {
+    const approveBtn = card.querySelector(".action-btn.approve");
+    const rejectBtn = card.querySelector(".action-btn.reject");
 
-  visitorRows.forEach((row) => {
-    row.addEventListener("click", function () {
-      console.log(this.dataset);
+    // Handle approve button click
+    approveBtn?.addEventListener("click", function (e) {
+      e.stopPropagation();
+      showVisitorPopup(card);
+    });
 
-      // Fill popup with visitor data
-      console.log(this.dataset);
-      document.getElementById("popupName").textContent = this.dataset.name;
-      document.getElementById("popupContact").textContent =
-        this.dataset.contact;
-      document.getElementById("popupID").textContent = this.dataset.id;
+    // Handle reject button click
+    rejectBtn?.addEventListener("click", function (e) {
+      e.stopPropagation();
+      showVisitorPopup(card);
+    });
 
-      document.getElementById("popupRequested").textContent =
-        this.dataset.requested;
-      document.getElementById("popupPurpose").textContent =
-        this.dataset.purpose;
-      document.getElementById("popupDate").textContent = this.dataset.date;
-      document.getElementById("popupVehicle").textContent =
-        this.dataset.vehicle || "N/A";
-
-      // Show popup
-      popup.style.display = "flex";
+    // Handle card click (if you want the whole card to be clickable)
+    card?.addEventListener("click", function () {
+      showVisitorPopup(card);
     });
   });
+
+  function showVisitorPopup(card) {
+    const popup = document.getElementById("visitorPopup");
+
+    // Fill popup with visitor data from card dataset
+    document.getElementById("popupName").textContent = card.dataset.name;
+    document.getElementById("popupContact").textContent = card.dataset.contact;
+    document.getElementById("popupRequested").textContent =
+      card.dataset.requested;
+    document.getElementById("popupPurpose").textContent = card.dataset.purpose;
+    document.getElementById(
+      "popupDate"
+    ).textContent = `${card.dataset.date}, ${card.dataset.time}`;
+    document.getElementById("popupID").textContent = card.dataset.id;
+    document.getElementById("popupVehicle").value = card.dataset.vehicle || "";
+
+    // Show popup
+    popup.style.display = "flex";
+  }
 });
 
 function closePopup() {
