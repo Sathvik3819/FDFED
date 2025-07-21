@@ -3,6 +3,7 @@ import Community from "./communities.js";
 
 const advertisementSchema = new mongoose.Schema(
   {
+    ID: String,
     title: { type: String, required: true },
     startDate: { type: String, required: true },
     endDate: { type: String, required: true },

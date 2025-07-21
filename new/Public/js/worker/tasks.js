@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const result = await response.json();
       if (result.success) {
         alert("Issue resolved successfully!");
+        window.location.reload()
       } else {
         alert("Failed to resolve issue. Please try again.");
       }

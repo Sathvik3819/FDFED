@@ -13,6 +13,7 @@ const workerSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Community",
   },
+  image:String,
 
   availabilityStatus: {
     type: String,

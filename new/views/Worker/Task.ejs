@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="../../css/nav.css" />
 
     <style>
+     
+
       .section-title {
         position: relative;
         padding-bottom: 15px;
@@ -37,50 +39,103 @@
         border-radius: 3px;
       }
 
+      /* Tasks Cards Container */
+      .tasks-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+      }
 
-      /* Tasks Table Styles */
-      .tasks-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
+      /* Task Card */
+      .task-card {
+        background: white;
         border-radius: var(--border-radius);
-        overflow: hidden;
         box-shadow: var(--shadow);
-      }
-
-      .tasks-table thead th {
-        background-color: var(--primary-light);
-        color: var(--dark);
-        font-weight: 600;
-        padding: 15px;
-        border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-      }
-
-      .tasks-table tbody tr {
+        padding: 20px;
         transition: var(--transition);
+        border-left: 4px solid var(--warning);
+        position: relative;
+        overflow: hidden;
       }
 
-      .tasks-table tbody tr:hover {
-        background-color: #f8f9fa;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      .task-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
       }
 
-      .tasks-table td {
-        padding: 15px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        vertical-align: middle;
+      .task-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--light-gray);
       }
 
-      .tasks-table tr:last-child td {
-        border-bottom: none;
+      .task-id {
+        font-size: 0.85rem;
+        color: var(--gray);
+        font-weight: 600;
+      }
+
+      .task-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 15px;
+        line-height: 1.3;
+      }
+
+      .task-details {
+        margin-bottom: 15px;
+      }
+
+      .detail-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+      }
+
+      .detail-row i {
+        color: var(--primary);
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+      }
+
+      .resident-name {
+        font-weight: 500;
+        color: var(--dark);
+      }
+
+      .resident-address {
+        color: var(--gray);
+      }
+
+      .task-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px dashed var(--light-gray);
+      }
+
+      .task-date {
+        font-size: 0.9rem;
+        color: var(--gray);
+      }
+
+      .task-due {
+        font-size: 0.9rem;
+        font-weight: 500;
       }
 
       .status-badge {
-        padding: 8px 12px;
+        padding: 6px 12px;
         border-radius: 20px;
         font-weight: 500;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
       }
 
       .status-pending {
@@ -88,14 +143,10 @@
         color: var(--warning);
       }
 
-      .status-overdue {
-        background-color: #f8d7da;
-        color: var(--danger);
-      }
-
-      .status-completed {
-        background-color: #d1e7dd;
-        color: var(--success);
+      .task-actions {
+        margin-top: 15px;
+        display: flex;
+        justify-content: flex-end;
       }
 
       .action-btn {
@@ -103,6 +154,59 @@
         border-radius: 20px;
         font-weight: 500;
         transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .action-btn i {
+        font-size: 0.9rem;
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        grid-column: 1 / -1;
+      }
+
+      .empty-state i {
+        font-size: 3rem;
+        color: var(--light-gray);
+        margin-bottom: 15px;
+      }
+
+      .empty-state h3 {
+        color: var(--gray);
+        margin-bottom: 10px;
+      }
+
+      .empty-state p {
+        color: var(--gray);
+        opacity: 0.8;
+      }
+
+      /* Urgent Badge */
+      .urgent-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background-color: var(--danger);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+      }
+
+      /* Responsive Styles */
+      @media (max-width: 1200px) {
+        .tasks-container {
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
       }
 
       @media (max-width: 992px) {
@@ -120,11 +224,6 @@
           transform: rotate(0);
           padding: 30px;
         }
-
-        .tasks-table {
-          display: block;
-          overflow-x: auto;
-        }
       }
 
       @media (max-width: 768px) {
@@ -133,7 +232,47 @@
           flex-wrap: wrap;
           justify-content: center;
         }
+
+        .tasks-container {
+          grid-template-columns: 1fr;
+        }
       }
+
+      @media (max-width: 576px) {
+        .task-card {
+          padding: 15px;
+        }
+
+        .task-title {
+          font-size: 1.1rem;
+        }
+      }
+
+      /* Animation */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .task-card {
+        opacity: 0;
+        animation: fadeInUp 0.5s ease forwards;
+      }
+
+      .task-card:nth-child(1) { animation-delay: 0.1s; }
+      .task-card:nth-child(2) { animation-delay: 0.2s; }
+      .task-card:nth-child(3) { animation-delay: 0.3s; }
+      .task-card:nth-child(4) { animation-delay: 0.4s; }
+      .task-card:nth-child(5) { animation-delay: 0.5s; }
+      .task-card:nth-child(6) { animation-delay: 0.6s; }
+      .task-card:nth-child(7) { animation-delay: 0.7s; }
+      .task-card:nth-child(8) { animation-delay: 0.8s; }
     </style>
   </head>
 
@@ -151,7 +290,6 @@
             alt="Ad"
             height="100px"
             width="200px"
-           
           />
           <% }) %> <% } else { %>
           <p class="ad-text">Advertisement</p>
@@ -165,56 +303,72 @@
           <h1>Assigned Issues</h1>
         </div>
 
-        <div class="table-responsive">
-          <table class="tasks-table">
-            <thead>
-              <tr>
-                <th>Issue ID</th>
-                <th>Title</th>
-                <th>Resident Details</th>
-                <th>Created At</th>
-                <th>Status</th>
-                <th>Due Date</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (locals.tasks) { %> <% tasks.forEach(t => { %> <% if
-              (t.status === "Assigned" ) { %>
-              <tr>
-                <td><%= t.issueID %></td>
-                <td><%= t.title %></td>
-                <td>
-                  <%= t.resident.residentFirstname %> <%=
-                  t.resident.residentLastname %>, <%= t.resident.blockNo %>,
-                  Flat <%= t.resident.flatNo %>
-                </td>
-                <td><%= t.createdAt %></td>
-                <td>
-                  <span class="status-badge status-pending"
-                    ><%= t.status %></span
-                  >
-                </td>
-                <td><%= t.deadline %></td>
-                <td>
-                  <button
-                    class="action-btn btn btn-primary btn-sm"
-                    data-id="<%= t._id %>"
-                  >
-                    <i class="bi bi-check-circle me-1"></i> Resolve
-                  </button>
-                </td>
-              </tr>
+        <div class="tasks-container">
+          <% if (locals.tasks && tasks.length > 0) { %> 
+            <% tasks.forEach(t => { %> 
+              <% if (t.status === "Assigned") { %>
+                <div class="task-card">
+                  <% if (t.priority === "High") { %>
+                    <span class="urgent-badge">URGENT</span>
+                  <% } %>
+                  
+                  <div class="task-card-header">
+                    <span class="task-id">Issue #<%= t.issueID %></span>
+                    <span class="status-badge status-pending">
+                      <%= t.status %>
+                    </span>
+                  </div>
 
-              <% } %> <% }) %> <% } %>
-            </tbody>
-          </table>
+                  <h3 class="task-title"><%= t.title %></h3>
+
+                  <div class="task-details">
+                    <div class="detail-row">
+                      <i class="bi bi-person"></i>
+                      <div>
+                        <span class="resident-name">
+                          <%= t.resident.residentFirstname %> <%= t.resident.residentLastname %>
+                        </span>
+                        <div class="resident-address">
+                          <%= t.resident.blockNo %>, Flat <%= t.resident.flatNo %>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="detail-row">
+                      <i class="bi bi-calendar-plus"></i>
+                      <span>Created on <%= t.createdAt %></span>
+                    </div>
+                  </div>
+
+                  <div class="task-meta">
+                    <div class="task-date">
+                      <i class="bi bi-clock"></i>
+                      <span>Due by <%= t.deadline %></span>
+                    </div>
+                    <% if (new Date(t.deadline) < new Date()) { %>
+                      <span class="task-due text-danger">Overdue</span>
+                    <% } %>
+                  </div>
+
+                  <div class="task-actions">
+                    <button class="action-btn btn btn-primary" data-id="<%= t._id %>">
+                      <i class="bi bi-check-circle"></i> Resolve
+                    </button>
+                  </div>
+                </div>
+              <% } %> 
+            <% }) %> 
+          <% } else { %>
+            <div class="empty-state">
+              <i class="bi bi-clipboard-check"></i>
+              <h3>No Assigned Tasks</h3>
+              <p>Tasks assigned to you will appear here</p>
+            </div>
+          <% } %>
         </div>
       </div>
     </div>
 
     <script src="../../js/worker/tasks.js"></script>
-        <script src="../../js/sidebar.js"></script>
-
+    <script src="../../js/sidebar.js"></script>
   </body>
 </html>

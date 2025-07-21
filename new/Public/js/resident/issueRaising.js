@@ -33,8 +33,22 @@ async function openIssuePopup(data) {
       issueData.issueID || "-";
     document.getElementById("popupTitle").textContent = issueData.title || "-";
 
-    document.getElementById("popupStatus").textContent =
-      issueData.status || "-";
+    // Update status badge color dynamically
+    const popupStatusElement = document.getElementById("popupStatus");
+    popupStatusElement.textContent = issueData.status || "-";
+    popupStatusElement.className = `status-badge status-${issueData.status.replace(
+      /\s/g,
+      ""
+    )}`; // Remove spaces for class name
+
+    if (issueData.status === "Review Pending") {
+      popupStatusElement.classList.add("review");
+    } else if (issueData.status === "Payment Pending") {
+      popupStatusElement.classList.add("paymentPending");
+    }
+
+    document.getElementById("popupCategory").textContent =
+      issueData.category || "-"; // Added category to popup
     document.getElementById("popupDescription").textContent =
       issueData.description || "-";
     document.getElementById("popupDate").textContent =
@@ -56,9 +70,30 @@ async function openIssuePopup(data) {
       workerSection.style.display = "none";
     }
 
+    // Payment section
+    const paymentDetailsSection = document.querySelector(".payment-details");
+    if (issueData.amount || issueData.paymentStatus) {
+      // Assuming these fields indicate payment details exist
+      paymentDetailsSection.style.display = "block";
+      document.getElementById("popupAmount").textContent = issueData.amount
+        ? `₹${issueData.amount}`
+        : "-";
+      const popupPaymentStatusElement =
+        document.getElementById("popupPaymentStatus");
+      popupPaymentStatusElement.textContent = issueData.paymentStatus || "-";
+      popupPaymentStatusElement.className = `status-badge status-${issueData.paymentStatus.replace(
+        /\s/g,
+        ""
+      )}`;
+    } else {
+      paymentDetailsSection.style.display = "none";
+    }
+
     // Show cancel button only if status is Pending
     const cancelBtn = document.getElementById("cancelBtn");
     cancelBtn.style.display = issueData.status === "Pending" ? "block" : "none";
+    // Set the issue ID for cancellation
+    cancelBtn.setAttribute("data-id", issueData._id);
 
     // Show popup
     document.getElementById("issuePopup").style.display = "flex";
@@ -75,38 +110,41 @@ function closePopup() {
 // Close popup if user clicks outside the popup content
 window.onclick = function (event) {
   const popup = document.getElementById("issuePopup");
+  const issueFormPopup = document.getElementById("issueFormPopup");
+  const feedbackCon = document.getElementById("feedbackCon");
 
   if (event.target === popup) {
     closePopup();
   }
+  if (event.target === issueFormPopup) {
+    closeForm("issue");
+  }
+  if (event.target === feedbackCon) {
+    closeFeedbackForm();
+  }
 };
 
-document.addEventListener("DOMContentLoaded", function () {
-  // Handle view buttons
-  const viewButtons = document.querySelectorAll(".action-btn.view");
-  viewButtons.forEach((button) => {
-    button.addEventListener("click", function () {
-      const data = button.getAttribute("data-id");
-
-      openIssuePopup(data); // Just open the overlay
-    });
-  });
-});
+function closeFeedbackForm() {
+  document.getElementById("feedbackCon").style.display = "none";
+}
 
 document.addEventListener("DOMContentLoaded", function () {
-  const table = document.querySelector("table");
+  const issuesGrid = document.querySelector(".issues-grid");
+  const cancelFeedbackBtn = document.querySelector(".cancel-feedback");
+  const cancelIssueBtnPopup = document.getElementById("cancelBtn"); // For the cancel button inside the popup
 
-  table.addEventListener("click", async function (event) {
-    // Check if clicked element or its parent has the 'delete' class
-    const deleteBtn = event.target.closest(".delete");
+  // Event delegation for action buttons in issue cards
+  issuesGrid.addEventListener("click", async function (event) {
+    const issueCard = event.target.closest(".issue-card");
+    if (!issueCard) return; // Click was not inside an issue card
 
+    const issueID = issueCard.getAttribute("data-id");
+
+    // Handle delete button click
+    const deleteBtn = event.target.closest(".action-btn.delete");
     if (deleteBtn) {
-      const row = deleteBtn.closest("tr");
-      const issueID = row.getAttribute("data-id");
-
-      console.log("Deleting issue with ID:", issueID);
-
-      if (confirm("Are you sure you want to delete this issue?")) {
+      console.log("Attempting to delete issue with ID:", issueID);
+      if (confirm("Are you sure you want to cancel this issue?")) {
         try {
           const response = await fetch(`/resident/deleteIssue/${issueID}`, {
             method: "DELETE",
@@ -115,33 +153,75 @@ document.addEventListener("DOMContentLoaded", function () {
           const result = await response.json();
 
           if (response.ok) {
-            alert("Issue deleted successfully!");
-            row.remove(); // Remove the row from the table
+            alert("Issue cancelled successfully!");
+            issueCard.remove(); // Remove the card from the grid
           } else {
-            alert(result.error || "Failed to delete issue.");
+            alert(result.error || "Failed to cancel issue.");
           }
         } catch (error) {
-          console.error("Error deleting issue:", error);
-          alert("Error deleting issue. Please try again.");
+          console.error("Error cancelling issue:", error);
+          alert("Error cancelling issue. Please try again.");
         }
+      }
+    }
+
+    // Handle view button click
+    const viewBtn = event.target.closest(".action-btn.view");
+    if (viewBtn) {
+      openIssuePopup(issueID);
+    }
+
+    // Handle review button click
+    const reviewBtn = event.target.closest(".action-btn.review-btn");
+    if (reviewBtn) {
+      document.getElementById("feedbackCon").style.display = "flex";
+      document.getElementById("issueId").value = issueID;
+    }
+
+    // Handle pay button click (Assuming this redirects or opens a payment modal)
+    const payBtn = event.target.closest(".action-btn.pay-btn");
+    if (payBtn) {
+      // For now, let's just log the ID. In a real app, you'd trigger a payment flow.
+      alert(`Initiating payment for Issue ID: ${issueID}`);
+      // Example: window.location.href = `/resident/makePayment/${issueID}`;
+    }
+  });
+
+  // Handle cancel button in the feedback form
+  cancelFeedbackBtn.addEventListener("click", function () {
+    closeFeedbackForm();
+  });
+
+  // Handle cancel button inside the issue details popup
+  cancelIssueBtnPopup.addEventListener("click", async function () {
+    const issueID = cancelIssueBtnPopup.getAttribute("data-id");
+    if (confirm("Are you sure you want to cancel this issue?")) {
+      try {
+        const response = await fetch(`/resident/deleteIssue/${issueID}`, {
+          method: "DELETE",
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert("Issue cancelled successfully!");
+          // Find and remove the corresponding card from the grid
+          const cancelledCard = document.querySelector(
+            `.issue-card[data-id="${issueID}"]`
+          );
+          if (cancelledCard) {
+            cancelledCard.remove();
+          }
+          closePopup(); // Close the issue details popup
+        } else {
+          alert(result.error || "Failed to cancel issue.");
+        }
+      } catch (error) {
+        console.error("Error cancelling issue:", error);
+        alert("Error cancelling issue. Please try again.");
       }
     }
   });
 
-  const reviewBtn = document.querySelectorAll(".review-btn");
-  const cancel = document.querySelector(".cancel-feedback");
-
-  reviewBtn.forEach((button) => {
-    button.addEventListener("click", function () {
-      document.getElementById("feedbackCon").style.display = "flex";
-      const issueId = button.getAttribute("data-id");
-      document.getElementById("issueId").value = issueId;
-
-      
-    });
-  });
-
-  cancel.addEventListener("click", function () {
-    document.getElementById("feedbackCon").style.display = "none";
-  });
+  
 });

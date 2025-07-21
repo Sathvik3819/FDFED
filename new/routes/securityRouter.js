@@ -5,11 +5,25 @@ import Security from "../models/security.js";
 import VisitorPreApproval from "../models/preapproval.js";
 import auth from "../controllers/auth.js";
 import { authorizeS } from "../controllers/authorization.js";
-import Ad from '../models/Ad.js'
+import Ad from "../models/Ad.js";
 
 import visitor from "../models/visitors.js";
 
 import mongoose from "mongoose";
+
+import multer from "multer";
+import bcrypt from 'bcrypt';
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "=profImg.png";
+    cb(null, uniqueName);
+  },
+});
+const upload = multer({ storage: storage });
 
 securityRouter.get("/addVisitor", (req, res) => {
   res.render("security/addV", { path: "aw" });
@@ -50,17 +64,14 @@ securityRouter.get("/dashboard", async (req, res) => {
   const visitors = await visitor.find({
     community: req.user.community,
     addedBy: req.user.id,
-    $or: [
-      { status: "active" },
-      { status: "checkedOut" },
-    ],
+    $or: [{ status: "active" }, { status: "checkedOut" }],
   });
-  
+
   const ads = await Ad.find({ community: req.user.community });
 
   console.log(ads);
-  
-  res.render("security/dashboard", { path: "d" ,visitors,ads});
+
+  res.render("security/dashboard", { path: "d", visitors, ads });
 });
 
 securityRouter.get("/", (req, res) => {
@@ -77,7 +88,7 @@ securityRouter.get("/preApproval", async (req, res) => {
 
   console.log(ads);
 
-  res.render("security/preApproval", { path: "pa", pa ,ads});
+  res.render("security/preApproval", { path: "pa", pa, ads });
 });
 
 securityRouter.post("/preApproval/action", async (req, res) => {
@@ -156,7 +167,7 @@ securityRouter.get("/visitorManagement", async (req, res) => {
 
   console.log(visitors);
 
-  res.render("security/VisitorManagement", { path: "vm", visitors,ads });
+  res.render("security/VisitorManagement", { path: "vm", visitors, ads });
 });
 
 securityRouter.get("/visitorManagement/:action/:id", async (req, res) => {
@@ -214,8 +225,55 @@ securityRouter.get("/visitorManagement/:action/:id", async (req, res) => {
 securityRouter.get("/profile", async (req, res) => {
   const ads = await Ad.find({ community: req.user.community });
 
-  console.log(ads);
-  res.render("security/Profile", { path: "pr",ads });
+  const r = await Security.findById(req.user.id);
+
+  res.render("security/Profile", { path: "pr", ads, r });
 });
+
+securityRouter.post("/profile", upload.single("image"), async (req, res) => {
+  const { name, email, contact, address } = req.body;
+
+  const r = await Worker.findById(req.user.id);
+
+  let image = null;
+
+  if(req.file){
+    image = req.file.path;
+  }
+
+  r.name = name;
+  r.email = email;
+  r.contact = contact;
+  r.address = address;
+
+  if(image){
+    r.image = image;
+  }
+
+  await r.save();
+
+  res.redirect("/worker/profile");
+});
+
+
+securityRouter.post("/change-password",async (req,res)=>{
+  const { currentPassword, newPassword } = req.body;
+  const security = await Worker.findById(req.user.id);
+
+  if (!security) {
+    return res.json({ success: false, message: "Security not found." });
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, security.password);
+  if (!isMatch) {
+    return res.json({ success: false, message: "Current password does not match." });
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  security.password = await bcrypt.hash(newPassword, salt);
+  await security.save();
+
+  res.json({ ok: true, message: "Password changed successfully." });
+})
 
 export default securityRouter;

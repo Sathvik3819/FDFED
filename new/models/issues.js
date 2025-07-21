@@ -6,9 +6,6 @@ const { Schema } = mongoose; // Extract the Schema from mongoose to avoid errors
 const issueSchema = new Schema({
   issueID: {
     type: String,
-    required: true,
-    unique: true, // Ensure each issue has a unique ID
-    trim: true,
   },
   title: {
     type: String,

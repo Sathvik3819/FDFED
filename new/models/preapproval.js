@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const visitorPreApprovalSchema = new mongoose.Schema(
   {
+    ID: String,
     visitorName: { type: String, required: true },
     contactNumber: { type: String, required: true },
     dateOfVisit: { type: String, required: true },

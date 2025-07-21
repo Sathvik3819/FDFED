@@ -18,7 +18,19 @@ import PaymentController from "../controllers/payments.js";
 import CommunityManager from "../models/cManager.js";
 import Ad from "../models/Ad.js";
 import Payment from "../models/payment.js";
-import visitor from "../models/visitors.js"
+import visitor from "../models/visitors.js";
+
+function generateCustomID(userEmail, facility, countOrRandom = null) {
+  const id = userEmail.toUpperCase().slice(0, 2);
+
+  const facilityCode = facility.toUpperCase().slice(0, 2);
+
+  const suffix = countOrRandom
+    ? String(countOrRandom).padStart(4, "0")
+    : String(Math.floor(1000 + Math.random() * 9000));
+
+  return `UE-${id}${facilityCode}${suffix}`;
+}
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -150,35 +162,38 @@ managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
 
     console.log("Booking Data after update:", b);
 
+    const uniqueId = generateCustomID(b._id.toString(), "PY", null);
+
     const payment = await Payment.create({
       title: b._id,
       sender: b.bookedBy._id,
       receiver: req.user.community,
       amount: 1000,
-      paymentDeadline: new Date().toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }),
+      paymentDeadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
       paymentDate: null,
       paymentMethod: "None",
       status: "Pending",
       remarks: null,
-      ID: b._id,
+      ID: uniqueId,
       belongTo: "CommonSpaces",
       community: req.user.community,
     });
 
     b.payment = payment._id;
     await b.save();
+
+    req.flash("alert-msg", `${b._id} approved successfully`);
+
+    res.status(200).json({ success: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
+managerRouter.post("/commonSpace/reject/:id", async (req, res) => {
   const id = req.params.id;
+  const { reason } = req.body;
   try {
     const b = await CommonSpaces.findById(id);
 
@@ -189,6 +204,7 @@ managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
     b.availability = "NO";
     b.paymentStatus = null;
     b.status = "Rejected";
+    b.feedback = reason;
 
     await b.save();
 
@@ -205,7 +221,6 @@ managerRouter.get("/userManagement", async (req, res) => {
   const R = await Resident.find({ community: req.user.community });
   const W = await Worker.find({ community: req.user.community });
   const S = await Security.find({ community: req.user.community });
-
 
   res.render("communityManager/userManagement", { path: "um", ads, R, W, S });
 });
@@ -249,6 +264,8 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
       console.log("new resident : ", r);
     }
 
+    req.flash("alert-msg", "New Resident created");
+
     res.redirect("/manager/userManagement");
   } catch (err) {
     console.error(err);
@@ -266,10 +283,9 @@ managerRouter.get("/userManagement/resident/:id", async (req, res) => {
 
 managerRouter.post("/userManagement/security", async (req, res) => {
   try {
-    const { Sid,name, email, contact, address, Shift } = req.body;
+    const { Sid, name, email, contact, address, Shift } = req.body;
 
-    if(Sid){
-
+    if (Sid) {
       const s = await Security.findById(Sid);
 
       s.name = name;
@@ -279,21 +295,19 @@ managerRouter.post("/userManagement/security", async (req, res) => {
       s.Shift = Shift;
 
       await s.save();
-      
-
-    }else{
+    } else {
       const r = await Security.create({
-      name,
-      email,
-      contact,
-      address,
-      Shift,
-      community: req.user.community,
-    });
+        name,
+        email,
+        contact,
+        address,
+        Shift,
+        community: req.user.community,
+      });
 
-    console.log("new security : ", r);
+      console.log("new security : ", r);
     }
-    
+    req.flash("alert-msg", "New Security created");
 
     res.redirect("/manager/userManagement");
   } catch (err) {
@@ -302,14 +316,12 @@ managerRouter.post("/userManagement/security", async (req, res) => {
   }
 });
 
-
 managerRouter.get("/userManagement/security/:id", async (req, res) => {
   const id = req.params.id;
 
   const r = await Security.findById(id);
 
   console.log(r);
-  
 
   res.status(200).json({ success: true, r });
 });
@@ -327,7 +339,7 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
       availabilityStatus,
     } = req.body;
 
-    if(Wid){
+    if (Wid) {
       const w = await Worker.findById(Wid);
 
       w.name = name;
@@ -339,21 +351,21 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
       w.availabilityStatus = availabilityStatus;
 
       await w.save();
-      
-    }else{
+    } else {
       const r = await Worker.create({
-      name,
-      email,
-      jobRole,
-      contact,
-      address,
-      salary,
-      availabilityStatus,
-      community: req.user.community,
-    });
+        name,
+        email,
+        jobRole,
+        contact,
+        address,
+        salary,
+        availabilityStatus,
+        community: req.user.community,
+      });
 
-    console.log("new worker : ", r);
+      console.log("new worker : ", r);
     }
+    req.flash("alert-msg", "New Worker created");
 
     res.redirect("/manager/userManagement");
   } catch (err) {
@@ -373,13 +385,15 @@ managerRouter.get("/userManagement/worker/:id", async (req, res) => {
 managerRouter.get("/dashboard", async (req, res) => {
   const ads = await Ad.find({ community: req.user.community });
 
-  const issues = await Issue.find({community:req.user.community});
-  const residents = await Resident.find({community:req.user.community});
-  const workers = await Worker.find({community:req.user.community});
-  const security = await Security.find({community:req.user.community});
-  const commonSpacesBookings = await CommonSpaces.find({community:req.user.community});
-  const payments = await Payment.find({community:req.user.community});
-  const visitors = await visitor.find({community:req.user.community})
+  const issues = await Issue.find({ community: req.user.community });
+  const residents = await Resident.find({ community: req.user.community });
+  const workers = await Worker.find({ community: req.user.community });
+  const security = await Security.find({ community: req.user.community });
+  const commonSpacesBookings = await CommonSpaces.find({
+    community: req.user.community,
+  });
+  const payments = await Payment.find({ community: req.user.community });
+  const visitors = await visitor.find({ community: req.user.community });
 
   const totalIssues = issues.length;
   const totalResidents = residents.length;
@@ -388,12 +402,24 @@ managerRouter.get("/dashboard", async (req, res) => {
   const totalCommonSpacesBookings = commonSpacesBookings.length;
   const totalPayments = payments.length;
 
-  const pendingIssues = issues.filter(issue => issue.status === 'Pending').length;
-  const resolvedIssues = issues.filter(issue => issue.status === 'Resolved').length;
-  const pendingCommonSpacesBookings = commonSpacesBookings.filter(booking => booking.status === 'Pending').length;
-  const approvedCommonSpacesBookings = commonSpacesBookings.filter(booking => booking.status === 'Booked').length;
-  const pendingPayments = payments.filter(payment => payment.status === 'Pending').length;
-  const completedPayments = payments.filter(payment => payment.status === 'Completed').length;
+  const pendingIssues = issues.filter(
+    (issue) => issue.status === "Pending"
+  ).length;
+  const resolvedIssues = issues.filter(
+    (issue) => issue.status === "Resolved"
+  ).length;
+  const pendingCommonSpacesBookings = commonSpacesBookings.filter(
+    (booking) => booking.status === "Pending"
+  ).length;
+  const approvedCommonSpacesBookings = commonSpacesBookings.filter(
+    (booking) => booking.status === "Booked"
+  ).length;
+  const pendingPayments = payments.filter(
+    (payment) => payment.status === "Pending"
+  ).length;
+  const completedPayments = payments.filter(
+    (payment) => payment.status === "Completed"
+  ).length;
 
   res.render("communityManager/dashboard", {
     path: "d",
@@ -410,10 +436,8 @@ managerRouter.get("/dashboard", async (req, res) => {
     approvedCommonSpacesBookings,
     pendingPayments,
     completedPayments,
-    visitors
+    visitors,
   });
-  
-
 });
 
 managerRouter.get("/", (req, res) => {
@@ -441,6 +465,8 @@ managerRouter.get("/issueResolving", async (req, res) => {
       .populate("resident")
       .populate("workerAssigned");
 
+    console.log(issues);
+
     res.render("communityManager/issueResolving", {
       path: "ir",
       issues: issues,
@@ -454,9 +480,11 @@ managerRouter.get("/issueResolving", async (req, res) => {
 });
 
 managerRouter.post("/issue/assign", async (req, res) => {
-  const { issueID, worker, deadline, remarks } = req.body;
+  const { id, issueID, worker, deadline, remarks } = req.body;
   try {
-    const issue = await Issue.findById(issueID);
+    const issue = await Issue.findById(id);
+    console.log(issue);
+
     if (!issue) {
       return res.status(404).send("Issue not found");
     }
@@ -472,8 +500,10 @@ managerRouter.post("/issue/assign", async (req, res) => {
     if (!workerData) {
       return res.status(404).send("Worker not found");
     }
-    workerData.assignedIssues.push(issueID);
+    workerData.assignedIssues.push(id);
     await workerData.save();
+
+    req.flash("alert-msg", "Worker Assigned");
 
     res.redirect("/manager/issueResolving");
   } catch (error) {
@@ -485,9 +515,11 @@ managerRouter.post("/issue/assign", async (req, res) => {
 managerRouter.get("/issueResolving/:id", async (req, res) => {
   const id = req.params.id;
 
-  const issue = await Issue.find({ issueID: id })
+  const issue = await Issue.findById(id)
     .populate("resident")
     .populate("workerAssigned");
+
+  console.log(issue);
 
   if (!issue) {
     return res.status(404).json({ message: "Issue not found" });
@@ -503,9 +535,10 @@ managerRouter.get("/payments", async (req, res) => {
 });
 
 managerRouter.get("/ad", async (req, res) => {
-  const ads = await Ad.find({ community: req.user.community,status:"active" });
-
-  
+  const ads = await Ad.find({
+    community: req.user.community,
+    status: "active",
+  });
 
   res.render("communityManager/Advertisement", { path: "ad", ads });
 });
@@ -539,7 +572,56 @@ managerRouter.post("/ad", upload.single("image"), async (req, res) => {
 managerRouter.get("/profile", async (req, res) => {
   const ads = await Ad.find({ community: req.user.community });
 
-  res.render("communityManager/Profile", { path: "pr", ads });
+  const r = await CommunityManager.findById(req.user.id);
+
+  console.log(r);
+
+  res.render("communityManager/Profile", { path: "pr", ads, r });
+});
+
+managerRouter.post("/profile", upload.single("image"), async (req, res) => {
+  const { name, email, contact } = req.body;
+  const image = req.file.path;
+
+  const r = await CommunityManager.findById(req.user.id);
+
+  r.name = name;
+  r.email = email;
+  r.contact = contact;
+  r.image = image;
+
+  await r.save();
+  req.flash("alert-msg", "profile updated");
+
+  res.redirect("/manager/profile");
+});
+
+managerRouter.post("/profile/changePassword", async (req, res) => {
+  const { cp, np, cnp } = req.body;
+
+  console.log(np, cnp);
+
+  const r = await CommunityManager.findById(req.user.id);
+
+  const isMatch = await bcrypt.compare(cp, r.password);
+
+  if (!isMatch) {
+    res.json({ success: false, message: "current password does not match" });
+  }
+
+  if (np !== cnp) {
+    console.log("not matched");
+
+    return res.json({ success: false, message: "password doesnot match" });
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(np, salt);
+  r.password = hashedPassword;
+
+  await r.save();
+
+  return res.json({ success: true, message: "password changed" });
 });
 
 export default managerRouter;

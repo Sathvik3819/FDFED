@@ -161,6 +161,11 @@ app.use(
 
 app.use(flash());
 
+app.use((req, res, next) => {
+  res.locals.alert = req.flash("alert-msg");
+  next();
+});
+
 app.use("/uploads", express.static("uploads"));
 
 app.use(express.urlencoded({ extended: true }));
@@ -320,14 +325,13 @@ app.post("/login", async (req, res) => {
 
 app.get("/logout", (req, res) => {
   const token = req.cookies.token;
-  console.log(res.cookie);
 
   if (!token) {
     return res.redirect("/login");
   }
 
   res.clearCookie("token");
-  res.redirect("/login");
+  res.status(200).json({ success: true });
 });
 
 app.listen(PORT, async () => {
@@ -338,12 +342,11 @@ app.listen(PORT, async () => {
       month: "2-digit",
       year: "numeric",
     });
-   
 
     if (d === ad.startDate) {
       ad.status = "active";
-    }else if(d>ad.endDate){
-      ad.status = "expired"
+    } else if (d > ad.endDate) {
+      ad.status = "expired";
     }
     await ad.save();
   });

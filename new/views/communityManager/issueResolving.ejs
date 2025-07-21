@@ -161,6 +161,64 @@
         border-bottom: 2px solid rgba(0, 0, 0, 0.1);
       }
 
+      .issue-list-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      /* Individual issue card */
+      .issue-card {
+        background: #ffffff;
+        border: 1px solid #e2e6ea;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .issue-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .issue-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .issue-card-id {
+        font-weight: 600;
+        color: var(--primary);
+        font-size: 0.95rem;
+      }
+
+      .issue-card-content {
+        margin-bottom: 15px;
+      }
+
+      .issue-card-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .issue-card-reporter,
+      .issue-card-date {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 5px;
+      }
+
+      .issue-card-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
       .close-btn {
         position: absolute;
         top: 0;
@@ -278,14 +336,18 @@
       .booking-body {
         padding: 25px;
         display: flex;
+        flex-wrap: wrap; /* Allow items to wrap */
         justify-content: space-between;
+        gap: 20px; /* Add some gap between elements */
       }
 
       .detail-card {
         background: #f9f9f9;
         border-radius: 12px;
-        padding: 15px 50px 15px 15px;
+        padding: 15px; /* Adjust padding for better fit */
         margin-bottom: 20px;
+        flex: 1 1 300px; /* Allow card to grow and shrink, with a base of 300px */
+        min-width: 280px; /* Ensure a minimum width */
       }
 
       .detail-row {
@@ -339,9 +401,23 @@
       .feedback-card {
         background: #f9f9f9;
         border-radius: 12px;
-        padding: 20px 40px 20px 20px;
+        padding: 20px; /* Adjust padding */
         margin-bottom: 20px;
-        width: 30%;
+        flex: 1 1 100%; /* Make them take full width on smaller screens */
+      }
+
+      @media (min-width: 768px) {
+        .description-card,
+        .feedback-card {
+          flex: 1 1 calc(50% - 10px); /* Two columns on medium screens */
+        }
+      }
+
+      @media (min-width: 992px) {
+        .description-card,
+        .feedback-card {
+          flex: 1 1 calc(33.333% - 20px); /* Three columns for larger screens, adjusting for gap */
+        }
       }
 
       .section-title {
@@ -540,6 +616,10 @@
         .issues-container {
           grid-template-columns: 1fr;
         }
+
+        .page-title::after {
+          width: 100%; /* Make the underline full width on smaller screens */
+        }
       }
 
       @media (max-width: 768px) {
@@ -565,6 +645,45 @@
         .btn {
           width: 100%;
           justify-content: center;
+        }
+
+        .booking-body {
+          flex-direction: column; /* Stack elements vertically in the popup body */
+          padding: 15px; /* Adjust padding */
+        }
+
+        .detail-card,
+        .description-card,
+        .feedback-card {
+          width: 100%; /* Ensure these take full width on small screens */
+          flex: none; /* Remove flex sizing to allow width 100% to work */
+        }
+      }
+
+      /* Further refinements for very small screens */
+      @media (max-width: 480px) {
+        .page-title {
+          font-size: 1.7rem;
+        }
+
+        .card-title {
+          font-size: 1.3rem;
+        }
+
+        .issues-table th,
+        .issues-table td {
+          padding: 10px; /* Reduce table padding */
+          font-size: 0.9rem; /* Smaller font for table content */
+        }
+
+        .btn {
+          padding: 10px 18px; /* Smaller button padding */
+          font-size: 0.9rem;
+        }
+
+        .popup-content {
+          width: 95%; /* Wider popup on very small screens */
+          padding: 20px;
         }
       }
     </style>
@@ -608,50 +727,40 @@
           <div class="issues-container">
             <div>
               <h3 class="card-title">Current Issues</h3>
-              <table class="issues-table">
-                <thead>
-                  <tr>
-                    <th>Issue ID</th>
-                    <th>Title</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% if (locals.issues) { %> <% issues.forEach((i) => { %> <% if
-                  (i.status === "Assigned" || i.status==="Pending") { %>
-                  <tr>
-                    <td><%= i.issueID %></td>
-                    <td>
-                      <strong><%= i.title %></strong><br />
-                      <small
-                        >Reported by: <%= i.resident.residentFirstname %> <%=
-                        i.resident.residentLastname %></small
-                      >
-                    </td>
-                    <td>
-                      <span class="status-<%= i.status %>"
-                        ><%= i.status %></span
-                      >
-                    </td>
-                    <td>
-                      <% if (!i.workerAssigned) { %>
-                      <button
-                        class="btn btn-primary btn-sm assign-btn"
-                        data-id="<%= i._id %>"
-                      >
-                        Assign
-                      </button>
-                      <% } else { %>
-                      <button class="btn btn-sm assign-btn disabled" disabled>
-                        Assigned
-                      </button>
-                      <% } %>
-                    </td>
-                  </tr>
-                  <% } %> <% }) %> <% } %>
-                </tbody>
-              </table>
+              <div class="issue-list-cards">
+                <% if (locals.issues) { %> <% issues.forEach((i) => { %> <% if
+                (i.status === "Assigned" || i.status==="Pending") { %>
+                <div class="issue-card">
+                  <div class="issue-card-header">
+                    <span class="issue-card-id"
+                      >Issue ID: <%= i.issueID %></span
+                    >
+                    <span class="status-<%= i.status %>"><%= i.status %></span>
+                  </div>
+                  <div class="issue-card-content">
+                    <h4 class="issue-card-title"><%= i.title %></h4>
+                    <p class="issue-card-reporter">
+                      Reported by: <%= i.resident.residentFirstname %> <%=
+                      i.resident.residentLastname %>
+                    </p>
+                  </div>
+                  <div class="issue-card-actions">
+                    <% if (!i.workerAssigned) { %>
+                    <button
+                      class="btn btn-primary btn-sm assign-btn"
+                      data-id="<%= i._id %>"
+                    >
+                      Assign
+                    </button>
+                    <% } else { %>
+                    <button class="btn btn-sm assign-btn disabled" disabled>
+                      Assigned
+                    </button>
+                    <% } %>
+                  </div>
+                </div>
+                <% } %> <% }) %> <% } %>
+              </div>
             </div>
 
             <div>
@@ -661,6 +770,7 @@
                 action="/manager/issue/assign"
                 method="POST"
               >
+                <input type="text" id="idIssue" name="id" hidden />
                 <div class="form-group">
                   <label for="issueID">Issue ID</label>
                   <input
@@ -726,45 +836,34 @@
         <!-- Assigned History Card (Hidden by default) -->
         <div class="card" id="history-card" style="display: none">
           <div class="card-title">Assigned Issues History</div>
-          <table class="issues-table" id="history-table">
-            <thead>
-              <tr>
-                <th>Issue ID</th>
-                <th>Title</th>
-                <th>Worker Assigned</th>
-                <th>Status</th>
-                <th>Resolution Date</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (locals.issues) { %> <% issues.forEach((i) => { %> <% if
-              (i.status === "Resolved" || i.status === "Assigned") { %>
-              <tr>
-                <td><%= i.issueID %></td>
-                <td>
-                  <strong><%= i.title %></strong><br />
-                  <small
-                    >Reported by: <%= i.resident.residentFirstname %> <%=
-                    i.resident.residentLastname %></small
-                  >
-                </td>
-                <td><%= i.workerAssigned.name %></td>
-                <td>
-                  <span class="status-<%= i.status %>"><%= i.status %></span>
-                </td>
-                <td class="text-center">
-                  <%= i.resolvedAt ? i.resolvedAt : "-" %>
-                </td>
-                <td>
-                  <button class="btn btn-secondary btn-sm view-btn">
-                    View Details
-                  </button>
-                </td>
-              </tr>
-              <% }%> <% }) %> <% } %>
-            </tbody>
-          </table>
+          <div class="issue-list-cards" id="history-cards-container">
+            <% if (locals.issues) { %> <% issues.forEach((i) => { %> <% if
+            (i.status === "Resolved" || i.status === "Assigned") { %>
+            <div class="issue-card">
+              <div class="issue-card-header">
+                <span class="issue-card-id">Issue ID: <%= i.issueID %></span>
+                <span class="status-<%= i.status %>"><%= i.status %></span>
+              </div>
+              <div class="issue-card-content">
+                <h4 class="issue-card-title"><%= i.title %></h4>
+                <p class="issue-card-reporter">
+                  Worker: <%= i.workerAssigned.name %>
+                </p>
+                <p class="issue-card-date">
+                  Completion Date: <%= i.resolvedAt ? i.resolvedAt : "-" %>
+                </p>
+              </div>
+              <div class="issue-card-actions">
+                <button
+                  class="btn btn-secondary btn-sm view-btn"
+                  data-id="<%= i._id %>"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+            <% }%> <% }) %> <% } %>
+          </div>
         </div>
       </div>
     </div>

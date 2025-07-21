@@ -1,5 +1,6 @@
 import express from "express";
 const residentRouter = express.Router();
+import bcrypt from "bcrypt";
 
 import Issue from "../models/issues.js";
 import Resident from "../models/resident.js";
@@ -12,6 +13,18 @@ import Ad from "../models/Ad.js";
 import communities from "../models/communities.js";
 
 import multer from "multer";
+
+function generateCustomID(userEmail, facility, countOrRandom = null) {
+  const emailPrefix = userEmail.toUpperCase().slice(-4);
+
+  const facilityCode = facility.toUpperCase().slice(0, 2);
+
+  const suffix = countOrRandom
+    ? String(countOrRandom).padStart(4, "0")
+    : String(Math.floor(1000 + Math.random() * 9000));
+
+  return `UE-${emailPrefix}-${facilityCode}-${suffix}`;
+}
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -31,8 +44,7 @@ residentRouter.get("/commonSpace", async (req, res) => {
 
   const ads = await Ad.find({ community: req.user.community });
 
-
-  res.render("resident/commonSpace", { path: "cbs", bookings: booking ,ads});
+  res.render("resident/commonSpace", { path: "cbs", bookings: booking, ads });
 });
 
 residentRouter.post("/commonSpace/:id", async (req, res) => {
@@ -74,6 +86,11 @@ residentRouter.post("/commonSpace", async (req, res) => {
       bookedBy: uid,
       community: req.user.community,
     });
+
+    const uniqueId = generateCustomID(req.user.id, "CS", null);
+    space.ID = uniqueId;
+
+    await space.save();
 
     console.log("New Common Space Created:", space);
 
@@ -128,7 +145,6 @@ residentRouter.get("/dashboard", async (req, res) => {
 
   const ads = await Ad.find({ community: req.user.community });
 
-
   const issues = await Issue.find({ resident: req.user.id });
   const commonSpaces = await CommonSpaces.find({ bookedBy: req.user.id });
   const payments = await Payment.find({ sender: req.user.id });
@@ -180,7 +196,7 @@ residentRouter.get("/dashboard", async (req, res) => {
   res.render("resident/dashboard", {
     path: "d",
     recents: cleanedRecents,
-    ads
+    ads,
   });
 });
 
@@ -200,7 +216,7 @@ residentRouter.get("/issueRaising", async (req, res) => {
     );
     const ads = await Ad.find({ community: req.user.community });
 
-  console.log(ads);
+    console.log(ads);
 
     if (!resident) {
       return res.status(404).json({ error: "Resident not found." });
@@ -208,7 +224,7 @@ residentRouter.get("/issueRaising", async (req, res) => {
 
     const issues = await resident.raisedIssues;
 
-    res.render("resident/issueRaising", { path: "ir", i: issues ,ads});
+    res.render("resident/issueRaising", { path: "ir", i: issues, ads });
   } catch (error) {
     console.error("Error fetching issues:", error);
     return res.status(500).json({ error: "Internal server error." });
@@ -234,7 +250,7 @@ residentRouter.post("/issueRaising/feedback", async (req, res) => {
     const payment = await Payment.create({
       title: issue.issueID,
       sender: req.user.id,
-      receiver: issue.workerAssigned.communityAssigned,
+      receiver: issue.workerAssigned.community,
       amount: 100,
       paymentDeadline: new Date().toLocaleDateString("en-IN", {
         day: "2-digit",
@@ -245,17 +261,21 @@ residentRouter.post("/issueRaising/feedback", async (req, res) => {
       paymentMethod: "None",
       status: "Pending",
       remarks: null,
-      ID: issue._id,
       belongTo: "Issue",
       belongToId: issue._id,
       communityId: issue.workerAssigned.communityAssigned,
     });
 
+    const uniqueId = generateCustomID(payment._id, "PA", null);
+
+    payment.ID = uniqueId;
+    await payment.save();
+
     res.redirect("/resident/issueRaising");
   } catch (error) {
     console.error("Error submitting feedback:", error);
     req.flash("message", "Something went wrong.");
-    return res.redirect("issueRaising");
+    return res.redirect("/issueRaising");
   }
 });
 
@@ -276,9 +296,6 @@ residentRouter.post("/issueRaising", async (req, res) => {
     }
     console.log("Resident Found:", resident);
 
-    const timestamp = Date.now().toString().slice(-8);
-    const issueID = `UE-${timestamp}`;
-    console.log("Generated Issue ID:", issueID);
     const creat = new Date().toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "2-digit",
@@ -286,7 +303,6 @@ residentRouter.post("/issueRaising", async (req, res) => {
     });
     // Create the new issue document
     const newIssue = await Issue.create({
-      issueID: issueID,
       resident: resident._id,
       title: category,
       description: description,
@@ -294,6 +310,11 @@ residentRouter.post("/issueRaising", async (req, res) => {
       createdAt: creat,
       workerAssigned: null,
     });
+
+    const issueID = generateCustomID(req.user.id, "IS", null);
+    newIssue.issueID = issueID;
+    await newIssue.save();
+
     console.log("New Issue Created:", newIssue);
     resident.raisedIssues.push(newIssue._id);
     await resident.save();
@@ -355,19 +376,16 @@ residentRouter.get("/payments", async (req, res) => {
 
     const ads = await Ad.find({ community: req.user.community });
 
-  console.log(ads);
+    console.log(ads);
 
     const payments = await Payment.find({ sender: userId })
       .populate("receiver", "name")
       .sort({ paymentDeadline: -1 });
 
-    payments.forEach(async (p) => {
-      p.paymentDate = formatDate(p.paymentDate);
-      p.paymentDeadline = formatDate(p.paymentDeadline);
-      await p.save();
-    });
+      console.log(payments);
+      
 
-    res.render("resident/payments", { path: "p", payments,ads });
+    res.render("resident/payments", { path: "p", payments, ads });
   } catch (error) {
     console.error("Error fetching payments:", error);
     req.flash("message", "Failed to load payment data");
@@ -474,7 +492,7 @@ residentRouter.get("/preApprovals", async (req, res) => {
     );
     const ads = await Ad.find({ community: req.user.community });
 
-  console.log(ads);
+    console.log(resident.preApprovedVisitors);
 
     res.render("resident/preApproval", {
       path: "pa",
@@ -501,9 +519,6 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
     const date = formatDate(dateOfVisit);
     console.log("Formatted Date:", date);
 
-    console.log(resident._id);
-    console.log(resident.community._id);
-
     const newVisitor = await VisitorPreApproval.create({
       visitorName,
       contactNumber,
@@ -516,6 +531,13 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
 
     resident.preApprovedVisitors.push(newVisitor._id);
     await resident.save();
+
+    const uniqueId = generateCustomID(newVisitor._id.toString(), "PA", null);
+
+    newVisitor.ID = uniqueId;
+    await newVisitor.save();
+
+    console.log(newVisitor);
 
     return res.redirect("/resident/preApprovals");
   } catch (err) {
@@ -547,8 +569,58 @@ residentRouter.delete("/preapproval/cancel/:id", async (req, res) => {
 residentRouter.get("/profile", async (req, res) => {
   const ads = await Ad.find({ community: req.user.community });
 
-  console.log(ads);
-  res.render("resident/Profile", { path: "pr",ads });
+  const r = await Resident.findById(req.user.id);
+
+  res.render("resident/Profile", { path: "pr", ads, r });
+});
+
+residentRouter.post("/profile", upload.single("image"), async (req, res) => {
+  const { firstName, lastName, contact, email, address } = req.body;
+
+  const r = await Resident.findById(req.user.id);
+
+  const image = req.file.path;
+
+  r.residentFirstname = firstName;
+  r.residentLastname = lastName;
+  r.email = email;
+  r.contact = contact;
+  const blockNo = address.split(" ")[1] + " " + address.split(" ")[2];
+  const flatNo = address.split(" ")[3];
+
+  if (image) {
+    r.image = image;
+  }
+
+  r.blockNo = blockNo;
+  r.flatNo = flatNo;
+
+  await r.save();
+
+  res.redirect("/resident/Profile");
+});
+
+residentRouter.post("/change-password", async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const resident = await Resident.findById(req.user.id);
+
+  if (!resident) {
+    return res.json({ success: false, message: "Resident not found." });
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, resident.password);
+  if (!isMatch) {
+    return res.json({
+      success: false,
+      message: "Current password does not match.",
+    });
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  resident.password = await bcrypt.hash(newPassword, salt);
+  await resident.save();
+
+  res.json({ ok: true, message: "Password changed successfully." });
 });
 
 export default residentRouter;

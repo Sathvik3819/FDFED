@@ -11,4 +11,64 @@ document.addEventListener("DOMContentLoaded", function () {
       slides[currentSlide].classList.add("active");
     }, 3000);
   }
+
+  const logOut = document.querySelector(".log-out");
+
+  logOut.addEventListener("click", async () => {
+    try {
+      const res = await fetch("/logout", {
+        method: "GET",
+      });
+
+      const response = await res.json();
+
+      if (response.success) {
+        // If the server responds with a redirect, follow it manually
+        window.location.href = "/login";
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const menuToggle = document.querySelector(".menu-toggle");
+  const mobileMenu = document.querySelector(".mobile-menu");
+
+  if (menuToggle && mobileMenu) {
+    menuToggle.addEventListener("click", function () {
+      mobileMenu.classList.toggle("show");
+
+      // Change the icon based on menu state
+      const icon = this.querySelector("i");
+      if (mobileMenu.classList.contains("show")) {
+        icon.classList.remove("bi-list");
+        icon.classList.add("bi-x");
+      } else {
+        icon.classList.remove("bi-x");
+        icon.classList.add("bi-list");
+      }
+    });
+
+    // Close menu when clicking on a link (optional)
+    const menuLinks = mobileMenu.querySelectorAll("a");
+    menuLinks.forEach((link) => {
+      link.addEventListener("click", function () {
+        mobileMenu.classList.remove("show");
+        const icon = menuToggle.querySelector("i");
+        icon.classList.remove("bi-x");
+        icon.classList.add("bi-list");
+      });
+    });
+  }
+
+  // Notification tooltip hover effect
+  const notification = document.querySelector(".notification");
+  if (notification) {
+    notification.addEventListener("click", function () {
+      // You can add notification dropdown functionality here
+      console.log("Notification clicked");
+    });
+  }
 });

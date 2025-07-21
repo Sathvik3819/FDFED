@@ -531,7 +531,7 @@
                     <i class="bi bi-person-circle"></i>
                   </div>
                   <div>
-                    <h5 class="visitor-name"><%= v.visitorName %></h5>
+                    <h5 class="visitor-name"><%= v.ID %></p></h5>
                     <p class="visitor-phone">
                       <i class="bi bi-telephone"></i> <%= v.contactNumber %>
                     </p>
@@ -543,6 +543,13 @@
               </div>
 
               <div class="request-card-body">
+                <div class="request-detail">
+                  <i class="bi bi-person"></i>
+                  <div>
+                    <span class="detail-label">Visit name</span>
+                    <span class="detail-value"><%= v.visitorName %></span>
+                  </div>
+                </div>
                 <div class="request-detail">
                   <i class="bi bi-calendar"></i>
                   <div>

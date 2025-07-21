@@ -1,94 +1,139 @@
-document.addEventListener("DOMContentLoaded", function () {
-  // Get all elements
+document.addEventListener("DOMContentLoaded", () => {
+  // Tab functionality
   const assignTab = document.getElementById("assign-tab");
   const historyTab = document.getElementById("history-tab");
   const assignCard = document.getElementById("assign-card");
   const historyCard = document.getElementById("history-card");
-  const historyTable = document.getElementById("history-table");
-  const assignButtons = document.querySelectorAll(".assign-btn");
-  const viewButtons = document.querySelectorAll(".view-btn");
-  const issueIDField = document.getElementById("issueID");
-  const issueAssignForm = document.getElementById("issueAssignForm");
-  const close = document.querySelector(".close-btn");
-  const popup = document.querySelector("#bookingDetailsPopup");
 
-  // Tab switching functionality
-  assignTab.addEventListener("click", function () {
-    // Set active tab styling
+  assignTab.addEventListener("click", () => {
     assignTab.classList.add("active");
     historyTab.classList.remove("active");
-
-    // Show assign card and hide history card
     assignCard.style.display = "block";
     historyCard.style.display = "none";
   });
 
-  close.addEventListener("click", () => {
-    popup.style.display = "none";
-  });
-
-  historyTab.addEventListener("click", function () {
-    // Set active tab styling
+  historyTab.addEventListener("click", () => {
     historyTab.classList.add("active");
     assignTab.classList.remove("active");
-
-    // Show history card and table, hide assign card
-    historyCard.style.display = "block";
-    historyTable.style.display = "table";
     assignCard.style.display = "none";
+    historyCard.style.display = "block";
   });
 
-  // Assign button functionality
+  // Assign Issue Form Population
+  const assignButtons = document.querySelectorAll(".assign-btn");
+  const issueIDInput = document.getElementById("issueID");
+  const id = document.getElementById("idIssue");
+
   assignButtons.forEach((button) => {
-    button.addEventListener("click", async function () {
-      const data = button.getAttribute("data-id");
-      console.log("Assign button clicked", data);
-      issueIDField.value = data;
-    });
-  });
-
-  // View button functionality
-  viewButtons.forEach(async (button) => {
-    button.addEventListener("click", async function () {
-      const row = this.closest("tr");
-      const issueID = row.querySelector("td:first-child").textContent;
-
-      const response = await fetch(`/manager/issueResolving/${issueID}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const res = await response.json();
-
-      if (res.success) {
-        const issue = res.issue;
-        console.log("Issue details:", issue);
-        // Populate the popup with issue details
-        document.getElementById("detail-id").innerText =
-          issue[0].issueID || "-";
-        document.getElementById("detail-status").innerText = issue[0].status || "-";
-        document.getElementById("detail-facility").innerText =
-          issue[0].title || "-";
-        document.getElementById("detail-date").innerText =
-          issue[0].resolvedAt || "-";
-        document.getElementById("detail-time").innerText =
-          issue[0].workerAssigned.name || "-";
-        document.getElementById("detail-created").innerText =
-          issue[0].description || "-";
-
-        document.getElementById("detail-feedback").innerText =
-          issue[0].feedback || "-";
-        const rating = issue[0].rating || 0;
-        const starHtml = "★".repeat(rating) + "☆".repeat(5 - rating);
-        document.getElementById("detail-rating").innerText = starHtml;
+    button.addEventListener("click", (event) => {
+      const Id = button.getAttribute("data-id");
+      const issueCard = event.target.closest(".issue-card");
+      if (issueCard) {
+        const displayedIssueID = issueCard
+          .querySelector(".issue-card-id")
+          .textContent.replace("Issue ID: ", "");
+        issueIDInput.value = displayedIssueID;
+        id.value = Id;
       }
-
-      popup.style.display = "flex";
     });
   });
 
-  // Initialize with Assign Issues tab active
-  assignTab.classList.add("active");
-  assignCard.style.display = "block";
-  historyCard.style.display = "none";
+  // Issue Details Popup functionality
+  const bookingDetailsPopup = document.getElementById("bookingDetailsPopup");
+  const viewDetailButtons = document.querySelectorAll(".view-btn");
+
+  viewDetailButtons.forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      const issueMongoId = event.target.dataset.id;
+
+      try {
+        const response = await fetch(
+          `/manager/issueResolving/${issueMongoId}`,
+          {
+            method: "GET",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const i = await response.json();
+        const issue = i.issue
+        
+
+        // Set Issue ID
+        document.getElementById("detail-id").textContent = issue.issueID || "-";
+
+        // Set Status and class
+        const statusElement = document.getElementById("detail-status");
+        if (issue.status) {
+          statusElement.textContent = issue.status;
+          statusElement.className = `detail-value status-${issue.status.replace(
+            /\s+/g,
+            "-"
+          )}`;
+        } else {
+          statusElement.textContent = "-";
+          statusElement.className = "detail-value";
+        }
+
+        // Other fields
+        document.getElementById("detail-facility").textContent =
+          issue.title || "-";
+        document.getElementById("detail-date").textContent = issue.resolvedAt
+          ? new Date(issue.resolvedAt).toLocaleDateString()
+          : "-";
+        document.getElementById("detail-time").textContent =
+          issue.workerAssigned?.name || "-";
+        document.getElementById("detail-created").textContent =
+          issue.description || "-";
+
+        // Handle feedback and rating
+        const ratingContainer = document.getElementById("detail-rating");
+        const feedbackText = document.getElementById("detail-feedback");
+
+        if (issue.feedback?.rating) {
+          ratingContainer.innerHTML = "";
+          const rating = issue.feedback.rating;
+
+          for (let i = 0; i < 5; i++) {
+            const starIcon = document.createElement("i");
+            starIcon.classList.add(
+              "bi",
+              i < rating ? "bi-star-fill" : "bi-star"
+            );
+            ratingContainer.appendChild(starIcon);
+          }
+
+          feedbackText.textContent =
+            issue.feedback.comment || "No feedback comment provided.";
+        } else {
+          ratingContainer.innerHTML =
+            '<span class="text-muted">No rating provided</span>';
+          feedbackText.textContent = "No feedback available.";
+        }
+
+        // Show the popup
+        bookingDetailsPopup.style.display = "flex";
+      } catch (error) {
+        console.error("Error fetching issue details:", error);
+        alert("Failed to load issue details. Please try again.");
+      }
+    });
+  });
+
+  // Function to close the popup
+  window.closeForm = (type) => {
+    if (type === "details") {
+      bookingDetailsPopup.style.display = "none";
+    }
+  };
+
+  // Close popup if clicked outside content
+  bookingDetailsPopup.addEventListener("click", (event) => {
+    if (event.target === bookingDetailsPopup) {
+      closeForm("details");
+    }
+  });
 });

@@ -23,11 +23,6 @@ const paymentSchema = new mongoose.Schema(
     },
     paymentDeadline: {
       type: String,
-      default: Date.now().toLocaleString("en-IN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }),
     },
     paymentDate: {
       type: String,
@@ -48,8 +43,7 @@ const paymentSchema = new mongoose.Schema(
       ref: "Community",
     },
     ID: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Issue",
+      type: String,
     },
     belongTo: String,
     belongToId: {

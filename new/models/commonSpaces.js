@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Community from "./communities.js";
 
 const commonSpacesSchema = new mongoose.Schema({
+  ID: String,
   name: {
     type: String,
     required: true,

@@ -246,7 +246,7 @@
       <!-- AD SECTION -->
       <div class="adCon d-flex justify-content-center align-items-center">
         <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.length > 0) { %> <% ads.forEach(ad => { %>
+          <% if (locals.ads && ads.length> 0) { %> <% ads.forEach(ad=> { %>
           <img
             src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
             class="ad-slide"
@@ -285,34 +285,35 @@
 
           <!-- Profile Section -->
           <div id="profileSection" class="form-section">
-            <div class="profile-image-container">
-              <i class="bi bi-person"></i>
-              <div class="upload-btn" title="Upload Photo">
-                <i class="bi bi-camera"></i>
+            <form action="/manager/profile" method="POST"enctype="multipart/form-data" >
+              <div class="profile-image-container" style="object-fit: contain">
+                <img
+                  src="http://localhost:3000/<%= r.image.replace(/\\/g, '/') %>"
+                  alt=""
+                  height="200px"
+                  width="200px"
+                />
+                <div class="upload-btn" title="Upload Photo">
+                  <label for="image"><i class="bi bi-camera"> </i></label>
+                  <input
+                    type="file"
+                    name="image"
+                    id="image"
+                    name="image"
+                    hidden
+                  />
+                </div>
               </div>
-            </div>
-
-            <form>
               <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                   <div class="form-group">
                     <label for="firstName">First Name</label>
                     <input
                       type="text"
                       class="form-control"
                       id="firstName"
-                      value="John"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="lastName">Last Name</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="lastName"
-                      value="Doe"
+                      value="<%= r.name %>"
+                      name="name"
                     />
                   </div>
                 </div>
@@ -324,25 +325,20 @@
                   type="email"
                   class="form-control"
                   id="email"
-                  value="john.doe@example.com"
+                  value="<%= r.email %>"
+                  name="email"
                 />
               </div>
 
               <div class="form-group">
                 <label for="phone">Phone Number</label>
                 <input
-                  type="tel"
+                  type="text"
                   class="form-control"
                   id="phone"
-                  value="+1 (555) 123-4567"
+                  value="<%= r.contact %>"
+                  name="contact"
                 />
-              </div>
-
-              <div class="form-group">
-                <label for="address">Address</label>
-                <textarea class="form-control" id="address" rows="3">
-123 Main St, Apt 4B, New York, NY 10001</textarea
-                >
               </div>
 
               <div class="d-flex justify-content-end mt-4">
@@ -355,19 +351,29 @@
 
           <!-- Password Section -->
           <div id="passwordSection" class="form-section d-none">
-            <form>
+            <form
+              action="/manager/profile/changePassword"
+              method="POST"
+              id="passwordForm"
+            >
               <div class="form-group">
                 <label for="currentPassword">Current Password</label>
                 <input
                   type="password"
                   class="form-control"
                   id="currentPassword"
+                  name="cp"
                 />
               </div>
 
               <div class="form-group">
                 <label for="newPassword">New Password</label>
-                <input type="password" class="form-control" id="newPassword" />
+                <input
+                  type="password"
+                  class="form-control"
+                  id="newPassword"
+                  name="np"
+                />
               </div>
 
               <div class="form-group">
@@ -376,6 +382,7 @@
                   type="password"
                   class="form-control"
                   id="confirmPassword"
+                  name="cnp"
                 />
               </div>
 
@@ -437,6 +444,33 @@
             section.style.transform = "translateY(0)";
           }, index * 100);
         });
+
+        document
+          .getElementById("passwordForm")
+          .addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const cp = document.getElementById("currentPassword").value;
+            const np = document.getElementById("newPassword").value;
+            const cnp = document.getElementById("confirmPassword").value;
+
+            if (np !== cnp) {
+              alert("New Password and Confirm Password do not match.");
+              return;
+            }
+
+            const response = await fetch("/manager/profile/changePassword", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ cp, np, cnp }),
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            window.location.href = "/manager/profile";
+          });
       });
     </script>
     <script src="../../js/sidebar.js"></script>
