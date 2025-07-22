@@ -179,15 +179,16 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use("/uploads", express.static("uploads"));
-
+import AdminRouter from "./routes/adminRouter.js";
 import residentRouter from "./routes/residentRouter.js";
 import securityRouter from "./routes/securityRouter.js";
 import workerRouter from "./routes/workerRouter.js";
 import managerRouter from "./routes/managerRouter.js";
-
+import interestRouter from "./routes/InterestRouter.js"
 import Ad from "./models/Ad.js";
 
 // Routes
+app.use("/admin", auth, authorizeA, AdminRouter);
 app.use("/resident", auth, authorizeR, residentRouter);
 
 app.use("/security", auth, authorizeS, securityRouter);
@@ -196,6 +197,7 @@ app.use("/worker", auth, authorizeW, workerRouter);
 
 app.use("/manager", auth, authorizeC, managerRouter);
 
+app.use("/interest",interestRouter)
 // Start server
 const PORT = 3000;
 
@@ -204,57 +206,6 @@ app.get("/", (req, res) => {
   res.render("Landing_Page", { communities: communities.slice(0, 9) });
 });
 
-//  render register page
-app.get("/register", (req, res) => {
-  res.render("registerPage", { message: req.flash("message") });
-});
-
-app.post("/register", async (req, res) => {
-  try {
-    const { firstName, lastName, email, password, userType } = req.body;
-    console.log(req.body);
-
-    if (userType === "Resident") {
-      const result = await authenticateR(email, password, req, res);
-
-      if (result === 1) {
-        return res.redirect("/login");
-      } else {
-        return res.redirect("/register");
-      }
-    } else if (userType === "Security") {
-      const result = await authenticateS(email, password, req, res);
-
-      if (result === 1) {
-        return res.redirect("/login");
-      } else {
-        return res.redirect("/register");
-      }
-    } else if (userType === "Worker") {
-      const result = await authenticateW(email, password, req, res);
-
-      if (result === 1) {
-        return res.redirect("/login");
-      } else {
-        return res.redirect("/register");
-      }
-    } else if (userType === "Community admin") {
-      const result = await authenticateC(email, password, req, res);
-
-      if (result === 1) {
-        return res.redirect("/login");
-      } else {
-        return res.redirect("/register");
-      }
-    } else {
-      console.log("Invalid user type");
-      return res.redirect("/register");
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Server error" });
-  }
-});
 
 // Render the login page
 app.get("/login", (req, res) => {
@@ -269,7 +220,7 @@ app.post("/AdminLogin", async (req, res) => {
     console.log("Admin login attempt:", req.body);
 
     const result = await AuthenticateA(email, password, req, res);
-    return result ? res.redirect("/users/admin") : res.redirect("/AdminLogin");
+    return result ? res.redirect("/admin") : res.redirect("/AdminLogin");
   } catch (error) {
     console.error("Admin login error:", error);
     req.flash("message", "Server error during login");

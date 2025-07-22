@@ -321,11 +321,11 @@ function debounce(func, wait) {
 // Data fetching functions with improved error handling
 async function fetchPaymentsData() {
     try {
-        payments = await ApiClient.get('/users/communityManager/all-payments');
+        payments = await ApiClient.get('/manager/all-payments');
         filteredPayments = [...payments];
         
         // Apply default filter (this month)
-        filterPaymentsByTime('this-month');
+        filterPaymentsByTime('all-time');
         
         updateDashboardStats();
         renderPaymentsTable();
@@ -338,7 +338,7 @@ async function fetchPaymentsData() {
 
 async function fetchResidentsData() {
     try {
-        residents = await ApiClient.get('/users/communityManager/residents');
+        residents = await ApiClient.get('/manager/residents');
     } catch (error) {
         ErrorHandler.show('Failed to load residents data.');
         residents = [];
@@ -347,7 +347,7 @@ async function fetchResidentsData() {
 
 async function fetchCurrentUser() {
     try {
-        currentUser = await ApiClient.get('/users/communityManager/currentcManager');
+        currentUser = await ApiClient.get('/manager/currentcManager');
     } catch (error) {
         ErrorHandler.show('Failed to load user data.');
         currentUser = {};
@@ -356,7 +356,7 @@ async function fetchCurrentUser() {
 
 async function fetchCommunityData() {
     try {
-        communityData = await ApiClient.get('/users/communityManager/community-details');
+        communityData = await ApiClient.get('/manager/community-details');
     } catch (error) {
         ErrorHandler.show('Failed to load community subscription data.');
         communityData = {};
@@ -366,7 +366,7 @@ async function fetchCommunityData() {
 // In your fetchSubscriptionStatus function:
 async function fetchSubscriptionStatus() {
     try {
-        const response = await ApiClient.get('/users/communityManager/subscription-status');
+        const response = await ApiClient.get('/manager/subscription-status');
         
         // Enhanced status processing
         if (response.success && response.community) {
@@ -499,18 +499,18 @@ function filterPaymentsByTime(timeFilter) {
     switch(timeFilter) {
         case 'this-month':
             filteredPayments = payments.filter(payment => {
-                const paymentDeadline = new Date(payment.paymentDeadline);
-                return paymentDeadline.getMonth() === currentMonth && 
-                       paymentDeadline.getFullYear() === currentYear;
+                const paymentDate = new Date(payment.paymentDate);
+                return paymentDate.getMonth() === currentMonth && 
+                       paymentDate.getFullYear() === currentYear;
             });
             break;
         case 'last-month':
             filteredPayments = payments.filter(payment => {
-                const paymentDeadline = new Date(payment.paymentDeadline);
+                const paymentDate = new Date(payment.paymentDate);
                 const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
                 const yearOfLastMonth = currentMonth === 0 ? currentYear - 1 : currentYear;
-                return paymentDeadline.getMonth() === lastMonth && 
-                       paymentDeadline.getFullYear() === yearOfLastMonth;
+                return paymentDate.getMonth() === lastMonth && 
+                       paymentDate.getFullYear() === yearOfLastMonth;
             });
             break;
         case 'all':
@@ -748,7 +748,9 @@ async function handleBulkPaymentSubmit(event) {
                     paymentDeadline: new Date().toISOString()
                 };
 
-                await ApiClient.post('/users/communityManager/payments', paymentData);
+                await ApiClient.post('/manager/payments', paymentData);
+                console.log("frontend js")
+                console.log(paymentData)
                 successCount++;
             } catch (error) {
                 console.error(`Error creating payment for ${resident.residentFirstname}:`, error);
@@ -814,7 +816,7 @@ async function handleSubscriptionPaymentSubmit(event) {
             paymentType: isPendingPayment ? 'pending_completion' : isRenewal ? 'renewal' : 'upgrade'
         };
         
-        const result = await ApiClient.post('/users/communityManager/subscription-payment', paymentData);
+        const result = await ApiClient.post('/manager/subscription-payment', paymentData);
         
         const successMessage = isPendingPayment 
             ? `Payment completed successfully! Your ${plan.name} subscription is now active.`
@@ -1078,7 +1080,7 @@ async function createBulkPaymentForResident(resident, paymentData) {
             paymentDeadline: paymentData.paymentDeadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
         };
         
-        const result = await ApiClient.post('/users/communityManager/payments', fullPaymentData);
+        const result = await ApiClient.post('/manager/payments', fullPaymentData);
         return { success: true, resident: resident.residentFirstname, result };
     } catch (error) {
         console.error(`Failed to create payment for ${resident.residentFirstname}:`, error);

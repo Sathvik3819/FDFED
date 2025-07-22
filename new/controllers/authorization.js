@@ -26,7 +26,7 @@ const authorizeC = (req, res, next) => {
     next();
 };
 const authorizeA = (req, res, next) => {
-    if (req.user.userType !== "Admin") {
+    if (req.user.userType !== "admin") {
         return res.status(403).json({ "message": "Unauthorized" });
     }
     next();

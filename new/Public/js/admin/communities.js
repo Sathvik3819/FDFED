@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      const response = await fetch('/users/admin/api/communities');
+      const response = await fetch('/admin/api/communities');
       if (!response.ok) throw new Error('Failed to fetch communities');
       
       const data = await response.json();
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
       selectedCommunityId = communityId;
       
       // Fetch the latest data for this community
-      const response = await fetch(`/users/admin/api/communities/${communityId}`);
+      const response = await fetch(`/admin/api/communities/${communityId}`);
       if (!response.ok) throw new Error('Failed to fetch community details');
       
       const community = await response.json();
@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
       selectedCommunityId = communityId;
       
       // Fetch the latest data for this community
-      const response = await fetch(`/users/admin/api/communities/${communityId}`);
+      const response = await fetch(`/admin/api/communities/${communityId}`);
       if (!response.ok) throw new Error('Failed to fetch community details');
       
       const community = await response.json();
@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       if (isEditing && selectedCommunityId) {
         // Update existing community
-        response = await fetch(`/users/admin/api/communities/${selectedCommunityId}`, {
+        response = await fetch(`/admin/api/communities/${selectedCommunityId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       } else {
         // Add new community
-        response = await fetch('/users/admin/api/communities', {
+        response = await fetch('/admin/api/communities', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -423,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       if (!selectedCommunityId) return;
       
-      const response = await fetch(`/users/admin/api/communities/${selectedCommunityId}`, {
+      const response = await fetch(`/admin/api/communities/${selectedCommunityId}`, {
         method: 'DELETE'
       });
       

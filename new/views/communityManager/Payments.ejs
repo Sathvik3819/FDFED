@@ -422,9 +422,10 @@
             placeholder="Search by title or status..."
           />
           <select id="timeFilter">
+             <option value="all">All Time</option>
             <option value="this-month">This Month</option>
             <option value="last-month">Last Month</option>
-            <option value="all">All Time</option>
+           
           </select>
         </div>
 
@@ -553,79 +554,7 @@
       </div>
     </div>
 
-    <script>
-      // Basic modal functionality
-      document.addEventListener("DOMContentLoaded", function () {
-        // Bulk Payment Modal
-        const bulkPaymentBtn = document.getElementById("bulkPayment");
-        const bulkPaymentModal = document.getElementById("bulkPaymentModal");
-        const closeBulkModal = document.querySelector(
-          "#bulkPaymentModal .close"
-        );
-        const cancelBulkPayment = document.getElementById("cancelBulkPayment");
-
-        bulkPaymentBtn.addEventListener("click", function () {
-          bulkPaymentModal.style.display = "block";
-        });
-
-        closeBulkModal.addEventListener("click", function () {
-          bulkPaymentModal.style.display = "none";
-        });
-
-        cancelBulkPayment.addEventListener("click", function () {
-          bulkPaymentModal.style.display = "none";
-        });
-
-        // Subscription Payment Modal
-        const subscriptionPaymentBtn = document.getElementById(
-          "subscriptionPayment"
-        );
-        const subscriptionPaymentModal = document.getElementById(
-          "subscriptionPaymentModal"
-        );
-        const closeSubscriptionModal = document.querySelector(
-          "#subscriptionPaymentModal .close"
-        );
-        const cancelSubscriptionPayment = document.getElementById(
-          "cancelSubscriptionPayment"
-        );
-
-        subscriptionPaymentBtn.addEventListener("click", function () {
-          subscriptionPaymentModal.style.display = "block";
-        });
-
-        closeSubscriptionModal.addEventListener("click", function () {
-          subscriptionPaymentModal.style.display = "none";
-        });
-
-        cancelSubscriptionPayment.addEventListener("click", function () {
-          subscriptionPaymentModal.style.display = "none";
-        });
-
-        // Close modals when clicking outside
-        window.addEventListener("click", function (event) {
-          if (event.target === bulkPaymentModal) {
-            bulkPaymentModal.style.display = "none";
-          }
-          if (event.target === subscriptionPaymentModal) {
-            subscriptionPaymentModal.style.display = "none";
-          }
-        });
-
-        // Animation for cards
-        const cards = document.querySelectorAll(".stat-card");
-        cards.forEach((card, index) => {
-          card.style.opacity = "0";
-          card.style.transform = "translateY(20px)";
-
-          setTimeout(() => {
-            card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-            card.style.opacity = "1";
-            card.style.transform = "translateY(0)";
-          }, 200 + index * 100);
-        });
-      });
-    </script>
+    <script src="../../js/communityManager/payments.js"></script>
     <script src="../../js/sidebar.js"></script>
   </body>
 </html>

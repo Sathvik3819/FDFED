@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Payment Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+     <link rel="stylesheet" href="/css/admin/payments.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+</head>
+<body>
+     <%- include('../partials/sidebarAdmin') %>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Payment Dashboard</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="exportData()">
+                    📊 Export
+                </button>
+                <button class="btn" onclick="refreshData()">
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card success">
+                <div class="stat-card-header">
+                    <div class="stat-icon success">💰</div>
+                </div>
+                <div class="stat-value" id="totalRevenue">₹0</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-icon primary">📊</div>
+                </div>
+                <div class="stat-value" id="totalTransactions">0</div>
+                <div class="stat-label">Total Transactions</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-card-header">
+                    <div class="stat-icon warning">⏳</div>
+                </div>
+                <div class="stat-value" id="pendingPayments">0</div>
+                <div class="stat-label">Pending Payments</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-card-header">
+                    <div class="stat-icon danger">❌</div>
+                </div>
+                <div class="stat-value" id="failedPayments">0</div>
+                <div class="stat-label">Failed Payments</div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-card">
+                <h3 class="chart-title">Revenue Trend</h3>
+                <div style="height: 300px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3 class="chart-title">Payment Methods</h3>
+                <div style="height: 300px;">
+                    <canvas id="paymentMethodChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="search-box">
+                <label class="form-label">Search</label>
+                <div style="position: relative;">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search by community, transaction ID...">
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+            <div class="filter-item">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                    <option value="failed">Failed</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label class="form-label">Plan Type</label>
+                <select class="form-select" id="planFilter">
+                    <option value="">All Plans</option>
+                    <option value="basic">Basic</option>
+                    <option value="standard">Standard</option>
+                    <option value="premium">Premium</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label class="form-label">Date Range</label>
+                <select class="form-select" id="dateFilter">
+                    <option value="">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="year">This Year</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Payments Table -->
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table" id="paymentsTable">
+                    <thead>
+                        <tr>
+                            <th>Community</th>
+                            <th>Transaction ID</th>
+                            <th>Plan</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <div class="page-info" id="pageInfo">
+                    Showing 1-10 of 100 entries
+                </div>
+                <div class="page-buttons" id="pageButtons">
+                    <!-- Dynamic pagination buttons -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Details Modal -->
+    <div class="modal-backdrop" id="paymentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Payment Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+<script src="/js/admin/payment.js"></script>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Ease - Community Manager Interest Form</title>
+    <link rel="stylesheet" href="../CSS/registerPage.css">
+    <style>
+        .login-link {
+            right: 0px;
+            font-size: 14px;
+            color: black;
+            text-decoration: none;
+            font-weight: bold;
+        }
+      
+        .login-link:hover {
+            text-decoration: underline;
+        }
+        
+        .community-section {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        
+        .continue-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .continue-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .verification-note {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
+    </style>
+</head>
+
+<body>
+    <% if (message && message.length > 0) { %>
+        <div class="alert">
+            <%= message %>
+        </div>
+    <% } %>
+    
+    <div class="container">
+        <div class="left-panel">
+            <div class="logo">
+                <img src="../imgs/Logo.png" alt="URBAN EASE" height="30px" width="130px">
+            </div>
+            <p class="tagline">Community is built on care and trust. We're here to help you manage your community effectively.</p>
+        </div>
+
+        <div class="div1"></div>
+
+        <div class="right-panel">
+            <h2>Community Manager Interest Form</h2>
+            <p class="subtitle">Express your interest in becoming a Community Manager</p>
+
+            <form id="interestForm" method="POST" action="/interest/submit">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name *</label>
+                        <input type="text" id="firstName" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name *</label>
+                        <input type="text" id="lastName" name="lastName" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number *</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                </div>
+
+                <p class="verification-note">
+                    Note: Our team will review your application and contact you within 2 business days.
+                </p>
+
+                <button type="submit" class="continue-btn">Submit Interest Form</button>
+            </form>
+              
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="/login" class="login-link">
+                    Already have an account? Login here
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Basic client-side validation
+        document.getElementById('interestForm').addEventListener('submit', function(e) {
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            
+            // Simple phone validation
+            if (!/^[\d\s\+\-\(\)]{10,15}$/.test(phone)) {
+                alert('Please enter a valid phone number');
+                e.preventDefault();
+                return;
+            }
+            
+            // Simple email validation
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert('Please enter a valid email address');
+                e.preventDefault();
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -11,26 +11,17 @@ class PaymentController {
     static async getAllPayments(req, res) {
         try {
             // Step 1: Get community manager ID from the logged-in user
-            const managerId = req.user.id;
-    
-            // Step 2: Fetch the manager and get the assigned community
-            const manager = await CommunityManager.findById(managerId);
             
-            if (!manager) {
-                return res.status(404).json({ message: 'Community Manager not found' });
-            }
     
-            const communityId = manager.assignedCommunity;
-            
-            if (!communityId) {
-                return res.status(400).json({ message: 'No community assigned to this manager' });
-            }
+            const communityId=req.user.community;
     
             // Step 3: Find all payments for this community
             const payments = await Payment.find({ communityId })
                 .populate('receiver', 'name')
                 .populate('sender', 'name flatNumber')
                 .sort({ paymentDeadline: -1 }); // newest first
+            console.log(payments)
+
             return res.status(200).json(payments);
         } catch (error) {
             console.error('Error fetching payments:', error);
@@ -82,15 +73,10 @@ class PaymentController {
             if (!title || !senderId || !receiverId || !amount) {
                 return res.status(400).json({ message: 'Missing required fields' });
             }
+            console.log(req.body)
+            
     
-            // Step 1: Get communityId from manager
-            const managerId = req.user.id;
-            const manager = await CommunityManager.findById(managerId);
-            if (!manager || !manager.assignedCommunity) {
-                return res.status(400).json({ message: 'Invalid community manager or no community assigned' });
-            }
-    
-            const communityId = manager.assignedCommunity;
+            const communityId = req.user.community;
     
             // Step 2: Create payment
             let payment = new Payment({
@@ -104,7 +90,7 @@ class PaymentController {
                 status: "Pending",
                 remarks: remarks || ""
             });
-         
+            console.log(payment)
             await payment.save();
     
             // Step 3: Populate sender and receiver
@@ -194,27 +180,15 @@ class PaymentController {
     static async getAllResidents(req, res) {
         try {
             // Step 1: Get community manager ID from the logged-in user
-            const managerId = req.user.id;
-            
-            // Step 2: Fetch the manager and populate the communityAssigned field
-            const manager = await CommunityManager.findById(managerId)
-                .populate('assignedCommunity'); // assumes communityAssigned is a ref
-                
-            if (!manager) {
-                return res.status(404).json({ message: 'Community Manager not found' });
-            }
+           
     
-            if (!manager.assignedCommunity) {
-                return res.status(400).json({ message: 'No community assigned to this manager' });
-            }
-    
-            const communityId = manager.assignedCommunity._id;
+            const communityId = req.user.community
             
             // Step 3: Find all residents linked to that community
             const residents = await Resident.find({ 
                 community: communityId
             }).select('residentFirstname flatNo email contact');
-        
+            
             return res.status(200).json(residents);
         } catch (error) {
             console.error('Error fetching residents:', error);

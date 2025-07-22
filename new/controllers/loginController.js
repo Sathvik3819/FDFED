@@ -57,7 +57,7 @@ async function authenticateUser(model, email, password, req, res) {
 
         return { 
             success: 1, 
-            redirect: '/users/communityManager/new-community' 
+            redirect: 'manager/new-community' 
         };
     }
     

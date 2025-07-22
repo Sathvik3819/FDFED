@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading indicator
         managersTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Loading managers...</td></tr>';
         
-        const response = await fetch('/users/admin/api/community-managers');
+        const response = await fetch('/admin/api/community-managers');
         const data = await response.json();
         
         if (data.success) {
@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         openModal(viewManagerModal);
         
-        const response = await fetch(`/users/admin/api/community-managers/${managerId}`);
+        const response = await fetch(`/admin/api/community-managers/${managerId}`);
         const data = await response.json();
         
         if (data.success) {
@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('modalTitle').textContent = 'Loading Manager...';
         openModal(managerModal);
         
-        const response = await fetch(`/users/admin/api/community-managers/${managerId}`);
+        const response = await fetch(`/admin/api/community-managers/${managerId}`);
         const data = await response.json();
         
         if (data.success) {
@@ -408,8 +408,8 @@ document.addEventListener('DOMContentLoaded', function() {
       // Determine if this is a create or update operation
       const isUpdate = !!currentManagerId;
       const url = isUpdate 
-        ? `/users/admin/api/community-managers/${currentManagerId}` 
-        : '/users/admin/api/community-managers';
+        ? `/admin/api/community-managers/${currentManagerId}` 
+        : '/admin/api/community-managers';
       const method = isUpdate ? 'PUT' : 'POST';
       
       try {
@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
       confirmDeleteBtn.disabled = true;
       
       try {
-        const response = await fetch(`/users/admin/api/community-managers/${currentManagerId}`, {
+        const response = await fetch(`/admin/api/community-managers/${currentManagerId}`, {
           method: 'DELETE'
         });
         

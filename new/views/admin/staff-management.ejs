@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Ease - Staff Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin/staff-management.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <%- include('../partials/sidebarAdmin') %>
+
+        <!-- Main content -->
+        <div class="main-content">
+            <div class="header">
+                <div class="d-flex align-items-center">
+                    <span class="menu-toggle" id="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </span>
+                    <h1>Staff Management</h1>
+                </div>
+            </div>
+
+            <!-- Filters section -->
+            <div class="filters-section">
+                <div class="filter-item search-box">
+                    <input type="text" class="search-input" id="globalSearchInput" placeholder="Search staff...">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                <div class="filter-item">
+                    <select class="form-select" id="communityFilter">
+                        <option value="">All Communities</option>
+                        <% 
+                        // Get unique communities
+                        const communityNames = [];
+                        communities.forEach(community => {
+                            if (!communityNames.includes(community.name)) {
+                                communityNames.push(community.name);
+                            }
+                        });
+                        %>
+                        <% communityNames.forEach(name => { %>
+                        <option value="<%= name %>"><%= name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Staff Management Sections -->
+            <div class="staff-grid">
+                <!-- Residents Section -->
+                <div class="staff-section residents-section">
+                    <div class="section-header">
+                        <h2>Residents</h2>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" id="addResidentBtn">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Resident</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Flat/Block</th>
+                                        <th>Email</th>
+                                        <th>Contact</th>
+                                        <th>Community</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="residentsTableBody">
+                                    <% if (residents.length === 0) { %>
+                                    <tr>
+                                        <td colspan="6" class="text-center">No residents found</td>
+                                    </tr>
+                                    <% } else { %>
+                                    <% residents.forEach(resident => { %>
+                                    <tr data-id="<%= resident._id %>" data-type="resident">
+                                        <td><%= resident.residentFirstname %> <%= resident.residentLastname %></td>
+                                        <td>Flat <%= resident.flatNo %>, Block <%= resident.blockNo %></td>
+                                        <td><%= resident.email %></td>
+                                        <td><%= resident.contact %></td>
+                                        <td><%= resident.community ? resident.community.name : 'Unassigned' %></td>
+                                        <td>
+                                            <div class="table-actions">
+                                                <button class="btn btn-sm btn-icon btn-view" data-type="resident" data-id="<%= resident._id %>" aria-label="View resident">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-icon btn-edit" data-type="resident" data-id="<%= resident._id %>" aria-label="Edit resident">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-icon btn-delete" data-type="resident" data-id="<%= resident._id %>" aria-label="Delete resident">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination" id="residentsPagination">
+                            <div class="page-info">
+                                Showing <span class="start-record">1</span> to <span class="end-record"><%= Math.min(residents.length, 5) %></span> of <span class="total-records"><%= residents.length %></span> entries
+                            </div>
+                            <div class="page-buttons">
+                                <button class="page-btn disabled prev-page" aria-label="Previous page">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <!-- Page buttons generated by JS -->
+                                <button class="page-btn next-page" aria-label="Next page">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Section -->
+                <div class="staff-section security-section">
+                    <div class="section-header">
+                        <h2>Security Personnel</h2>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" id="addSecurityBtn">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Security</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Contact</th>
+                                        <th>Shift</th>
+                                        <th>Community</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="securityTableBody">
+                                    <% if (security.length === 0) { %>
+                                    <tr>
+                                        <td colspan="6" class="text-center">No security personnel found</td>
+                                    </tr>
+                                    <% } else { %>
+                                    <% security.forEach(guard => { %>
+                                    <tr data-id="<%= guard._id %>" data-type="security">
+                                        <td><%= guard.name %></td>
+                                        <td><%= guard.email %></td>
+                                        <td><%= guard.contact %></td>
+                                        <td><%= guard.Shift %></td>
+                                        <td><%= guard.community ? guard.community.name : 'Unassigned' %></td>
+                                        <td>
+                                            <div class="table-actions">
+                                                <button class="btn btn-sm btn-icon btn-view" data-type="security" data-id="<%= guard._id %>" aria-label="View security">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-icon btn-edit" data-type="security" data-id="<%= guard._id %>" aria-label="Edit security">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-icon btn-delete" data-type="security" data-id="<%= guard._id %>" aria-label="Delete security">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination" id="securityPagination">
+                            <div class="page-info">
+                                Showing <span class="start-record">1</span> to <span class="end-record"><%= Math.min(security.length, 5) %></span> of <span class="total-records"><%= security.length %></span> entries
+                            </div>
+                            <div class="page-buttons">
+                                <button class="page-btn disabled prev-page" aria-label="Previous page">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <!-- Page buttons generated by JS -->
+                                <button class="page-btn next-page" aria-label="Next page">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workers Section -->
+                <div class="staff-section workers-section">
+                    <div class="section-header">
+                        <h2>Maintenance Workers</h2>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" id="addWorkerBtn">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Worker</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Job Role</th>
+                                        <th>Contact</th>
+                                        <th>Status</th>
+                                        <th>Community</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="workersTableBody">
+                                    <% if (workers.length === 0) { %>
+                                    <tr>
+                                        <td colspan="6" class="text-center">No workers found</td>
+                                    </tr>
+                                    <% } else { %>
+                                    <% workers.forEach(worker => { %>
+                                    <tr data-id="<%= worker._id %>" data-type="worker">
+                                        <td><%= worker.name %></td>
+                                        <td><%= worker.jobRole %></td>
+                                        <td><%= worker.contact %></td>
+                                        <td><span class="status-badge status-<%= worker.availabilityStatus.toLowerCase() %>"><%= worker.availabilityStatus %></span></td>
+                                        <td><%= worker.community ? worker.community.name : 'Unassigned' %></td>
+                                        <td>
+                                            <div class="table-actions">
+                                                <button class="btn btn-sm btn-icon btn-view" data-type="worker" data-id="<%= worker._id %>" aria-label="View worker">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-icon btn-edit" data-type="worker" data-id="<%= worker._id %>" aria-label="Edit worker">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-icon btn-delete" data-type="worker" data-id="<%= worker._id %>" aria-label="Delete worker">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination" id="workersPagination">
+                            <div class="page-info">
+                                Showing <span class="start-record">1</span> to <span class="end-record"><%= Math.min(workers.length, 5) %></span> of <span class="total-records"><%= workers.length %></span> entries
+                            </div>
+                            <div class="page-buttons">
+                                <button class="page-btn disabled prev-page" aria-label="Previous page">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <!-- Page buttons generated by JS -->
+                                <button class="page-btn next-page" aria-label="Next page">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Resident Modal -->
+    <div class="modal-backdrop" id="residentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="residentModalTitle">Add New Resident</h5>
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="residentForm">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="residentFirstname">First Name</label>
+                            <input type="text" class="form-control" id="residentFirstname" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="residentLastname">Last Name</label>
+                            <input type="text" class="form-control" id="residentLastname" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="flatNo">Flat Number</label>
+                            <input type="text" class="form-control" id="flatNo" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="blockNo">Block Number</label>
+                            <input type="text" class="form-control" id="blockNo" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="residentEmail">Email</label>
+                        <input type="email" class="form-control" id="residentEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="residentPassword">Password</label>
+                        <input type="password" class="form-control" id="residentPassword">
+                        <small class="form-text text-muted" id="residentPasswordNote">Leave empty to keep current password (when editing)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="residentContact">Contact</label>
+                        <input type="text" class="form-control" id="residentContact" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveResident">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Modal -->
+    <div class="modal-backdrop" id="securityModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="securityModalTitle">Add New Security Personnel</h5>
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="securityForm">
+                    <div class="form-group">
+                        <label for="securityName">Name</label>
+                        <input type="text" class="form-control" id="securityName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="securityEmail">Email</label>
+                        <input type="email" class="form-control" id="securityEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="securityPassword">Password</label>
+                        <input type="password" class="form-control" id="securityPassword">
+                        <small class="form-text text-muted" id="securityPasswordNote">Leave empty to keep current password (when editing)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="securityContact">Contact</label>
+                        <input type="text" class="form-control" id="securityContact" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="securityAddress">Address</label>
+                        <textarea class="form-control" id="securityAddress" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="securityShift">Shift</label>
+                        <select class="form-select" id="securityShift" required>
+                            <option value="Day">Day</option>
+                            <option value="Night">Night</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveSecurity">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Worker Modal -->
+    <div class="modal-backdrop" id="workerModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="workerModalTitle">Add New Maintenance Worker</h5>
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="workerForm">
+                    <div class="form-group">
+                        <label for="workerName">Name</label>
+                        <input type="text" class="form-control" id="workerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="workerEmail">Email</label>
+                        <input type="email" class="form-control" id="workerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="workerPassword">Password</label>
+                        <input type="password" class="form-control" id="workerPassword">
+                        <small class="form-text text-muted" id="workerPasswordNote">Leave empty to keep current password (when editing)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="workerContact">Contact</label>
+                        <input type="text" class="form-control" id="workerContact" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="workerAddress">Address</label>
+                        <textarea class="form-control" id="workerAddress" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="workerJobRole">Job Role</label>
+                        <input type="text" class="form-control" id="workerJobRole" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="workerStatus">Availability Status</label>
+                        <select class="form-select" id="workerStatus" required>
+                            <option value="Available">Available</option>
+                            <option value="Busy">Busy</option>
+                            <option value="On Leave">On Leave</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="workerSalary">Salary</label>
+                        <input type="number" class="form-control" id="workerSalary" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveWorker">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Details Modal -->
+    <div class="modal-backdrop" id="viewDetailsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewDetailsTitle">Staff Details</h5>
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="viewDetailsContent">
+                    <!-- Content will be populated dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="editFromView">Edit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-backdrop" id="deleteConfirmationModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteItemName">this item</strong>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toastNotification">
+        <div class="toast-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="toast-message">Operation successful!</div>
+    </div>
+
+    <script src="/js/admin/staff-management.js"></script>
+</body>
+
+</html>
