@@ -10,8 +10,8 @@ const visitorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  email:{
-    type:String
+  email: {
+    type: String,
   },
   purpose: {
     type: String,
@@ -21,17 +21,17 @@ const visitorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  entryDate:{
-    type:String
+  entryDate: {
+    type: Date,
   },
-  exitdate:{
-    type:String
+  exitdate: {
+    type: Date,
   },
   entryTime: {
-    type: String,
+    type: Date,
   },
   exitTime: {
-    type: String,
+    type: Date,
   },
   verifiedByResident: {
     type: Boolean,

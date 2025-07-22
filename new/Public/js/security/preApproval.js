@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Close popup and refresh the page
       closePopup();
-      window.location.reload();
+     
     } catch (error) {
       console.error("Error:", error);
       alert(

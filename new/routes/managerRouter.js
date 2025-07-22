@@ -20,6 +20,8 @@ import Ad from "../models/Ad.js";
 import Payment from "../models/payment.js";
 import visitor from "../models/visitors.js";
 
+import {sendPassword} from '../controllers/OTP.js'
+
 function generateCustomID(userEmail, facility, countOrRandom = null) {
   const id = userEmail.toUpperCase().slice(0, 2);
 
@@ -261,6 +263,16 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
         community: req.user.community,
       });
 
+      const password = await sendPassword(email);
+      console.log(password);
+      
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+
+      r.password = hashedPassword;
+
+      await r.save();
+
       console.log("new resident : ", r);
     }
 
@@ -280,6 +292,17 @@ managerRouter.get("/userManagement/resident/:id", async (req, res) => {
 
   res.status(200).json({ success: true, r });
 });
+
+
+managerRouter.delete("/userManagement/resident/:id", async (req, res) => {
+  const id = req.params.id;
+
+  const r = await Resident.deleteOne({_id:id});
+
+
+  res.status(200).json({ ok: true});
+});
+
 
 managerRouter.post("/userManagement/security", async (req, res) => {
   try {

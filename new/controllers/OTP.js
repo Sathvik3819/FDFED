@@ -59,7 +59,7 @@ function verify(email, otp) {
 
 function generateSecurePassword(email) {
   const randomChars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+{}[]";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&";
   const randomLength = 8;
 
   const emailPrefix = email.split("@")[0].slice(0, 4);
@@ -75,7 +75,7 @@ function generateSecurePassword(email) {
   return password;
 }
 
-async function sendPassword(email, password) {
+async function sendPassword(email) {
   const password = generateSecurePassword(email);
 
   const transporter = nodemailer.createTransport({
@@ -98,7 +98,7 @@ async function sendPassword(email, password) {
       <p>Dear User,</p>
       <p>We received a request to log in or perform a secure action using your account.</p>
       <p><strong style="font-size: 18px;">🔐 PASSWORD : ${password}</strong></p>
-      <p>Please do not share this password with anyone.<b style="font-size: 20px;">Log in using this password and set your custom password to ensure security</b>.</p>
+      <p>Please do not share this password with anyone.\n<b style="font-size: 20px;">Log in using this password and set your custom password to ensure security</b>.</p>
       <br/>
       <p>Best regards,<br/>Urban ease<br/>\nUser Management System</p>
     </div>
@@ -107,8 +107,10 @@ async function sendPassword(email, password) {
 
   const info = await transporter.sendMail(mes, (err, info) => {
     if (err) console.log(err);
-    else console.log("password sent to email");
+    else console.log("password sent to email:",pass);
   });
+
+  return password;
 }
 
 export { OTP, verify, sendPassword };

@@ -2,4 +2,5 @@
 => A code must verified by security from pre approved visitor
 => notifications
 => payment remainders and overdues
+=> pop up for details in security dashboards
 => dummy password sent to user when new user created

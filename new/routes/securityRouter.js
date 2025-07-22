@@ -12,7 +12,7 @@ import visitor from "../models/visitors.js";
 import mongoose from "mongoose";
 
 import multer from "multer";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -34,9 +34,9 @@ securityRouter.post("/addVisitor", async (req, res) => {
     visitorType,
     fullName,
     contact,
-    visitDate,
+  
     email,
-    visitTime,
+   
     vehicleNo,
   } = req.body;
 
@@ -46,8 +46,8 @@ securityRouter.post("/addVisitor", async (req, res) => {
       contactNumber: contact,
       purpose: visitorType,
       vehicleNumber: vehicleNo,
-      entryDate: visitDate,
-      entryTime: visitTime,
+      entryDate: new Date(Date.now()),
+      entryTime: new Date(Date.now()),
       email,
       addedBy: req.user.id,
       community: req.user.community,
@@ -82,11 +82,12 @@ securityRouter.get("/preApproval", async (req, res) => {
   const pa = await VisitorPreApproval.find({
     community: req.user.community,
   }).populate("approvedBy");
+  
   console.log(pa);
+  
 
   const ads = await Ad.find({ community: req.user.community });
 
-  console.log(ads);
 
   res.render("security/preApproval", { path: "pa", pa, ads });
 });
@@ -114,19 +115,39 @@ securityRouter.post("/preApproval/action", async (req, res) => {
     }
 
     // Fetch the visitor record
-    const visitor = await VisitorPreApproval.findById(ID);
-    if (!visitor) {
+    const vis = await VisitorPreApproval.findById(ID);
+    if (!vis) {
       return res
         .status(404)
         .json({ success: false, message: "Visitor not found" });
     }
 
-    // Update fields safely
-    visitor.status = status.toLowerCase(); // "approved" or "rejected"
-    visitor.isCheckedIn = status === "Approved"; // only check-in if approved
-    visitor.vehicleNumber = vehicleNumber; // optional: store vehicleNumber
+    vis.status = status.toLowerCase(); 
+    vis.isCheckedIn = status === "Approved"; 
+    vis.vehicleNumber = vehicleNumber; 
 
-    await visitor.save();
+    await vis.save();
+
+    console.log(vis.status);
+    
+
+    if(vis.status === "approved"){
+      const v = await visitor.create({
+      name: vis.visitorName,
+      contactNumber: vis.contactNumber,
+      email: vis.email,
+      purpose: vis.purpose,
+      entryDate: new Date(Date.now()),
+      entryTime:new Date(Date.now()),
+      vehicleNumber:vehicleNumber,
+      verifiedByResident:true,
+      community : req.user.community,
+      addedBy:req.user.id,
+      status:"active",
+    });
+    console.log("new visitor by preapproval : "+ v);
+    
+    }
 
     res.status(200).json({
       success: true,
@@ -149,21 +170,12 @@ securityRouter.get("/visitorManagement", async (req, res) => {
   console.log(ads);
 
   visitors.sort((a, b) => {
-    const dateA = new Date(
-      a.entryDate.split("/").reverse().join("-") + " " + a.entryTime
-    );
-    const dateB = new Date(
-      b.entryDate.split("/").reverse().join("-") + " " + b.entryTime
-    );
-    const timeA = new Date("1970/01/01 " + a.entryTime);
-    const timeB = new Date("1970/01/01 " + b.entryTime);
+  const dateTimeA = new Date(a.entryDate);
+  const dateTimeB = new Date(b.entryDate);
 
-    if (dateA.toDateString() === dateB.toDateString()) {
-      return timeB - timeA;
-    }
+  return dateTimeB - dateTimeA; 
+});
 
-    return dateB - dateA;
-  });
 
   console.log(visitors);
 
@@ -184,30 +196,16 @@ securityRouter.get("/visitorManagement/:action/:id", async (req, res) => {
         .json({ success: false, message: "Visitor not found" });
     }
 
+
+
     if (action === "checked-in") {
       v.status = "active";
-      v.entryTime = new Date().toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-      v.entryDate = new Date().toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
+      v.entryTime = new Date(Date.now())
+      v.entryDate = new Date(Date.now())
     } else if (action === "checked-out") {
       v.status = "checkedOut";
-      v.exitTime = new Date().toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-      v.exitdate = new Date().toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
+      v.exitTime = new Date(Date.now())
+      v.exitdate = new Date(Date.now())
     } else {
       return res
         .status(400)
@@ -237,7 +235,7 @@ securityRouter.post("/profile", upload.single("image"), async (req, res) => {
 
   let image = null;
 
-  if(req.file){
+  if (req.file) {
     image = req.file.path;
   }
 
@@ -246,7 +244,7 @@ securityRouter.post("/profile", upload.single("image"), async (req, res) => {
   r.contact = contact;
   r.address = address;
 
-  if(image){
+  if (image) {
     r.image = image;
   }
 
@@ -255,8 +253,7 @@ securityRouter.post("/profile", upload.single("image"), async (req, res) => {
   res.redirect("/worker/profile");
 });
 
-
-securityRouter.post("/change-password",async (req,res)=>{
+securityRouter.post("/change-password", async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   const security = await Worker.findById(req.user.id);
 
@@ -266,7 +263,10 @@ securityRouter.post("/change-password",async (req,res)=>{
 
   const isMatch = await bcrypt.compare(currentPassword, security.password);
   if (!isMatch) {
-    return res.json({ success: false, message: "Current password does not match." });
+    return res.json({
+      success: false,
+      message: "Current password does not match.",
+    });
   }
 
   const salt = await bcrypt.genSalt(10);
@@ -274,6 +274,6 @@ securityRouter.post("/change-password",async (req,res)=>{
   await security.save();
 
   res.json({ ok: true, message: "Password changed successfully." });
-})
+});
 
 export default securityRouter;

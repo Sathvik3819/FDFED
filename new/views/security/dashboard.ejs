@@ -287,8 +287,8 @@
                     <% visitors.forEach(v => { %>
                      <div class="activity-entry">
                     <span class="badge badge-entry <%= v.status==="active" ? "entry-in":"entry-out" %>"><%= v.status==="active" ? "Entered":"Exited" %></span>
-                    <p class="m-0"><b>V098 - James Wilson</b> entered through Gate 1</p>
-                    <div class="entry-time">Today, 09:42 AM</div>
+                    <p class="m-0"><b><%= v.name %></b> <%= v.status==="active" ? "Entered":"Exited" %> through Gate 1</p>
+                    <div class="entry-time"><%= v.status==="active" ? new Date(v.entryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + " at " + new Date(v.entryTime).toLocaleTimeString('en-US', {hour: '2-digit' ,minute:'2-digit' , hour12:true}) : new Date(v.exitdate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + " at " + new Date(v.exitTime).toLocaleTimeString('en-US', {hour: '2-digit' ,minute:'2-digit' , hour12:true})  %></div>
                 </div>
                     <% }) %>
                  

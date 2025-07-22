@@ -2,7 +2,6 @@ import Resident from '../models/resident.js';
 import Security from '../models/security.js';
 import communityManager from '../models/cManager.js';
 import Worker from '../models/workers.js';
-import bcrypt from 'bcrypt';
 
 async function registerUser(model, email, password, req , res) {
     console.log(email);
@@ -16,8 +15,7 @@ async function registerUser(model, email, password, req , res) {
         return 0;  
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    user.password = hashedPassword;
+    
     await user.save(); 
 
     return 1;  

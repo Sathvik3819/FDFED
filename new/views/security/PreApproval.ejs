@@ -102,8 +102,8 @@
       }
 
       .card-header {
-        background: rgb(127, 204, 234);
-        color: white;
+        background: rgba(255, 68, 0, 0.203);
+        color: rgb(43, 43, 43);
         padding: 15px;
         font-weight: 500;
         display: flex;
@@ -419,7 +419,7 @@
         <!-- Requests Cards -->
         <div id="tab-requests">
           <div class="cards-container">
-            <% if (locals.pa && pa.filter(v => v.status === 'Pending').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="pending" ) { %>
+            <% if (locals.pa && pa.filter(v => v.status === 'pending').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="pending" ) { %>
             <div class="visitor-card"
               data-id="<%= p._id %>"
               data-name="<%= p.visitorName %>"

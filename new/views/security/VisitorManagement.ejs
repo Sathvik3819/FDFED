@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="/../../css/nav.css" />
 
     <style>
+     
+
       .section-title {
         position: relative;
         padding-bottom: 15px;
@@ -238,6 +240,7 @@
         transition: var(--transition);
         border-top: 4px solid;
         position: relative;
+        overflow: hidden;
       }
 
       .visitor-card.pending {
@@ -310,6 +313,16 @@
       .detail-value {
         color: var(--gray);
         flex: 1;
+      }
+
+      .entry-type-value {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
       }
 
       .visitor-actions {
@@ -413,13 +426,13 @@
         .export-btn {
           width: 100%;
         }
-      }
 
-      @media (max-width: 576px) {
         .visitor-cards-container {
           grid-template-columns: 1fr;
         }
+      }
 
+      @media (max-width: 576px) {
         .visitor-card {
           padding: 15px;
         }
@@ -598,17 +611,52 @@
 
             <div class="visitor-details">
               <div class="detail-row">
+                <div class="detail-label">Entry Type:</div>
+                <div class="detail-value">
+                  <span class="entry-type-value">
+                    <% if (v.verifiedByResident) { %>
+                    <i class="bi bi-patch-check"></i> Pre-Approved <% if
+                    (v.approvedBy) { %>
+                    <span class="approver">(by <%= v.approvedBy %>)</span>
+                    <% } %> <% } else { %>
+                    <i class="bi bi-door-open"></i> Direct Entry <% } %>
+                  </span>
+                </div>
+              </div>
+              <div class="detail-row">
                 <div class="detail-label">Purpose:</div>
                 <div class="detail-value"><%= v.purpose %></div>
               </div>
               <div class="detail-row">
-                <div class="detail-label">Date:</div>
-                <div class="detail-value"><%= v.entryDate %></div>
+                <div class="detail-label">Entry Date:</div>
+                <div class="detail-value">
+                  <%= new Date(v.entryDate).toLocaleDateString('en-US', { year:
+                  'numeric', month: 'long', day: 'numeric' }) %>
+                </div>
               </div>
               <div class="detail-row">
-                <div class="detail-label">Time:</div>
-                <div class="detail-value"><%= v.entryTime %></div>
+                <div class="detail-label">Entry Time:</div>
+                <div class="detail-value">
+                  <%= new Date(v.entryTime).toLocaleTimeString('en-US', { hour:
+                  '2-digit', minute: '2-digit', hour12: true }) %>
+                </div>
               </div>
+              <% if (v.exitdate) { %>
+              <div class="detail-row">
+                <div class="detail-label">Exit Date:</div>
+                <div class="detail-value">
+                  <%= new Date(v.exitdate).toLocaleDateString('en-US', { year:
+                  'numeric', month: 'long', day: 'numeric' }) %>
+                </div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Exit Time:</div>
+                <div class="detail-value">
+                  <%= new Date(v.exitTime).toLocaleTimeString('en-US', { hour:
+                  '2-digit', minute: '2-digit', hour12: true }) %>
+                </div>
+              </div>
+              <% } %>
             </div>
 
             <div class="visitor-actions">
@@ -655,16 +703,31 @@
 
             <div class="visitor-details">
               <div class="detail-row">
+                <div class="detail-label">Entry Type:</div>
+                <div class="detail-value">
+                  <span class="entry-type-value">
+                    <% if (v.verifiedByResident) { %>
+                    <i class="bi bi-patch-check"></i> Pre-Approved <% if
+                    (v.approvedBy) { %>
+                    <span class="approver">(by <%= v.approvedBy %>)</span>
+                    <% } %> <% } else { %>
+                    <i class="bi bi-door-open"></i> Direct Entry <% } %>
+                  </span>
+                </div>
+              </div>
+              <div class="detail-row">
                 <div class="detail-label">Purpose:</div>
                 <div class="detail-value"><%= v.purpose %></div>
               </div>
               <div class="detail-row">
-                <div class="detail-label">Date:</div>
-                <div class="detail-value"><%= v.entryDate %></div>
+                <div class="detail-label">Entry Date:</div>
+                <div class="detail-value"><%= new Date(v.entryDate).toLocaleDateString('en-US', { year:
+                  'numeric', month: 'long', day: 'numeric' }) %></div>
               </div>
               <div class="detail-row">
-                <div class="detail-label">Time:</div>
-                <div class="detail-value"><%= v.entryTime %></div>
+                <div class="detail-label">Entry Time:</div>
+                <div class="detail-value"><%= new Date(v.entryTime).toLocaleTimeString('en-US', { hour:
+                  '2-digit', minute: '2-digit', hour12: true }) %></div>
               </div>
             </div>
 
@@ -702,16 +765,49 @@
 
             <div class="visitor-details">
               <div class="detail-row">
+                <div class="detail-label">Entry Type:</div>
+                <div class="detail-value">
+                  <span class="entry-type-value">
+                    <% if (v.verifiedByResident) { %>
+                    <i class="bi bi-patch-check"></i> Pre-Approved <% if
+                    (v.approvedBy) { %>
+                    <span class="approver">(by <%= v.approvedBy %>)</span>
+                    <% } %> <% } else { %>
+                    <i class="bi bi-door-open"></i> Direct Entry <% } %>
+                  </span>
+                </div>
+              </div>
+              <div class="detail-row">
                 <div class="detail-label">Purpose:</div>
                 <div class="detail-value"><%= v.purpose %></div>
               </div>
               <div class="detail-row">
-                <div class="detail-label">Date:</div>
-                <div class="detail-value"><%= v.entryDate %></div>
+                <div class="detail-label">Entry Date:</div>
+                <div class="detail-value">
+                  <%= new Date(v.entryDate).toLocaleDateString('en-US', { year:
+                  'numeric', month: 'long', day: 'numeric' }) %>
+                </div>
               </div>
               <div class="detail-row">
-                <div class="detail-label">Time:</div>
-                <div class="detail-value"><%= v.entryTime %></div>
+                <div class="detail-label">Entry Time:</div>
+                <div class="detail-value">
+                  <%= new Date(v.entryTime).toLocaleTimeString('en-US', { hour:
+                  '2-digit', minute: '2-digit', hour12: true }) %>
+                </div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Exit Date:</div>
+                <div class="detail-value">
+                  <%= new Date(v.exitdate).toLocaleDateString('en-US', { year:
+                  'numeric', month: 'long', day: 'numeric' }) %>
+                </div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Exit Time:</div>
+                <div class="detail-value">
+                  <%= new Date(v.exitTime).toLocaleTimeString('en-US', { hour:
+                  '2-digit', minute: '2-digit', hour12: true }) %>
+                </div>
               </div>
             </div>
           </div>
