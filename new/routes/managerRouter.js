@@ -267,7 +267,6 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
       console.log(password);
       
       const hashedPassword = await bcrypt.hash(password, 10);
-      
 
       r.password = hashedPassword;
 

@@ -105,6 +105,7 @@ async function sendPassword(email) {
   `,
   };
 
+  
   const info = await transporter.sendMail(mes, (err, info) => {
     if (err) console.log(err);
     else console.log("password sent to email:",pass);
