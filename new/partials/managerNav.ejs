@@ -41,3 +41,9 @@
     <h5><%= alert[0] %></h5>
   </div>
 <% } %>
+<script>
+  document.querySelector(".log-out").addEventListener("click", () => {
+  window.history.replaceState(null, '', '/');
+    window.location.href = "/logout";
+  });
+</script>

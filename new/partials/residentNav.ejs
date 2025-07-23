@@ -35,3 +35,9 @@
   </button>
 </div>
 </nav>
+<script>
+  document.querySelector(".log-out").addEventListener("click", () => {
+  window.history.replaceState(null, '', '/');
+    window.location.href = "/logout";
+  });
+</script>
