@@ -22,10 +22,10 @@ const paymentSchema = new mongoose.Schema(
       min: 0,
     },
     paymentDeadline: {
-      type: String,
+      type: Date,
     },
     paymentDate: {
-      type: String,
+      type: Date,
     },
     paymentMethod: {
       type: String,

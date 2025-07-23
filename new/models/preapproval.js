@@ -24,6 +24,7 @@ const visitorPreApprovalSchema = new mongoose.Schema(
       default: "pending",
     },
     vehicleNo: String,
+    OTP: String,
   },
   { timestamps: true }
 );

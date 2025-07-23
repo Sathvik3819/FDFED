@@ -12,6 +12,8 @@ import { authorizeR } from "../controllers/authorization.js";
 import Ad from "../models/Ad.js";
 import communities from "../models/communities.js";
 
+import {OTP} from '../controllers/OTP.js'
+
 import multer from "multer";
 
 function generateCustomID(userEmail, facility, countOrRandom = null) {
@@ -414,7 +416,8 @@ residentRouter.get("/payment/:paymentId", async (req, res) => {
     const payment = await Payment.findOne({
       _id: paymentId,
       sender: userId,
-    });
+    }).populate("receiver")
+    .populate("sender");
 
     if (!payment) {
       return res.status(404).json({ error: "Payment receipt not found" });
@@ -535,7 +538,12 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
     const uniqueId = generateCustomID(newVisitor._id.toString(), "PA", null);
 
     newVisitor.ID = uniqueId;
+
+    const o = OTP()
+
     await newVisitor.save();
+
+
 
     console.log(newVisitor);
 
