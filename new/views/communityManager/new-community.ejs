@@ -5,523 +5,989 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Urban Ease - Create Community</title>
-    <link rel="stylesheet" href="/css/CommunityManager/create-community.css">
+
+   <style>:root {
+    --primary-color: #2c4b7c;
+    --secondary-color: #6a93cb;
+    --light-blue: #a1c4fd;
+    --white: #ffffff;
+    --light-gray: #f5f7fa;
+    --text-dark: #333;
+    --text-light: #666;
+    --active-green: #4caf50;
+    --pending-orange: #ff7043;
+    --checked-gray: #9e9e9e;
+    --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    --border-radius: 12px;
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --backdrop-blur: blur(10px);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--text-dark);
+    font-size: 13px;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* Desktop/Laptop: Full height layout */
+@media (min-width: 1024px) {
+    body {
+        height: 100vh;
+        overflow: hidden;
+    }
     
-    <style>
-        :root {
-            --primary-color: #2c4b7c;
-            --secondary-color: #6a93cb;
-            --light-blue: #a1c4fd;
-            --white: #ffffff;
-            --light-gray: #f5f7fa;
-            --text-dark: #333;
-            --text-light: #666;
-            --active-green: #4caf50;
-            --pending-orange: #ff7043;
-            --checked-gray: #9e9e9e;
-            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --border-radius: 10px;
-        }
+    .main-container {
+        height: 100vh;
+    }
+    
+    .container {
+        max-height: calc(100vh - 120px);
+    }
+    
+    .column-content {
+        overflow-y: auto;
+    }
+}
 
-        @font-face {
-            font-family: 'MyFont';
-            src: url('../imgs/Poppins/Poppins-Medium.ttf') format('woff2');
-            font-weight: normal;
-            font-style: normal;
-        }
+/* Tablet and smaller: Scrollable layout */
+@media (max-width: 1023px) {
+    body {
+        overflow-y: auto;
+        height: auto;
+    }
+    
+    .main-container {
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .container {
+        max-height: none;
+    }
+    
+    .column-content {
+        overflow-y: visible;
+        max-height: none;
+    }
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+    pointer-events: none;
+}
 
-        body {
-            background-color: var(--secondary-color);
-            color: var(--text-dark);
-            min-height: 100vh;
-            font-size: 18px;
-            width: 100%;
-            overflow-x: hidden;
-        }
+.main-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+}
 
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
+.main-header {
+    text-align: center;
+    padding: 1.5rem 0;
+    color: var(--white);
+    flex-shrink: 0;
+}
 
-        .main-content {
-            
-            flex: 1;
-            padding: 20px;
-            background-color: var(--light-gray);
-            transition: 0.3s;
-        }
+.main-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #fff 0%, #f0f8ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-        .page-header {
-            margin-bottom: 25px;
-        }
+.main-header p {
+    font-size: 1rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
 
-        .page-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: var(--text-dark);
-            border-bottom: 2px solid #b9b9b9;
-            padding-bottom: 5px;
-        }
+.container {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+    padding: 0 2rem 2rem 2rem;
+    min-height: 0;
+}
 
-        .form-container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: var(--white);
-            border-radius: var(--border-radius);
-            box-shadow: var(--card-shadow);
-            padding: 40px;
-        }
+.column {
+    background: var(--glass-bg);
+    backdrop-filter: var(--backdrop-blur);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
 
-        .form-section {
-            margin-bottom: 35px;
-        }
+.column-header {
+    text-align: center;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    flex-shrink: 0;
+}
 
-        .form-section:last-child {
-            margin-bottom: 0;
-        }
+.column-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+}
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin-bottom: 20px;
-        }
+.column-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
 
-        .form-row.single {
-            grid-template-columns: 1fr;
-        }
+.column-content {
+    flex: 1;
+    padding: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
 
-        h2 {
-            color: var(--primary-color);
-            margin-bottom: 25px;
-            font-size: 24px;
-            font-weight: 600;
-            position: relative;
-            padding-bottom: 12px;
-        }
+.column-content::-webkit-scrollbar {
+    width: 4px;
+}
 
-        h2::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 50px;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            border-radius: 2px;
-        }
+.column-content::-webkit-scrollbar-track {
+    background: transparent;
+}
 
-        .form-group {
-            margin-bottom: 25px;
-        }
+.column-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+}
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-dark);
-            font-size: 15px;
-        }
+.form-section {
+    margin-bottom: 0.5rem;
+}
 
-        .required {
-            color: #e74c3c;
-        }
+.section-title {
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
 
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e1e8ed;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background-color: #fafbfc;
-        }
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 20px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 2px;
+}
 
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--secondary-color);
-            background-color: var(--white);
-            box-shadow: 0 0 0 4px rgba(106, 147, 203, 0.1);
-        }
+/* Form Grid Layout */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
 
-        input:hover,
-        select:hover,
-        textarea:hover {
-            border-color: var(--light-blue);
-            background-color: var(--white);
-        }
+.form-group {
+    margin-bottom: 1rem;
+}
 
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
+label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    font-size: 0.75rem;
+}
 
-        .subscription-plan-selector {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 15px;
-        }
+.required {
+    color: #e74c3c;
+}
 
-        .plan-option {
-            border: 2px solid #e1e8ed;
-            border-radius: 12px;
-            padding: 25px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
-        }
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.9);
+}
 
-        .plan-option:hover {
-            border-color: var(--secondary-color);
-            box-shadow: 0 8px 25px rgba(106, 147, 203, 0.15);
-            transform: translateY(-2px);
-        }
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    background-color: var(--white);
+    box-shadow: 0 0 0 2px rgba(106, 147, 203, 0.1);
+}
 
-        .plan-option.selected {
-            border-color: var(--primary-color);
-            background: linear-gradient(135deg, rgba(44, 75, 124, 0.05) 0%, rgba(106, 147, 203, 0.05) 100%);
-            box-shadow: 0 8px 25px rgba(44, 75, 124, 0.2);
-        }
+textarea {
+    resize: vertical;
+    min-height: 60px;
+}
 
-        .plan-option.selected::before {
-            content: '✓';
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: var(--primary-color);
-            color: white;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
-        }
+/* Photo Upload Styles */
+.photo-upload-area {
+    border: 2px dashed #e1e8ed;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.5);
+    margin-bottom: 1rem;
+}
 
-        .plan-option input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+.photo-upload-area:hover {
+    border-color: var(--secondary-color);
+    background: rgba(106, 147, 203, 0.1);
+}
 
-        .plan-title {
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
+.photo-upload-area.dragover {
+    border-color: var(--active-green);
+    background: rgba(76, 175, 80, 0.1);
+}
 
-        .plan-price {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--active-green);
-            margin-bottom: 15px;
-        }
+.upload-icon {
+    font-size: 2rem;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
 
-        .plan-features {
-            font-size: 14px;
-            color: var(--text-light);
-            line-height: 1.6;
-            text-align: left;
-        }
+.upload-text {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
 
-        .plan-features ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+.photo-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
 
-        .plan-features li {
-            padding: 4px 0;
-            position: relative;
-            padding-left: 18px;
-        }
+.photo-preview {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f5f5f5;
+}
 
-        .plan-features li::before {
-            content: '•';
-            color: var(--secondary-color);
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-        }
+.photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
-        .info-note {
-            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
-            border: 1px solid rgba(76, 175, 80, 0.3);
-            color: var(--active-green);
-            padding: 16px 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 500;
-        }
+.photo-remove {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-        .info-note::before {
-            content: "ℹ";
-            font-weight: bold;
-            font-size: 18px;
-            background: var(--active-green);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
+/* Common Spaces Styles */
+.spaces-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
 
-        .form-actions {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 40px;
-        }
+.space-option {
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    font-size: 0.7rem;
+}
 
-        .btn {
-            padding: 16px 40px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 160px;
-            position: relative;
-            overflow: hidden;
-        }
+.space-option:hover {
+    border-color: var(--secondary-color);
+    transform: translateY(-1px);
+}
 
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
+.space-option.selected {
+    border-color: var(--active-green);
+    background: rgba(76, 175, 80, 0.1);
+}
 
-        .btn:hover::before {
-            left: 100%;
-        }
+.space-option input[type="checkbox"] {
+    display: none;
+}
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
-            color: var(--white);
-            box-shadow: 0 4px 15px rgba(44, 75, 124, 0.3);
-        }
+.space-name {
+    font-weight: 500;
+    color: var(--text-dark);
+}
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(44, 75, 124, 0.4);
-        }
+/* Custom Spaces */
+.custom-space-section {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(106, 147, 203, 0.05);
+    border: 1px dashed var(--secondary-color);
+    border-radius: 6px;
+}
 
-        .btn-secondary {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            color: var(--text-dark);
-            border: 2px solid #dee2e6;
-        }
+.custom-spaces-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+    min-height: 20px;
+}
 
-        .btn-secondary:hover {
-            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-            transform: translateY(-1px);
-        }
+.custom-space-tag {
+    background: var(--active-green);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
 
-        .success-message {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border: 1px solid #c3e6cb;
-            display: none;
-        }
+.custom-space-tag .remove-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 10px;
+    opacity: 0.8;
+}
 
-        .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border: 1px solid #f5c6cb;
-            display: none;
-        }
+.add-custom-space {
+    display: flex;
+    gap: 0.5rem;
+}
 
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: #fff;
-            margin: 10% auto;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            max-width: 500px;
-        }
-        
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .close:hover {
-            color: black;
-        }
-        
-        .payment-summary {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #f5f7fa;
-            border-radius: 8px;
-        }
-        
-        .payment-summary h4 {
-            margin-bottom: 10px;
-            color: var(--primary-color);
-        }
-        
-        .payment-summary div {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-        }
+.add-custom-space input {
+    flex: 1;
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+}
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                padding: 15px;
-            }
+.add-space-btn {
+    background: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.65rem;
+    white-space: nowrap;
+}
 
-            .form-container {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
+/* Subscription Plans */
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
 
-            .subscription-plan-selector {
-                grid-template-columns: 1fr;
-            }
+.plan-option {
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 0.75rem;
+    background: rgba(255, 255, 255, 0.7);
+}
 
-            .status-selector {
-                flex-direction: column;
-            }
+.plan-option:hover {
+    border-color: var(--secondary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
 
-            .form-actions {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .modal-content {
-                margin: 20% auto;
-                width: 90%;
-            }
-        }
-    </style>
+.plan-option.selected {
+    border-color: var(--primary-color);
+    background: rgba(44, 75, 124, 0.1);
+    box-shadow: 0 6px 15px rgba(44, 75, 124, 0.2);
+}
+
+.plan-option input[type="radio"] {
+    display: none;
+}
+
+.plan-title {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.plan-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--active-green);
+    margin-bottom: 0.5rem;
+}
+
+.plan-features {
+    font-size: 0.65rem;
+    color: var(--text-light);
+    line-height: 1.3;
+    text-align: left;
+}
+
+.plan-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.plan-features li {
+    padding: 0.1rem 0;
+    position: relative;
+    padding-left: 12px;
+}
+
+.plan-features li::before {
+    content: '✓';
+    color: var(--active-green);
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+    font-size: 0.6rem;
+}
+
+/* Payment Summary */
+.payment-summary {
+    background: rgba(245, 247, 250, 0.9);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin: 1rem 0;
+}
+
+.payment-summary h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.25rem 0;
+    font-size: 0.7rem;
+    padding: 0.25rem 0;
+}
+
+.summary-row.total {
+    border-top: 1px solid #ddd;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--primary-color);
+}
+
+.btn {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    color: var(--white);
+    box-shadow: 0 4px 15px rgba(44, 75, 124, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(44, 75, 124, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(248, 249, 250, 0.9);
+    color: var(--text-dark);
+    border: 1px solid #dee2e6;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+    transform: translateY(-1px);
+}
+
+.success-message,
+.error-message {
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    font-size: 0.7rem;
+    display: none;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.info-note {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    color: var(--active-green);
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 0.65rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.info-note::before {
+    content: "ℹ";
+    font-weight: bold;
+    font-size: 12px;
+    background: var(--active-green);
+    color: white;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Responsive Design */
+
+/* Large Desktop */
+@media (min-width: 1440px) {
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 3rem 3rem 3rem;
+    }
+    
+    .main-header h1 {
+        font-size: 2.5rem;
+    }
+}
+
+/* Desktop/Laptop */
+@media (min-width: 1024px) and (max-width: 1439px) {
+    .container {
+        gap: 1.2rem;
+        padding: 0 1.5rem 2rem 1.5rem;
+    }
+    
+    .main-header h1 {
+        font-size: 1.8rem;
+    }
+}
+
+/* Large Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .container {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        padding: 0 1.5rem 2rem 1.5rem;
+    }
+
+    .column:last-child {
+        grid-column: 1 / -1;
+    }
+
+    .main-header h1 {
+        font-size: 1.6rem;
+    }
+
+    .spaces-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .plans-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .plan-option {
+        margin-bottom: 0;
+    }
+}
+
+/* Small Tablet / Large Mobile */
+@media (min-width: 481px) and (max-width: 767px) {
+    .container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 1rem;
+        padding: 0 1rem 1rem 1rem;
+    }
+
+    .main-header {
+        padding: 1rem 0;
+    }
+
+    .main-header h1 {
+        font-size: 1.4rem;
+    }
+
+    .main-header p {
+        font-size: 0.9rem;
+    }
+
+    .column {
+        min-height: auto;
+        width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .spaces-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .plans-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .photo-preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    }
+}
+
+/* Mobile - 3 ROWS LAYOUT */
+@media (max-width: 480px) {
+    .container {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 0.75rem;
+        padding: 0 0.5rem 1rem 0.5rem;
+    }
+
+    .main-header h1 {
+        font-size: 1.2rem;
+    }
+
+    .main-header p {
+        font-size: 0.8rem;
+    }
+
+    .column {
+        min-height: auto;
+        width: 100%;
+    }
+
+    .column-header {
+        padding: 0.75rem;
+    }
+
+    .column-content {
+        padding: 0.75rem;
+    }
+
+    .photo-preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .spaces-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .plans-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .modal-content {
+        margin: 20% auto;
+        padding: 1.5rem;
+        max-width: 90%;
+    }
+    
+    .btn {
+        padding: 0.6rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 1600px) {
+    .container {
+        max-width: 1600px;
+        gap: 2rem;
+        padding: 0 4rem 3rem 4rem;
+    }
+    
+    .main-header h1 {
+        font-size: 2.8rem;
+    }
+    
+    .column-content {
+        padding: 1.5rem;
+    }
+}</style>
 </head>
 
 <body>
-    <div class="container">
-       
-        <main class="main-content">
-            <div class="page-header">
-                <h1 class="page-title">Create New Community</h1>
+    <div class="main-container">
+        <div class="main-header">
+            <h1>Create New Community</h1>
+            <p>Set up your community management system in just a few steps</p>
+        </div>
+
+        <div class="container">
+            <!-- Column 1: Basic Information & Photos -->
+            <div class="column">
+                <div class="column-header">
+                    <div class="column-title">📝 Community Details</div>
+                    <div class="column-subtitle">Basic info & photos</div>
+                </div>
+
+                <div class="column-content">
+                    <div id="successMessage" class="success-message"></div>
+                    <div id="errorMessage" class="error-message"></div>
+
+
+                    <form id="createCommunityForm">
+                        <div class="form-section">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="communityName">Community Name <span class="required">*</span></label>
+                                    <input type="text" id="communityName" name="name" required
+                                        placeholder="Enter community name">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="communityLocation">Location <span class="required">*</span></label>
+                                    <input type="text" id="communityLocation" name="location" required
+                                        placeholder="Enter community location">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="communityEmail">Community Email <span class="required">*</span></label>
+                                    <input type="email" id="communityEmail" name="email" required
+                                        placeholder="community@example.com">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="totalMembers">Total Members</label>
+                                    <input type="number" id="totalMembers" name="totalMembers" min="0"
+                                        placeholder="Number of members" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-title">Community Photos</h3>
+
+                            <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+                                <div class="upload-icon">📷</div>
+                                <div class="upload-text">Click to upload photos</div>
+                                <div style="font-size: 0.65rem; color: #999;">Drag & drop or click to browse</div>
+                            </div>
+
+                            <input type="file" id="photoInput" multiple accept="image/*" style="display: none;">
+                            <div id="photoPreviewGrid" class="photo-preview-grid"></div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-title">Description</h3>
+
+                            <div class="form-group">
+                                <textarea id="communityDescription" name="description"
+                                    placeholder="Brief description of the community..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
 
-            <div id="successMessage" class="success-message"></div>
-            <div id="errorMessage" class="error-message"></div>
+            <!-- Column 2: Common Spaces -->
+            <div class="column">
+                <div class="column-header">
+                    <div class="column-title">🏢 Common Spaces</div>
+                    <div class="column-subtitle">Select available facilities</div>
+                </div>
 
-            <div class="info-note">
-                New communities are automatically set to Active status as they are operational upon creation.
-            </div>
+                <div class="column-content">
+                    <div class="form-section">
+                        <div class="spaces-grid">
+                            <div class="space-option" onclick="toggleSpace(this, 'Clubhouse')">
+                                <input type="checkbox" name="commonSpaces" value="Clubhouse">
+                                <div class="space-name">🏢 Clubhouse</div>
+                            </div>
 
-            <form id="createCommunityForm" class="form-container">
-                <!-- Basic Information Section -->
-                <div class="form-section">
-                    <h2>Basic Information</h2>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="communityName">Community Name <span class="required">*</span></label>
-                            <input type="text" id="communityName" name="name" required 
-                                   placeholder="Enter community name">
+                            <div class="space-option" onclick="toggleSpace(this, 'Banquet Hall')">
+                                <input type="checkbox" name="commonSpaces" value="Banquet Hall">
+                                <div class="space-name">🏛️ Banquet Hall</div>
+                            </div>
+
+                            <div class="space-option" onclick="toggleSpace(this, 'Community Hall')">
+                                <input type="checkbox" name="commonSpaces" value="Community Hall">
+                                <div class="space-name">🏤 Community Hall</div>
+                            </div>
+
+                            <div class="space-option" onclick="toggleSpace(this, 'Swimming Pool')">
+                                <input type="checkbox" name="commonSpaces" value="Swimming Pool">
+                                <div class="space-name">🏊 Swimming Pool</div>
+                            </div>
+
+                            <div class="space-option" onclick="toggleSpace(this, 'Tennis Court')">
+                                <input type="checkbox" name="commonSpaces" value="Tennis Court">
+                                <div class="space-name">🎾 Tennis Court</div>
+                            </div>
+
+                            <div class="space-option" onclick="toggleSpace(this, 'Badminton Court')">
+                                <input type="checkbox" name="commonSpaces" value="Badminton Court">
+                                <div class="space-name">🏸 Badminton Court</div>
+                            </div>
+
+                            <div class="space-option" onclick="toggleSpace(this, 'Basketball Court')">
+                                <input type="checkbox" name="commonSpaces" value="Basketball Court">
+                                <div class="space-name">🏀 Basketball Court</div>
+                            </div>
+
+                            <div class="space-option" onclick="toggleSpace(this, 'Amphitheatre')">
+                                <input type="checkbox" name="commonSpaces" value="Amphitheatre">
+                                <div class="space-name">🎭 Amphitheatre</div>
+                            </div>
+
+                            <div class="space-option" onclick="toggleSpace(this, 'Guest Room')">
+                                <input type="checkbox" name="commonSpaces" value="Guest Room">
+                                <div class="space-name">🛏️ Guest Room</div>
+                            </div>
+
+                            <div class="space-option" onclick="toggleSpace(this, 'Yoga Deck')">
+                                <input type="checkbox" name="commonSpaces" value="Yoga Deck">
+                                <div class="space-name">🧘 Yoga Deck</div>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="communityLocation">Location <span class="required">*</span></label>
-                            <input type="text" id="communityLocation" name="location" required 
-                                   placeholder="Enter community location">
-                        </div>
-                    </div>
+                        <!-- Custom Spaces Section -->
+                        <div class="custom-space-section">
+                            <div
+                                style="font-weight: 600; margin-bottom: 0.5rem; font-size: 0.7rem; color: var(--primary-color);">
+                                ➕ Add Custom Spaces
+                            </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="communityEmail">Community Email <span class="required">*</span></label>
-                            <input type="email" id="communityEmail" name="email" required 
-                                   placeholder="community@example.com">
-                        </div>
+                            <div class="custom-spaces-list" id="customSpacesList">
+                                <!-- Custom spaces will be added here dynamically -->
+                            </div>
 
-                        <div class="form-group">
-                            <label for="totalMembers">Total Members</label>
-                            <input type="number" id="totalMembers" name="totalMembers" min="0" 
-                                   placeholder="Number of members" value="0">
+                            <div class="add-custom-space">
+                                <input type="text" id="customSpaceInput" placeholder="Enter custom space name">
+                                <button type="button" class="add-space-btn" onclick="addCustomSpace()">Add</button>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Description Section -->
-                <div class="form-section">
-                    <h2>Community Description</h2>
-                    
-                    <div class="form-row single">
-                        <div class="form-group">
-                            <label for="communityDescription">Description</label>
-                            <textarea id="communityDescription" name="description" 
-                                      placeholder="Describe the community, its amenities, and features..."></textarea>
-                        </div>
-                    </div>
+            <!-- Column 3: Subscription & Payment -->
+            <div class="column">
+                <div class="column-header">
+                    <div class="column-title">💳 Subscription & Payment</div>
+                    <div class="column-subtitle">Choose plan & complete setup</div>
                 </div>
 
-                <!-- Subscription Plan Section -->
-                <div class="form-section">
-                    <h2>Subscription Plan</h2>
-                    
-                    <div class="form-group">
-                        <label>Choose Subscription Plan <span class="required">*</span></label>
-                        <div class="subscription-plan-selector">
+                <div class="column-content">
+                    <div class="form-section">
+                        <h3 class="section-title">Choose Plan</h3>
+                        <div class="plans-grid">
                             <div class="plan-option selected" onclick="selectPlan('basic')">
                                 <input type="radio" name="subscriptionPlan" value="basic" checked>
                                 <div class="plan-title">Basic Plan</div>
@@ -535,7 +1001,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            
+
                             <div class="plan-option" onclick="selectPlan('standard')">
                                 <input type="radio" name="subscriptionPlan" value="standard">
                                 <div class="plan-title">Standard Plan</div>
@@ -550,7 +1016,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            
+
                             <div class="plan-option" onclick="selectPlan('premium')">
                                 <input type="radio" name="subscriptionPlan" value="premium">
                                 <div class="plan-title">Premium Plan</div>
@@ -566,508 +1032,394 @@
                                 </div>
                             </div>
                         </div>
+
+                    </div>
+
+                    
+
+                    <div class="form-section">
+                        <h3 class="section-title">Payment Method</h3>
+
+                        <div class="form-group">
+                            <label for="paymentMethod">Payment Method <span class="required">*</span></label>
+                            <select id="paymentMethod" name="paymentMethod" required>
+                                <option value="">Select payment method</option>
+                                <option value="credit_card">Credit Card</option>
+                                <option value="debit_card">Debit Card</option>
+                                <option value="net_banking">Net Banking</option>
+                                <option value="upi">UPI</option>
+                                <option value="wallet">Digital Wallet</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-primary" onclick="processPayment()">Complete Setup &
+                            Pay</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset Form</button>
                     </div>
                 </div>
-
-                <!-- Form Actions -->
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Proceed to Payment</button>
-                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset Form</button>
-                </div>
-            </form>
-        </main>
-    </div>
-
-    <!-- Payment Method Modal -->
-    <div id="subscriptionPaymentModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('subscriptionPaymentModal')">&times;</span>
-            <h2>Subscription Payment</h2>
-            
-            <form id="subscriptionPaymentForm">
-                <div id="planDetails">
-                    <!-- Plan details will be populated dynamically -->
-                </div>
-                
-                <div class="form-group">
-                    <label for="paymentMethod">Payment Method <span class="required">*</span></label>
-                    <select id="paymentMethod" name="paymentMethod" required>
-                        <option value="">Select payment method</option>
-                        <option value="credit_card">Credit Card</option>
-                        <option value="debit_card">Debit Card</option>
-                        <option value="net_banking">Net Banking</option>
-                        <option value="upi">UPI</option>
-                        <option value="wallet">Digital Wallet</option>
-                    </select>
-                </div>
-                
-                <div class="payment-summary">
-                    <h4>Payment Summary</h4>
-                    <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                        <span>Total Amount:</span>
-                        <strong id="totalAmount"></strong>
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Process Payment</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('subscriptionPaymentModal')">Cancel</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
     <!-- Payment Success Modal -->
     <div id="paymentSuccessModal" class="modal">
-        <div class="modal-content" style="text-align: center;">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 20px;">
-                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#4CAF50"/>
+        <div class="modal-content">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                style="margin-bottom: 20px;">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"
+                    fill="#4CAF50" />
             </svg>
             <h3>Payment Successful!</h3>
             <p>Your subscription is now active.</p>
             <p>Thank you for choosing Urban Ease.</p>
-            <p>You are being Logged Out . Please Login Again</p>
-             </div>
+            <p>You are being logged out. Please login again.</p>
+        </div>
     </div>
 
-<script>
-// Client-Side JavaScript for Community Creation Form with Subscription Payment
+   <script>// Global variables
+let uploadedPhotos = [];
+let customSpaces = [];
+let selectedPlan = 'basic';
 
-// Plan selection functionality
+// Initialize when DOM loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEventListeners();
+    initializeDragAndDrop();
+});
+
+function initializeEventListeners() {
+    // Photo input change event
+    document.getElementById('photoInput').addEventListener('change', handlePhotoSelection);
+    
+    // Custom space input enter key
+    document.getElementById('customSpaceInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addCustomSpace();
+        }
+    });
+    
+    // Form submission
+    document.getElementById('createCommunityForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        processPayment();
+    });
+}
+
+function initializeDragAndDrop() {
+    const uploadArea = document.querySelector('.photo-upload-area');
+    
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        
+        const files = Array.from(e.dataTransfer.files);
+        const imageFiles = files.filter(file => file.type.startsWith('image/'));
+        
+        if (imageFiles.length > 0) {
+            handlePhotoFiles(imageFiles);
+        }
+    });
+}
+
+function handlePhotoSelection(event) {
+    const files = Array.from(event.target.files);
+    handlePhotoFiles(files);
+}
+
+function handlePhotoFiles(files) {
+    // Limit total photos to 10
+    const remainingSlots = 10 - uploadedPhotos.length;
+    const filesToProcess = files.slice(0, remainingSlots);
+    
+    filesToProcess.forEach(file => {
+        if (file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) { // 5MB limit
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const photoData = {
+                    file: file,
+                    dataUrl: e.target.result,
+                    name: file.name
+                };
+                uploadedPhotos.push(photoData);
+                updatePhotoPreview();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            showMessage('error', `File ${file.name} is either not an image or exceeds 5MB limit.`);
+        }
+    });
+    
+    // Reset the input
+    event.target.value = '';
+}
+
+function updatePhotoPreview() {
+    const previewGrid = document.getElementById('photoPreviewGrid');
+    previewGrid.innerHTML = '';
+    
+    uploadedPhotos.forEach((photo, index) => {
+        const previewDiv = document.createElement('div');
+        previewDiv.className = 'photo-preview';
+        previewDiv.innerHTML = `
+            <img src="${photo.dataUrl}" alt="${photo.name}">
+            <button type="button" class="photo-remove" onclick="removePhoto(${index})">&times;</button>
+        `;
+        previewGrid.appendChild(previewDiv);
+    });
+}
+
+function removePhoto(index) {
+    uploadedPhotos.splice(index, 1);
+    updatePhotoPreview();
+}
+
+function toggleSpace(element, spaceName) {
+    const checkbox = element.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+    element.classList.toggle('selected', checkbox.checked);
+}
+
+function addCustomSpace() {
+    const input = document.getElementById('customSpaceInput');
+    const spaceName = input.value.trim();
+    
+    if (spaceName && !customSpaces.includes(spaceName)) {
+        customSpaces.push(spaceName);
+        updateCustomSpacesList();
+        input.value = '';
+    } else if (customSpaces.includes(spaceName)) {
+        showMessage('error', 'This space already exists.');
+    }
+}
+
+function updateCustomSpacesList() {
+    const listContainer = document.getElementById('customSpacesList');
+    listContainer.innerHTML = '';
+    
+    customSpaces.forEach((space, index) => {
+        const spaceTag = document.createElement('div');
+        spaceTag.className = 'custom-space-tag';
+        spaceTag.innerHTML = `
+            ${space}
+            <button type="button" class="remove-btn" onclick="removeCustomSpace(${index})">&times;</button>
+        `;
+        listContainer.appendChild(spaceTag);
+    });
+}
+
+function removeCustomSpace(index) {
+    customSpaces.splice(index, 1);
+    updateCustomSpacesList();
+}
+
 function selectPlan(planType) {
     // Remove selected class from all plans
-    document.querySelectorAll('.plan-option').forEach(option => {
-        option.classList.remove('selected');
+    document.querySelectorAll('.plan-option').forEach(plan => {
+        plan.classList.remove('selected');
     });
     
     // Add selected class to clicked plan
     event.currentTarget.classList.add('selected');
     
-    // Check the radio button
-    document.querySelector(`input[value="${planType}"]`).checked = true;
+    // Update the radio button
+    const radio = event.currentTarget.querySelector('input[type="radio"]');
+    radio.checked = true;
+    
+    selectedPlan = planType;
 }
 
-// Form submission handler
-document.getElementById('createCommunityForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
+function validateForm() {
+    const requiredFields = [
+        'communityName',
+        'communityLocation',
+        'communityEmail',
+        'paymentMethod'
+    ];
     
+    for (let fieldId of requiredFields) {
+        const field = document.getElementById(fieldId);
+        if (!field.value.trim()) {
+            showMessage('error', `Please fill in the ${field.previousElementSibling.textContent.replace('*', '').trim()}.`);
+            field.focus();
+            return false;
+        }
+    }
+    
+    // Email validation
+    const email = document.getElementById('communityEmail').value;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showMessage('error', 'Please enter a valid email address.');
+        return false;
+    }
+    
+    return true;
+}
+
+function getSelectedCommonSpaces() {
+    const selectedSpaces = [];
+    
+    // Get predefined spaces
+    document.querySelectorAll('.space-option input[type="checkbox"]:checked').forEach(checkbox => {
+        selectedSpaces.push({
+            type: checkbox.value,
+            name: checkbox.value,
+            bookable: true
+        });
+    });
+    
+    // Get custom spaces
+    customSpaces.forEach(spaceName => {
+        selectedSpaces.push({
+            type: 'Other',
+            name: spaceName,
+            bookable: true
+        });
+    });
+    
+    return selectedSpaces;
+}
+
+async function processPayment() {
+    if (!validateForm()) {
+        return;
+    }
+    
+    // Show loading state
     const submitBtn = document.querySelector('.btn-primary');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Processing...';
     submitBtn.disabled = true;
     
     try {
-        if (!validateForm()) {
-            showMessage('Please fill in all required fields correctly', 'error');
-            return;
-        }
+        // Prepare form data
+        const formData = new FormData();
         
-        // Collect form data but don't submit yet
-        const formData = new FormData(this);
-        const communityData = Object.fromEntries(formData.entries());
+        // Basic community info
+        formData.append('name', document.getElementById('communityName').value.trim());
+        formData.append('location', document.getElementById('communityLocation').value.trim());
+        formData.append('email', document.getElementById('communityEmail').value.trim());
+        formData.append('description', document.getElementById('communityDescription').value.trim());
+        formData.append('totalMembers', document.getElementById('totalMembers').value || 0);
         
-        // Process data
-        communityData.totalMembers = parseInt(communityData.totalMembers) || 0;
-        ['name', 'location', 'email', 'description'].forEach(field => {
-            if (communityData[field]) {
-                communityData[field] = communityData[field].toString().trim();
-            }
+        // Subscription info
+        formData.append('subscriptionPlan', selectedPlan);
+        formData.append('paymentMethod', document.getElementById('paymentMethod').value);
+        
+        // Common spaces
+        formData.append('commonSpaces', JSON.stringify(getSelectedCommonSpaces()));
+        
+        // Add photos
+        uploadedPhotos.forEach((photo, index) => {
+            formData.append('photos', photo.file);
         });
         
-        if (communityData.email) {
-            communityData.email = communityData.email.toLowerCase();
-        }
-        
-        // Show subscription payment modal with the collected data
-        const selectedPlan = document.querySelector('input[name="subscriptionPlan"]:checked').value;
-        showSubscriptionPaymentModal(communityData, selectedPlan);
-        
-    } catch (error) {
-        console.error('Error:', error);
-        showMessage(error.message || 'Error processing form', 'error');
-    } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-    }
-});
-
-// Show subscription payment modal
-function showSubscriptionPaymentModal(communityData, planType) {
-    const modal = document.getElementById('subscriptionPaymentModal');
-    const planDetails = getPlanDetails(planType);
-    
-    // Update plan details in modal
-    document.getElementById('planDetails').innerHTML = `
-        <div class="plan-info" style="margin-bottom: 20px; padding: 15px; background: #f5f7fa; border-radius: 8px;">
-            <h4>${planDetails.title} Plan</h4>
-            <div class="plan-price" style="font-size: 24px; color: #4CAF50; margin: 10px 0;">${planDetails.price}/month</div>
-        </div>
-    `;
-    
-    // Update total amount
-    document.getElementById('totalAmount').textContent = planDetails.price;
-    
-    // Show modal
-    modal.style.display = 'block';
-    
-    // Reset payment form
-    document.getElementById('subscriptionPaymentForm').reset();
-    
-    // Add event listener for payment form submission
-    document.getElementById('subscriptionPaymentForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const paymentBtn = this.querySelector('.btn-primary');
-        const originalText = paymentBtn.textContent;
-        paymentBtn.textContent = 'Processing Payment...';
-        paymentBtn.disabled = true;
-        
-        try {
-            // Validate payment method is selected
-            const paymentMethod = document.getElementById('paymentMethod').value;
-            if (!paymentMethod) {
-                showMessage('Please select a payment method', 'error');
-                return;
-            }
-            
-            // Process payment and create community
-            const result = await processSubscriptionPayment(communityData, planType, paymentMethod);
-            
-            if (result.success) {
-    closeModal('subscriptionPaymentModal');
-    document.getElementById('paymentSuccessModal').style.display = 'block';
-
-    // Add this block to logout and redirect
-    setTimeout(() => {
-        // Optional: clear token or session manually
-        localStorage.removeItem('token');
-        
-        // Redirect to login page
-        window.location.href = '/login'; // change this to your actual login page URL
-    }, 2000); // delay for 3 seconds to let user see success
-}
-else {
-                throw new Error(result.message || 'Payment failed');
-            }
-            
-        } catch (error) {
-            console.error('Payment error:', error);
-            showMessage(error.message || 'Error processing payment', 'error');
-        } finally {
-            paymentBtn.textContent = originalText;
-            paymentBtn.disabled = false;
-        }
-    });
-}
-
-// Process subscription payment and create community
-async function processSubscriptionPayment(communityData, planType, paymentMethod) {
-    try {
-        // Get plan details
-        const planDetails = getPlanDetails(planType);
-        
-        // Prepare data for backend
-        const requestData = {
-            communityData: communityData,
-            subscriptionPlan: planType,
-            paymentDetails: {
-                amount: parseFloat(planDetails.price.replace(/[^\d.]/g, '')),
-                paymentMethod: paymentMethod,
-                transactionId: `TXN_${Date.now()}`
-            }
-        };
-        
-        // Call backend endpoint that handles both payment and community creation
-        const response = await fetch('/manager/create-with-payment', {
+        // Make API call
+        const response = await fetch('/manager/communities', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify(requestData)
+            body: formData
         });
         
         const result = await response.json();
         
-        if (!response.ok) {
-            throw new Error(result.message || 'Payment and community creation failed');
+        if (response.ok) {
+            showMessage('success', 'Community created successfully!');
+            
+            // Show success modal
+            setTimeout(() => {
+                document.getElementById('paymentSuccessModal').style.display = 'block';
+                
+                // Redirect after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/logout';
+                }, 3000);
+            }, 1000);
+            
+        } else {
+            throw new Error(result.message || 'Failed to create community');
         }
         
-        return result;
     } catch (error) {
-        console.error('Payment processing error:', error);
-        throw error;
+        console.error('Error creating community:', error);
+        showMessage('error', error.message || 'An error occurred while creating the community. Please try again.');
+    } finally {
+        // Reset button state
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
     }
 }
 
-// Close modal
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
+function showMessage(type, message) {
+    const messageElement = document.getElementById(type === 'success' ? 'successMessage' : 'errorMessage');
+    messageElement.textContent = message;
+    messageElement.style.display = 'block';
+    
+    // Hide the message after 5 seconds
+    setTimeout(() => {
+        messageElement.style.display = 'none';
+    }, 5000);
+    
+    // Hide the other message type
+    const otherMessageElement = document.getElementById(type === 'success' ? 'errorMessage' : 'successMessage');
+    otherMessageElement.style.display = 'none';
+}
+
+function resetForm() {
+    if (confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
+        // Reset form fields
+        document.getElementById('createCommunityForm').reset();
+        
+        // Reset photos
+        uploadedPhotos = [];
+        updatePhotoPreview();
+        
+        // Reset custom spaces
+        customSpaces = [];
+        updateCustomSpacesList();
+        
+        // Reset plan selection
+        document.querySelectorAll('.plan-option').forEach(plan => {
+            plan.classList.remove('selected');
+        });
+        document.querySelector('.plan-option').classList.add('selected');
+        document.querySelector('input[name="subscriptionPlan"][value="basic"]').checked = true;
+        selectedPlan = 'basic';
+        
+        // Reset space selections
+        document.querySelectorAll('.space-option').forEach(space => {
+            space.classList.remove('selected');
+            space.querySelector('input[type="checkbox"]').checked = false;
+        });
+        
+        // Hide messages
+        document.getElementById('successMessage').style.display = 'none';
+        document.getElementById('errorMessage').style.display = 'none';
+        
+        showMessage('success', 'Form has been reset.');
+    }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('paymentSuccessModal');
+    if (event.target === modal) {
         modal.style.display = 'none';
     }
-}
-
-// Get plan details
-function getPlanDetails(planType) {
-    const plans = {
-        basic: {
-            title: 'Basic',
-            price: '₹999',
-            features: [
-                'Up to 50 residents',
-                'Basic payment tracking',
-                'Community notices',
-                'Email support'
-            ],
-            apiValue: 'basic'
-        },
-        standard: {
-            title: 'Standard',
-            price: '₹1,999',
-            features: [
-                'Up to 200 residents',
-                'Advanced payment system',
-                'Issue management',
-                'SMS & Email notifications',
-                'Priority support'
-            ],
-            apiValue: 'standard'
-        },
-        premium: {
-            title: 'Premium',
-            price: '₹3,999',
-            features: [
-                'Unlimited residents',
-                'Complete management suite',
-                'Analytics & reports',
-                'Multi-community support',
-                '24/7 dedicated support'
-            ],
-            apiValue: 'premium'
-        }
-    };
-    
-    return plans[planType] || plans.basic;
-}
-
-// Enhanced form validation
-function validateForm() {
-    const requiredFields = [
-        { name: 'name', label: 'Community Name', element: document.querySelector('[name="name"]') },
-        { name: 'location', label: 'Location', element: document.querySelector('[name="location"]') },
-        { name: 'email', label: 'Email', element: document.querySelector('[name="email"]') }
-    ];
-    
-    let isValid = true;
-    let firstErrorField = null;
-    
-    // Clear previous error states
-    document.querySelectorAll('input, select, textarea').forEach(field => {
-        field.style.borderColor = '#e1e8ed';
-    });
-    
-    // Validate required fields
-    requiredFields.forEach(field => {
-        const value = field.element.value.trim();
-        
-        if (!value) {
-            field.element.style.borderColor = '#e74c3c';
-            if (!firstErrorField) {
-                firstErrorField = field;
-            }
-            isValid = false;
-        }
-    });
-    
-    // Email validation
-    const emailInput = document.querySelector('[name="email"]');
-    const emailValue = emailInput.value.trim();
-    if (emailValue) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(emailValue)) {
-            emailInput.style.borderColor = '#e74c3c';
-            if (!firstErrorField) {
-                firstErrorField = { label: 'Valid Email', element: emailInput };
-            }
-            isValid = false;
-        }
-    }
-    
-    // Community name length validation
-    const nameInput = document.querySelector('[name="name"]');
-    const nameValue = nameInput.value.trim();
-    if (nameValue && nameValue.length < 3) {
-        nameInput.style.borderColor = '#e74c3c';
-        if (!firstErrorField) {
-            firstErrorField = { label: 'Community Name (minimum 3 characters)', element: nameInput };
-        }
-        isValid = false;
-    }
-    
-    // Total members validation (must be non-negative)
-    const totalMembersInput = document.querySelector('[name="totalMembers"]');
-    const totalMembersValue = parseInt(totalMembersInput.value);
-    if (totalMembersValue < 0) {
-        totalMembersInput.style.borderColor = '#e74c3c';
-        if (!firstErrorField) {
-            firstErrorField = { label: 'Total Members (cannot be negative)', element: totalMembersInput };
-        }
-        isValid = false;
-    }
-    
-    // Focus on first error field
-    if (firstErrorField) {
-        firstErrorField.element.focus();
-        showMessage(`Please check the ${firstErrorField.label} field`, 'error');
-    }
-    
-    return isValid;
-}
-
-// Show success/error messages
-function showMessage(message, type) {
-    const successDiv = document.getElementById('successMessage');
-    const errorDiv = document.getElementById('errorMessage');
-    
-    // Hide both messages first
-    successDiv.style.display = 'none';
-    errorDiv.style.display = 'none';
-    
-    if (type === 'success') {
-        successDiv.textContent = message;
-        successDiv.style.display = 'block';
-    } else {
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-    }
-    
-    // Scroll to top to show message
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Auto-hide messages after 5 seconds
-    setTimeout(() => {
-        successDiv.style.display = 'none';
-        errorDiv.style.display = 'none';
-    }, 5000);
-}
-
-// Reset form functionality
-function resetForm() {
-    const form = document.getElementById('createCommunityForm');
-    form.reset();
-    
-    // Reset plan selection to basic
-    document.querySelectorAll('.plan-option').forEach(option => {
-        option.classList.remove('selected');
-    });
-    document.querySelector('.plan-option').classList.add('selected');
-    document.querySelector('input[value="basic"]').checked = true;
-    
-    // Reset field borders
-    document.querySelectorAll('input, select, textarea').forEach(field => {
-        field.style.borderColor = '#e1e8ed';
-    });
-    
-    // Hide messages
-    document.getElementById('successMessage').style.display = 'none';
-    document.getElementById('errorMessage').style.display = 'none';
-    
-    // Focus on first field
-    document.querySelector('[name="name"]').focus();
-}
-
-// Initialize event listeners when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Email validation on blur
-    document.getElementById('communityEmail').addEventListener('blur', function() {
-        const email = this.value.trim();
-        if (email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                this.style.borderColor = '#e74c3c';
-                showMessage('Please enter a valid email address', 'error');
-            } else {
-                this.style.borderColor = '#4caf50';
-                // Hide error message if email is now valid
-                const errorDiv = document.getElementById('errorMessage');
-                if (errorDiv.textContent.includes('email')) {
-                    errorDiv.style.display = 'none';
-                }
-            }
-        }
-    });
-    
-    // Community name validation on input
-    document.getElementById('communityName').addEventListener('input', function() {
-        const name = this.value.trim();
-        if (name.length > 0 && name.length < 3) {
-            this.style.borderColor = '#ff7043';
-        } else if (name.length >= 3) {
-            this.style.borderColor = '#4caf50';
-        } else {
-            this.style.borderColor = '#e1e8ed';
-        }
-    });
-    
-    // Total members validation
-    document.getElementById('totalMembers').addEventListener('input', function() {
-        const value = parseInt(this.value);
-        if (isNaN(value) || value < 0) {
-            this.style.borderColor = '#e74c3c';
-        } else {
-            this.style.borderColor = '#4caf50';
-        }
-    });
-    
-    // Clear error styling on focus
-    document.querySelectorAll('input, select, textarea').forEach(field => {
-        field.addEventListener('focus', function() {
-            if (this.style.borderColor === 'rgb(231, 76, 60)') { // #e74c3c in RGB
-                this.style.borderColor = '#e1e8ed';
-            }
-        });
-    });
-    
-    // Close modals when clicking outside
-    window.addEventListener('click', function(event) {
-        if (event.target.className === 'modal') {
-            event.target.style.display = 'none';
-        }
-    });
-});
-
-// Keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    // Ctrl + Enter to submit form
-    if (e.ctrlKey && e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('createCommunityForm').dispatchEvent(new Event('submit'));
-    }
-    
-    // Escape to reset form
-    if (e.key === 'Escape') {
-        e.preventDefault();
-        resetForm();
-    }
-});
-
-// Prevent form submission on Enter key in input fields (except textarea)
-document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            // Move to next field or submit if it's the last field
-            const formElements = Array.from(document.querySelectorAll('input, select, textarea'));
-            const currentIndex = formElements.indexOf(this);
-            if (currentIndex < formElements.length - 1) {
-                formElements[currentIndex + 1].focus();
-            }
-        }
-    });
-});
-
-console.log('Community creation form JavaScript loaded successfully');
-</script>
+}</script>
 </body>
+
 </html>
