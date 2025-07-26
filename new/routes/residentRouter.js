@@ -7,6 +7,7 @@ import Resident from "../models/resident.js";
 import CommonSpaces from "../models/commonSpaces.js";
 import Payment from "../models/payment.js";
 import VisitorPreApproval from "../models/preapproval.js";
+import Community from "../models/communities.js";
 import auth from "../controllers/auth.js";
 import { authorizeR } from "../controllers/authorization.js";
 import Ad from "../models/Ad.js";
@@ -39,6 +40,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+<<<<<<< HEAD
 function getTimeAgo(date) {
   const now = new Date(Date.now());
   const diffMs = now - new Date(date);
@@ -60,10 +62,16 @@ function getTimeAgo(date) {
   const diffDays = Math.floor(diffHours / 24);
   return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
 }
+=======
+// Updated routes for common space booking
+>>>>>>> c86b71ab2aa042c42609a6438e37e745a38a58d0
 
 residentRouter.get("/commonSpace", async (req, res) => {
-  const booking = await CommonSpaces.find({ bookedBy: req.user.id });
+  try {
+    const bookings = await CommonSpaces.find({ bookedBy: req.user.id }).sort({ createdAt: -1 });
+    console.log("Booking Data:", bookings);
 
+<<<<<<< HEAD
   const resi = await Resident.findById(req.user.id);
 
   resi.notifications.forEach(async (n) => {
@@ -79,40 +87,95 @@ residentRouter.get("/commonSpace", async (req, res) => {
     ads,
     resi,
   });
+=======
+    const ads = await Ad.find({ community: req.user.community });
+    
+    // Get community data to fetch available common spaces
+    const community = await Community.findById(req.user.community);
+    const availableSpaces = community ? community.commonSpaces : [];
+    console.log(availableSpaces)
+    res.render("resident/commonSpace", { 
+      path: "cbs", 
+      bookings: bookings, 
+      ads: ads,
+      availableSpaces: availableSpaces 
+    });
+  } catch (error) {
+    console.error("Error fetching common space data:", error);
+    req.flash("message", "Error loading common space data.");
+    res.redirect("/resident/dashboardx");
+  }
+>>>>>>> c86b71ab2aa042c42609a6438e37e745a38a58d0
 });
 
 residentRouter.post("/commonSpace/:id", async (req, res) => {
-  const issueId = req.params.id;
+  try {
+    const bookingId = req.params.id;
 
-  const commonspace = await CommonSpaces.findById(issueId);
-  if (!commonspace) {
-    return res.status(404).send("commonspace not found");
+    const commonspace = await CommonSpaces.findById(bookingId);
+    if (!commonspace) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    // Verify that this booking belongs to the current user
+    if (commonspace.bookedBy.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Unauthorized access" });
+    }
+
+    console.log("Commonspace Data:", commonspace);
+    res.status(200).json({ commonspace: commonspace });
+  } catch (error) {
+    console.error("Error fetching booking details:", error);
+    res.status(500).json({ error: "Server error" });
   }
-
-  console.log("Commonspace Data:", commonspace);
-
-  res.status(200).json({ commonspace: commonspace });
 });
 
 residentRouter.post("/commonSpace", async (req, res) => {
   try {
     const uid = req.user.id;
     const { facility, purpose, date, from, to } = req.body;
-    console.log(facility, purpose, date, from, to);
+    console.log("Received booking data:", { facility, purpose, date, from, to });
 
-    if (!facility || !purpose || !date || !from || !to) {
-      req.flash("message", "All fields are required.");
-      console.log("Missing fields in request body:", req.body);
-      return res.redirect("commonSpace");
+    // Validation
+    if (!facility || !date || !from || !to) {
+      req.flash("message", "Facility, date, and time are required fields.");
+      return res.redirect("/resident/commonSpace");
     }
 
-    const formattedDate = formatDate(date);
-    console.log("Formatted Date:", formattedDate);
+    // Validate date is not in the past
+    const bookingDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (bookingDate < today) {
+      req.flash("message", "Cannot book for past dates.");
+      return res.redirect("/resident/commonSpace");
+    }
 
+    // Validate time format and logic
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!timeRegex.test(from) || !timeRegex.test(to)) {
+      req.flash("message", "Invalid time format.");
+      return res.redirect("/resident/commonSpace");
+    }
+
+    // Check if end time is after start time
+    const [fromHour, fromMin] = from.split(':').map(Number);
+    const [toHour, toMin] = to.split(':').map(Number);
+    const fromMinutes = fromHour * 60 + fromMin;
+    const toMinutes = toHour * 60 + toMin;
+
+    if (toMinutes <= fromMinutes) {
+      req.flash("message", "End time must be after start time.");
+      return res.redirect("/resident/commonSpace");
+    }
+
+
+    // Create the booking
     const space = await CommonSpaces.create({
       name: facility,
-      description: purpose,
-      Date: formattedDate,
+      description: purpose || "No purpose specified",
+      Date: date,
       from,
       to,
       status: "Pending",
@@ -121,29 +184,27 @@ residentRouter.post("/commonSpace", async (req, res) => {
       community: req.user.community,
     });
 
+    // Generate unique ID
     const uniqueId = generateCustomID(req.user.id, "CS", null);
     space.ID = uniqueId;
-
     await space.save();
 
-    console.log("New Common Space Created:", space);
+    console.log("New Common Space Booking Created:", space);
 
+    // Update user's booked spaces
     const user = await Resident.findById(uid);
-    if (!user) {
-      console.log("User not found");
-      req.flash("message", "User not found.");
-      return res.redirect("/login");
+    if (user) {
+      user.bookedCommonSpaces.push(space._id);
+      await user.save();
     }
 
-    user.bookedCommonSpaces.push(space._id);
-    await user.save();
-
-    req.flash("message", "Booking request submitted successfully");
-    return res.redirect("commonSpace");
+    req.flash("message", "Booking request submitted successfully!");
+    return res.redirect("/resident/commonSpace");
+    
   } catch (error) {
-    console.error("Error:", error);
-    req.flash("message", "Something went wrong.");
-    res.redirect("commonSpace");
+    console.error("Error creating booking:", error);
+    req.flash("message", "Something went wrong. Please try again.");
+    res.redirect("/resident/commonSpace");
   }
 });
 
@@ -151,16 +212,35 @@ residentRouter.get("/commonSpace/cancelled/:id", async (req, res) => {
   try {
     const bookingId = req.params.id;
 
-    const booking = await CommonSpaces.deleteOne({
+    // First verify the booking exists and belongs to the user
+    const booking = await CommonSpaces.findOne({
       _id: bookingId,
       bookedBy: req.user.id,
+      status: "Pending" // Only allow cancellation of pending bookings
     });
 
-    console.log(bookingId, req.user.id);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found or cannot be cancelled" });
+    }
 
+    // Update status to cancelled instead of deleting
+    await CommonSpaces.findByIdAndUpdate(bookingId, {
+      status: "Cancelled",
+      cancelledBy: req.user.id,
+      cancelledAt: new Date(),
+      cancellationReason: "Cancelled by resident"
+    });
+
+    // Remove from user's booked spaces
+    await Resident.findByIdAndUpdate(req.user.id, {
+      $pull: { bookedCommonSpaces: bookingId }
+    });
+
+    console.log("Booking cancelled:", bookingId, "by user:", req.user.id);
     return res.json({ result: "Booking cancelled successfully" });
+    
   } catch (error) {
-    console.error("Error fetching cancellation reason:", error);
+    console.error("Error cancelling booking:", error);
     res.status(500).json({ error: "Server error" });
   }
 });

@@ -53,7 +53,7 @@ function setupEventListeners() {
 // Load dashboard statistics and charts
 async function loadDashboardData() {
     try {
-        const response = await fetch('/users/admin/payments');
+        const response = await fetch('/admin/payments');
         if (!response.ok) throw new Error('Failed to fetch dashboard data');
         
         // Since we're getting HTML, we need to extract data from the rendered page
@@ -77,7 +77,7 @@ async function loadTransactions(page = 1) {
             ...currentFilters
         });
 
-        const response = await fetch(`/users/admin/api/payments/transactions?${params}`);
+        const response = await fetch(`/admin/api/payments/transactions?${params}`);
         if (!response.ok) throw new Error('Failed to fetch transactions');
         
         const data = await response.json();
@@ -188,7 +188,7 @@ async function viewPaymentDetails(communityId, transactionId) {
     try {
         showLoading();
         
-        const response = await fetch(`/users/admin/api/payments/community/${communityId}`);
+        const response = await fetch(`/admin/api/payments/community/${communityId}`);
         if (!response.ok) throw new Error('Failed to fetch payment details');
         
         const data = await response.json();
@@ -324,7 +324,7 @@ async function updatePaymentStatus(communityId, transactionId, status) {
     try {
         showLoading();
         
-        const response = await fetch(`/users/admin/api/payments/transaction/${communityId}/${transactionId}`, {
+        const response = await fetch(`/admin/api/payments/transaction/${communityId}/${transactionId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

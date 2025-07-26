@@ -173,6 +173,13 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+});
+
 
 // Set up EJS
 app.set("view engine", "ejs");
@@ -273,7 +280,6 @@ app.post("/login", async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
-
 app.get("/logout", (req, res) => {
   const token = req.cookies.token;
 
@@ -282,8 +288,11 @@ app.get("/logout", (req, res) => {
   }
 
   res.clearCookie("token");
-  res.status(200).json({ success: true });
+
+  // Redirect to login instead of sending JSON
+  res.redirect("/login");
 });
+
 
 app.listen(PORT, async () => {
   const ads = await Ad.find({});
