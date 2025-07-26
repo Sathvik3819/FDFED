@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+    <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -19,7 +20,8 @@
     <link rel="stylesheet" href="../../css/nav.css" />
 
     <style>
-     
+      /* ... (keep all existing styles) ... */
+         
      
       .section-title {
         position: relative;
@@ -467,6 +469,140 @@
           padding: 15px;
         }
       }
+      /* New styles for management section */
+      .management-section {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 25px;
+        margin-bottom: 30px;
+      }
+      
+      .management-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      
+      .toggle-management {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+      
+      .toggle-management:hover {
+        background-color: #0b5ed7;
+      }
+      
+      .space-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+      
+      .space-item {
+        background: #f8f9fa;
+        border-radius: 5px;
+        padding: 15px;
+        border-left: 4px solid var(--primary);
+        position: relative;
+      }
+      
+      .space-item h4 {
+        margin-bottom: 10px;
+        color: var(--dark);
+      }
+      
+      .space-item p {
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        color: var(--gray);
+      }
+      
+      .space-actions {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        gap: 5px;
+      }
+      
+      .edit-space-btn, .delete-space-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 2px 5px;
+        border-radius: 3px;
+      }
+      
+      .edit-space-btn {
+        color: var(--primary);
+      }
+      
+      .delete-space-btn {
+        color: var(--danger);
+      }
+      
+      /* Form styles for adding/editing spaces */
+      .space-form {
+        display: none;
+        margin-top: 20px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 5px;
+      }
+      
+      .space-form.active {
+        display: block;
+      }
+      
+      .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+      
+      .form-group {
+        flex: 1;
+      }
+      
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 15px;
+      }
+      
+      /* Rules section */
+      .rules-section {
+        margin-top: 30px;
+      }
+      
+      .rules-textarea {
+        width: 100%;
+        min-height: 150px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-family: inherit;
+      }
+      
+      .save-rules-btn {
+        margin-top: 15px;
+        background-color: var(--success);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
     </style>
   </head>
 
@@ -498,6 +634,125 @@
           <h1>Common Space Bookings</h1>
         </div>
 
+        <!-- Management Section -->
+        <div class="management-section">
+          <div class="management-header">
+            <h2>Manage Common Spaces</h2>
+            <button class="toggle-management" id="toggleManagement">
+              Show Management
+            </button>
+          </div>
+          
+          <div id="managementContent" style="display: none;">
+            <!-- Add New Space Form -->
+            <button class="toggle-management" id="addSpaceBtn">
+              Add New Space
+            </button>
+            
+            <div class="space-form" id="spaceForm">
+              <h4 id="formTitle">Add New Common Space</h4>
+              <form id="spaceFormElement">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="spaceType">Space Type</label>
+                    <select class="form-control" id="spaceType" name="spaceType" required>
+                      <option value="">Select Type</option>
+                      <option value="Clubhouse">Clubhouse</option>
+                      <option value="Banquet Hall">Banquet Hall</option>
+                      <option value="Community Hall">Community Hall</option>
+                      <option value="Multipurpose Hall">Multipurpose Hall</option>
+                      <option value="Swimming Pool">Swimming Pool</option>
+                      <option value="Tennis Court">Tennis Court</option>
+                      <option value="Badminton Court">Badminton Court</option>
+                      <option value="Basketball Court">Basketball Court</option>
+                      <option value="Indoor Games Room">Indoor Games Room</option>
+                      <option value="Amphitheatre">Amphitheatre</option>
+                      <option value="Co-working Space">Co-working Space</option>
+                      <option value="Guest Room">Guest Room</option>
+                      <option value="Barbecue Area">Barbecue Area</option>
+                      <option value="Yoga Deck">Yoga Deck</option>
+                      <option value="Terrace Area">Terrace Area</option>
+                      <option value="Rooftop Garden">Rooftop Garden</option>
+                      <option value="Mini Theatre">Mini Theatre</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="spaceName">Space Name</label>
+                    <input type="text" class="form-control" id="spaceName" name="spaceName" required>
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="bookable">Bookable</label>
+                    <select class="form-control" id="bookable" name="bookable">
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="maxHours">Max Booking Duration (hours)</label>
+                    <input type="number" class="form-control" id="maxHours" name="maxHours" min="1" value="4">
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="bookingRules">Booking Rules</label>
+                  <textarea class="form-control" id="bookingRules" name="bookingRules" rows="3"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                  <button type="button" class="btn btn-secondary" id="cancelSpaceBtn">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save Space</button>
+                </div>
+              </form>
+            </div>
+            
+            <!-- Spaces List -->
+         <div class="space-list" id="spacesList">
+  <% if (locals.community && community.commonSpaces && community.commonSpaces.length > 0) { %>
+    <% community.commonSpaces.forEach(space => { %>
+      <div class="space-item" data-id="<%= space._id %>">
+        <div class="space-actions">
+          <button class="edit-space-btn" data-space='<%= JSON.stringify(space) %>'>
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="delete-space-btn" data-id="<%= space._id %>">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+        <h4><%= space.name %></h4>
+        <p><strong>Type:</strong> <%= space.type %></p>
+        <p><strong>Bookable:</strong> <%= space.bookable ? 'Yes' : 'No' %></p>
+        <% if (space.bookable) { %>
+          <p><strong>Max Hours:</strong> <%= space.maxBookingDurationHours || 'Not specified' %></p>
+        <% } %>
+        <% if (space.bookingRules) { %>
+          <p><strong>Rules:</strong> <%= space.bookingRules.substring(0, 50) %>...</p>
+        <% } %>
+      </div>
+    <% }) %>
+  <% }
+   else { %>
+    <div class="empty-state">
+      <i class="bi bi-building"></i>
+      <h3>No Common Spaces Configured</h3>
+      <p>Add your first common space to get started.</p>
+    </div>
+  <% } %>
+</div>
+            
+            <!-- Booking Rules Section -->
+            <div class="rules-section">
+              <h3>Booking Rules</h3>
+              <textarea class="rules-textarea" id="bookingRulesTextarea"><%= csb[0]?.bookingRules || 'No rules specified' %></textarea>
+              <button class="save-rules-btn" id="saveRulesBtn">Save Rules</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing Booking Stats and List -->
         <div class="stats-container">
           <div class="stat-card" style="border-left: 6px solid var(--primary)">
             <h3>Today's Bookings</h3>
@@ -588,5 +843,7 @@
 
     <script src="../../js/communityManager/CSB.js"></script>
     <script src="../../js/sidebar.js"></script>
+    
+    
   </body>
 </html>

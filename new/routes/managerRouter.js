@@ -20,7 +20,7 @@ import Ad from "../models/Ad.js";
 import Payment from "../models/payment.js";
 import visitor from "../models/visitors.js";
 
-import {sendPassword} from '../controllers/OTP.js'
+import { sendPassword } from '../controllers/OTP.js'
 
 function generateCustomID(userEmail, facility, countOrRandom = null) {
   const id = userEmail.toUpperCase().slice(0, 2);
@@ -48,12 +48,12 @@ const upload = multer({ storage: storage });
 managerRouter.get("/commonSpace", async (req, res) => {
   const c = req.user.community;
   const csb = await CommonSpaces.find({ community: c });
-
   const ads = await Ad.find({ community: req.user.community });
+  const community = await Community.findById(req.user.community)
+      .select('commonSpaces')
+      .lean();
 
-  console.log(ads);
-
-  res.render("communityManager/CSB", { path: "cbs", csb, ads });
+  res.render("communityManager/CSB", { path: "cbs", csb,community:community });
 });
 
 function mergeBusySlots(slots) {
@@ -216,309 +216,695 @@ managerRouter.post("/commonSpace/reject/:id", async (req, res) => {
   }
 });
 
+// Add new space
+managerRouter.post('/api/community/spaces', async (req, res) => {
+  try {
+    // Validate required fields
+    const { type, name } = req.body;
+    if (!type || !name) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Space type and name are required' 
+      });
+    }
 
+    // Check if user has community access
+    if (!req.user || !req.user.community) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized access' 
+      });
+    }
 
+    const community = await Community.findById(req.user.community);
+    if (!community) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Community not found' 
+      });
+    }
+
+    // Check for duplicate space names
+    const existingSpace = community.commonSpaces.find(
+      space => space.name.toLowerCase() === name.toLowerCase()
+    );
+    if (existingSpace) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'A space with this name already exists' 
+      });
+    }
+
+    // Validate and sanitize input data
+    const newSpace = {
+      type: type.trim(),
+      name: name.trim(),
+      bookable: req.body.bookable !== undefined ? Boolean(req.body.bookable) : true,
+      maxBookingDurationHours: req.body.maxBookingDurationHours ? 
+        Math.max(1, parseInt(req.body.maxBookingDurationHours)) : null,
+      bookingRules: req.body.bookingRules ? req.body.bookingRules.trim() : '',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    community.commonSpaces.push(newSpace);
+    await community.save();
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Space created successfully',
+      space: newSpace 
+    });
+  } catch (error) {
+    console.error('Error creating space:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Update space
+managerRouter.put('/api/community/spaces/:id', async (req, res) => {
+  try {
+    // Validate space ID
+    const spaceId = req.params.id;
+    if (!spaceId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Space ID is required' 
+      });
+    }
+
+    // Check if user has community access
+    if (!req.user || !req.user.community) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized access' 
+      });
+    }
+
+    const community = await Community.findById(req.user.community);
+    if (!community) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Community not found' 
+      });
+    }
+
+    const spaceIndex = community.commonSpaces.findIndex(
+      s => s._id.toString() === spaceId
+    );
+
+    if (spaceIndex === -1) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Space not found' 
+      });
+    }
+
+    // Validate required fields if provided
+    const { type, name } = req.body;
+    if ((type !== undefined && !type.trim()) || (name !== undefined && !name.trim())) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Space type and name cannot be empty' 
+      });
+    }
+
+    // Check for duplicate names (excluding current space)
+    if (name && name.trim()) {
+      const duplicateSpace = community.commonSpaces.find(
+        (space, index) => 
+          index !== spaceIndex && 
+          space.name.toLowerCase() === name.trim().toLowerCase()
+      );
+      if (duplicateSpace) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'A space with this name already exists' 
+        });
+      }
+    }
+
+    // Prepare update data
+    const updateData = {
+      updatedAt: new Date()
+    };
+
+    if (type !== undefined) updateData.type = type.trim();
+    if (name !== undefined) updateData.name = name.trim();
+    if (req.body.bookable !== undefined) updateData.bookable = Boolean(req.body.bookable);
+    if (req.body.maxBookingDurationHours !== undefined) {
+      updateData.maxBookingDurationHours = req.body.maxBookingDurationHours ? 
+        Math.max(1, parseInt(req.body.maxBookingDurationHours)) : null;
+    }
+    if (req.body.bookingRules !== undefined) {
+      updateData.bookingRules = req.body.bookingRules ? req.body.bookingRules.trim() : '';
+    }
+
+    // Update the space
+    Object.assign(community.commonSpaces[spaceIndex], updateData);
+
+    await community.save();
+
+    res.json({ 
+      success: true, 
+      message: 'Space updated successfully',
+      space: community.commonSpaces[spaceIndex] 
+    });
+  } catch (error) {
+    console.error('Error updating space:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Delete space
+managerRouter.delete('/api/community/spaces/:id', async (req, res) => {
+  try {
+    // Validate space ID
+    const spaceId = req.params.id;
+    if (!spaceId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Space ID is required' 
+      });
+    }
+
+    // Check if user has community access
+    if (!req.user || !req.user.community) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized access' 
+      });
+    }
+
+    const community = await Community.findById(req.user.community);
+    if (!community) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Community not found' 
+      });
+    }
+
+    const originalCount = community.commonSpaces.length;
+    
+    // Find the space to be deleted for additional checks
+    const spaceToDelete = community.commonSpaces.find(
+      space => space._id.toString() === spaceId
+    );
+
+    if (!spaceToDelete) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Common space not found' 
+      });
+    }
+
+    // Optional: Check if space has active bookings before deletion
+    // You might want to add this check based on your business logic
+    // const hasActiveBookings = await checkActiveBookings(spaceId);
+    // if (hasActiveBookings) {
+    //   return res.status(400).json({ 
+    //     success: false, 
+    //     message: 'Cannot delete space with active bookings' 
+    //   });
+    // }
+
+    // Filter out the space with the given ID
+    community.commonSpaces = community.commonSpaces.filter(
+      space => space._id.toString() !== spaceId
+    );
+
+    // Double-check that something was actually removed
+    if (community.commonSpaces.length === originalCount) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to delete space' 
+      });
+    }
+
+    await community.save();
+
+    res.json({ 
+      success: true, 
+      message: 'Common space deleted successfully',
+      deletedSpace: {
+        id: spaceId,
+        name: spaceToDelete.name,
+        type: spaceToDelete.type
+      }
+    });
+  } catch (error) {
+    console.error('Error deleting common space:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Update booking rules
+managerRouter.post('/api/community/booking-rules', async (req, res) => {
+  try {
+    // Validate input
+    if (req.body.rules === undefined) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Booking rules are required' 
+      });
+    }
+
+    // Check if user has community access
+    if (!req.user || !req.user.community) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized access' 
+      });
+    }
+
+    const community = await Community.findById(req.user.community);
+    if (!community) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Community not found' 
+      });
+    }
+
+    // Sanitize and update booking rules
+    const sanitizedRules = req.body.rules ? req.body.rules.trim() : '';
+    community.bookingRules = sanitizedRules;
+    community.updatedAt = new Date();
+
+    await community.save();
+
+    res.json({ 
+      success: true, 
+      message: 'Booking rules updated successfully',
+      rules: sanitizedRules
+    });
+  } catch (error) {
+    console.error('Error updating booking rules:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Optional: Get all spaces (for consistency)
+managerRouter.get('/api/community/spaces', async (req, res) => {
+  try {
+    // Check if user has community access
+    if (!req.user || !req.user.community) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized access' 
+      });
+    }
+
+    const community = await Community.findById(req.user.community);
+    if (!community) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Community not found' 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      spaces: community.commonSpaces,
+      totalSpaces: community.commonSpaces.length
+    });
+  } catch (error) {
+    console.error('Error fetching spaces:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Optional: Get single space
+managerRouter.get('/api/community/spaces/:id', async (req, res) => {
+  try {
+    const spaceId = req.params.id;
+    if (!spaceId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Space ID is required' 
+      });
+    }
+
+    // Check if user has community access
+    if (!req.user || !req.user.community) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized access' 
+      });
+    }
+
+    const community = await Community.findById(req.user.community);
+    if (!community) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Community not found' 
+      });
+    }
+
+    const space = community.commonSpaces.find(
+      s => s._id.toString() === spaceId
+    );
+
+    if (!space) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Space not found' 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      space: space
+    });
+  } catch (error) {
+    console.error('Error fetching space:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
 // Middleware to check subscription status
 async function checkSubscription(req, res, next) {
-    try {
-        // Skip check for payment-related routes
-        if (req.path.startsWith('/payments') || 
-            req.path.startsWith('/subscription') ||
-            req.path === '/all-communities' ||
-            req.path === '/residents' ||
-            req.path === '/communities' ||
-            req.path === '/currentcManager' ||
-            req.path === '/community-details' ||
-            req.path === '/subscription-status' ||
-            req.path === '/subscription-payment' ||
-            req.path === '/all-payments' ||
-            req.path === '/new-community' ||
-            req.path === '/create-with-payment') {
-            return next();
-        }
-
-        // Get manager and community info
-        const managerId = req.user.id;
-        const manager = await CommunityManager.findById(managerId);
-        
-        if (!manager) {
-            return res.status(404).render('error', { message: 'Community manager not found' });
-        }
-
-        const community = await Community.findById(manager.assignedCommunity)
-            .select('subscriptionStatus planEndDate');
-
-        if (!community) {
-            return res.status(404).render('error', { message: 'Community not found' });
-        }
-
-        // Check if subscription is active
-        const now = new Date();
-        const isExpired = community.planEndDate && new Date(community.planEndDate) < now;
-        
-        if (isExpired || community.subscriptionStatus !== 'active') {
-            // Store the original URL in session for redirecting back after payment
-            req.session.returnTo = req.originalUrl;
-            
-            // Add a flash message
-            req.flash('warning', 'Your subscription has expired or is inactive. Please complete the payment to continue.');
-            
-            // Redirect to payment page
-            return res.redirect('/manager/payments');
-        }
-
-        next();
-    } catch (error) {
-        console.error('Subscription check error:', error);
-        res.status(500).render('error', { message: 'Error checking subscription status' });
+  try {
+    // Skip check for payment-related routes
+    if (req.path.startsWith('/payments') ||
+      req.path.startsWith('/subscription') ||
+      req.path === '/all-communities' ||
+      req.path === '/residents' ||
+      req.path === '/communities' ||
+      req.path === '/currentcManager' ||
+      req.path === '/community-details' ||
+      req.path === '/subscription-status' ||
+      req.path === '/subscription-payment' ||
+      req.path === '/all-payments' ||
+      req.path === '/new-community' ||
+      req.path === '/create-with-payment') {
+      return next();
     }
+
+    // Get manager and community info
+    const managerId = req.user.id;
+    const manager = await CommunityManager.findById(managerId);
+
+    if (!manager) {
+      return res.status(404).render('error', { message: 'Community manager not found' });
+    }
+
+    const community = await Community.findById(manager.assignedCommunity)
+      .select('subscriptionStatus planEndDate');
+
+    if (!community) {
+      return res.status(404).render('error', { message: 'Community not found' });
+    }
+
+    // Check if subscription is active
+    const now = new Date();
+    const isExpired = community.planEndDate && new Date(community.planEndDate) < now;
+
+    if (isExpired || community.subscriptionStatus !== 'active') {
+      // Store the original URL in session for redirecting back after payment
+      req.session.returnTo = req.originalUrl;
+
+      // Add a flash message
+      req.flash('warning', 'Your subscription has expired or is inactive. Please complete the payment to continue.');
+
+      // Redirect to payment page
+      return res.redirect('/manager/payments');
+    }
+
+    next();
+  } catch (error) {
+    console.error('Subscription check error:', error);
+    res.status(500).render('error', { message: 'Error checking subscription status' });
+  }
 }
 
 // Apply checkSubscription middleware to all routes except excluded ones
 managerRouter.use(checkSubscription);
 
 async function getSubscriptionStatus(req) {
-    try {
-        const managerId = req.user.id;
-        const manager = await CommunityManager.findById(managerId);
-        
-        if (!manager || !manager.assignedCommunity) {
-            return null;
-        }
+  try {
+    const managerId = req.user.id;
+    const manager = await CommunityManager.findById(managerId);
 
-        const community = await Community.findById(manager.assignedCommunity)
-            .select('subscriptionStatus planEndDate subscriptionPlan');
-
-        if (!community) {
-            return null;
-        }
-
-        const now = new Date();
-        const isExpired = community.planEndDate && new Date(community.planEndDate) < now;
-        const daysUntilExpiry = community.planEndDate 
-            ? Math.ceil((new Date(community.planEndDate) - now) / (1000 * 60 * 60 * 24))
-            : 0;
-
-        return {
-            status: isExpired ? 'expired' : community.subscriptionStatus,
-            plan: community.subscriptionPlan,
-            isExpired,
-            daysUntilExpiry,
-            isExpiringSoon: daysUntilExpiry <= 7 && daysUntilExpiry > 0
-        };
-    } catch (error) {
-        console.error('Error getting subscription status:', error);
-        return null;
+    if (!manager || !manager.assignedCommunity) {
+      return null;
     }
+
+    const community = await Community.findById(manager.assignedCommunity)
+      .select('subscriptionStatus planEndDate subscriptionPlan');
+
+    if (!community) {
+      return null;
+    }
+
+    const now = new Date();
+    const isExpired = community.planEndDate && new Date(community.planEndDate) < now;
+    const daysUntilExpiry = community.planEndDate
+      ? Math.ceil((new Date(community.planEndDate) - now) / (1000 * 60 * 60 * 24))
+      : 0;
+
+    return {
+      status: isExpired ? 'expired' : community.subscriptionStatus,
+      plan: community.subscriptionPlan,
+      isExpired,
+      daysUntilExpiry,
+      isExpiringSoon: daysUntilExpiry <= 7 && daysUntilExpiry > 0
+    };
+  } catch (error) {
+    console.error('Error getting subscription status:', error);
+    return null;
+  }
 }
 // Get community details with subscription info
 managerRouter.get('/community-details', async (req, res) => {
-    try {
-        const managerId = req.user.id;
-        const manager = await CommunityManager.findById(managerId);
-        
-        if (!manager) {
-            return res.status(404).json({ message: 'Community manager not found' });
-        }
+  try {
+    const managerId = req.user.id;
+    const manager = await CommunityManager.findById(managerId);
 
-        const community = await Community.findById(manager.assignedCommunity)
-            .select('name subscriptionPlan subscriptionStatus planStartDate planEndDate subscriptionHistory');
-
-        if (!community) {
-            return res.status(404).json({ message: 'Community not found' });
-        }
-        console.log(community)
-        res.json(community);
-    } catch (error) {
-        console.error('Error fetching community details:', error);
-        res.status(500).json({ message: 'Failed to fetch community details' });
+    if (!manager) {
+      return res.status(404).json({ message: 'Community manager not found' });
     }
+
+    const community = await Community.findById(manager.assignedCommunity)
+      .select('name subscriptionPlan subscriptionStatus planStartDate planEndDate subscriptionHistory');
+
+    if (!community) {
+      return res.status(404).json({ message: 'Community not found' });
+    }
+    console.log(community)
+    res.json(community);
+  } catch (error) {
+    console.error('Error fetching community details:', error);
+    res.status(500).json({ message: 'Failed to fetch community details' });
+  }
 });
 
 // Handle subscription payment
 managerRouter.post('/subscription-payment', async (req, res) => {
-    try {
-        const {
-            communityId,
-            subscriptionPlan,
-            amount,
-            paymentMethod,
-            planDuration,
-            transactionId,
-            paymentDate,
-            isRenewal
-        } = req.body;
+  try {
+    const {
+      communityId,
+      subscriptionPlan,
+      amount,
+      paymentMethod,
+      planDuration,
+      transactionId,
+      paymentDate,
+      isRenewal
+    } = req.body;
 
-        // Validate required fields
-        if (!subscriptionPlan || !amount || !paymentMethod ) {
-            return res.status(400).json({ message: 'Missing required payment information' });
-        }
-
-        // Get the community
-        const managerId = req.user.id;
-        const manager = await CommunityManager.findById(managerId);
-        
-        if (!manager) {
-            return res.status(404).json({ message: 'Community manager not found' });
-        }
-
-        const community = await Community.findById(communityId);
-        if (!community) {
-            return res.status(404).json({ message: 'Community not found' });
-        }
-
-        // Calculate plan end date
-        const startDate = new Date(paymentDate);
-        const endDate = new Date(startDate);
-        
-        if (planDuration === 'monthly') {
-            endDate.setMonth(endDate.getMonth() + 1);
-        } else if (planDuration === 'yearly') {
-            endDate.setFullYear(endDate.getFullYear() + 1);
-        }
-
-        // Create subscription payment record
-        const subscriptionPayment = {
-            transactionId: transactionId || `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            planName: getSubscriptionPlanName(subscriptionPlan),
-            planType: subscriptionPlan,
-            amount: amount,
-            paymentMethod: paymentMethod,
-            
-            paymentDate: new Date(paymentDate),
-            planStartDate: startDate,
-            planEndDate: endDate,
-            duration: planDuration,
-            status: 'completed',
-            isRenewal: isRenewal || false,
-            processedBy: managerId,
-            metadata: {
-                userAgent: req.get('User-Agent'),
-                ipAddress: req.ip || req.connection.remoteAddress
-            }
-        };
-
-        // Update community subscription details
-        community.subscriptionPlan = subscriptionPlan;
-        community.subscriptionStatus = 'active';
-        community.planStartDate = startDate;
-        community.planEndDate = endDate;
-
-        // Add to subscription history
-        if (!community.subscriptionHistory) {
-            community.subscriptionHistory = [];
-        }
-        community.subscriptionHistory.push(subscriptionPayment);
-
-        // Save the community
-        await community.save();
-
-        // Prepare response
-        const response = {
-            success: true,
-            message: 'Subscription payment processed successfully',
-            transactionId: subscriptionPayment.transactionId,
-            planName: subscriptionPayment.planName,
-            amount: subscriptionPayment.amount,
-            planEndDate: subscriptionPayment.planEndDate,
-            subscriptionStatus: community.subscriptionStatus
-        };
-
-        res.status(200).json(response);
-
-    } catch (error) {
-        console.error('Subscription payment error:', error);
-        res.status(500).json({ 
-            message: 'Payment processing failed', 
-            error: error.message 
-        });
+    // Validate required fields
+    if (!subscriptionPlan || !amount || !paymentMethod) {
+      return res.status(400).json({ message: 'Missing required payment information' });
     }
+
+    // Get the community
+    const managerId = req.user.id;
+    const manager = await CommunityManager.findById(managerId);
+
+    if (!manager) {
+      return res.status(404).json({ message: 'Community manager not found' });
+    }
+
+    const community = await Community.findById(communityId);
+    if (!community) {
+      return res.status(404).json({ message: 'Community not found' });
+    }
+
+    // Calculate plan end date
+    const startDate = new Date(paymentDate);
+    const endDate = new Date(startDate);
+
+    if (planDuration === 'monthly') {
+      endDate.setMonth(endDate.getMonth() + 1);
+    } else if (planDuration === 'yearly') {
+      endDate.setFullYear(endDate.getFullYear() + 1);
+    }
+
+    // Create subscription payment record
+    const subscriptionPayment = {
+      transactionId: transactionId || `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      planName: getSubscriptionPlanName(subscriptionPlan),
+      planType: subscriptionPlan,
+      amount: amount,
+      paymentMethod: paymentMethod,
+
+      paymentDate: new Date(paymentDate),
+      planStartDate: startDate,
+      planEndDate: endDate,
+      duration: planDuration,
+      status: 'completed',
+      isRenewal: isRenewal || false,
+      processedBy: managerId,
+      metadata: {
+        userAgent: req.get('User-Agent'),
+        ipAddress: req.ip || req.connection.remoteAddress
+      }
+    };
+
+    // Update community subscription details
+    community.subscriptionPlan = subscriptionPlan;
+    community.subscriptionStatus = 'active';
+    community.planStartDate = startDate;
+    community.planEndDate = endDate;
+
+    // Add to subscription history
+    if (!community.subscriptionHistory) {
+      community.subscriptionHistory = [];
+    }
+    community.subscriptionHistory.push(subscriptionPayment);
+
+    // Save the community
+    await community.save();
+
+    // Prepare response
+    const response = {
+      success: true,
+      message: 'Subscription payment processed successfully',
+      transactionId: subscriptionPayment.transactionId,
+      planName: subscriptionPayment.planName,
+      amount: subscriptionPayment.amount,
+      planEndDate: subscriptionPayment.planEndDate,
+      subscriptionStatus: community.subscriptionStatus
+    };
+
+    res.status(200).json(response);
+
+  } catch (error) {
+    console.error('Subscription payment error:', error);
+    res.status(500).json({
+      message: 'Payment processing failed',
+      error: error.message
+    });
+  }
 });
 
 // Get subscription history
 managerRouter.get('/subscription-history', async (req, res) => {
-    try {
-        const managerId = req.user.id;
-        const manager = await CommunityManager.findById(managerId);
-        
-        if (!manager) {
-            return res.status(404).json({ message: 'Community manager not found' });
-        }
+  try {
+    const managerId = req.user.id;
+    const manager = await CommunityManager.findById(managerId);
 
-        const community = await Community.findById(manager.assignedCommunity)
-            .select('subscriptionHistory');
-
-        if (!community) {
-            return res.status(404).json({ message: 'Community not found' });
-        }
-
-        // Sort history by payment date (newest first)
-        const sortedHistory = community.subscriptionHistory
-            ? community.subscriptionHistory.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))
-            : [];
-
-        res.json({
-            success: true,
-            history: sortedHistory,
-            totalPayments: sortedHistory.length
-        });
-
-    } catch (error) {
-        console.error('Error fetching subscription history:', error);
-        res.status(500).json({ message: 'Failed to fetch subscription history' });
+    if (!manager) {
+      return res.status(404).json({ message: 'Community manager not found' });
     }
+
+    const community = await Community.findById(manager.assignedCommunity)
+      .select('subscriptionHistory');
+
+    if (!community) {
+      return res.status(404).json({ message: 'Community not found' });
+    }
+
+    // Sort history by payment date (newest first)
+    const sortedHistory = community.subscriptionHistory
+      ? community.subscriptionHistory.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))
+      : [];
+
+    res.json({
+      success: true,
+      history: sortedHistory,
+      totalPayments: sortedHistory.length
+    });
+
+  } catch (error) {
+    console.error('Error fetching subscription history:', error);
+    res.status(500).json({ message: 'Failed to fetch subscription history' });
+  }
 });
 
 // Get current subscription status
 managerRouter.get('/subscription-status', async (req, res) => {
-    try {
-        const managerId = req.user.id;
-        const manager = await CommunityManager.findById(managerId);
-        
-        if (!manager) {
-            return res.status(404).json({ message: 'Community manager not found' });
-        }
+  try {
+    const managerId = req.user.id;
+    const manager = await CommunityManager.findById(managerId);
 
-        const community = await Community.findById(manager.assignedCommunity)
-            .select('name subscriptionPlan subscriptionStatus planStartDate planEndDate');
-
-        if (!community) {
-            return res.status(404).json({ message: 'Community not found' });
-        }
-
-        // Check if subscription is expired
-        const now = new Date();
-        const isExpired = community.planEndDate && new Date(community.planEndDate) < now;
-        
-        if (isExpired && community.subscriptionStatus === 'active') {
-            community.subscriptionStatus = 'expired';
-            await community.save();
-        }
-
-        // Calculate days until expiry
-        let daysUntilExpiry = null;
-        if (community.planEndDate) {
-            daysUntilExpiry = Math.ceil((new Date(community.planEndDate) - now) / (1000 * 60 * 60 * 24));
-        }
-
-        res.json({
-            success: true,
-            community: {
-                name: community.name,
-                subscriptionPlan: community.subscriptionPlan,
-                subscriptionStatus: community.subscriptionStatus,
-                planStartDate: community.planStartDate,
-                planEndDate: community.planEndDate,
-                daysUntilExpiry: daysUntilExpiry,
-                isExpired: isExpired,
-                isExpiringSoon: daysUntilExpiry && daysUntilExpiry <= 7 && daysUntilExpiry > 0
-            }
-        });
-
-    } catch (error) {
-        console.error('Error fetching subscription status:', error);
-        res.status(500).json({ message: 'Failed to fetch subscription status' });
+    if (!manager) {
+      return res.status(404).json({ message: 'Community manager not found' });
     }
+
+    const community = await Community.findById(manager.assignedCommunity)
+      .select('name subscriptionPlan subscriptionStatus planStartDate planEndDate');
+
+    if (!community) {
+      return res.status(404).json({ message: 'Community not found' });
+    }
+
+    // Check if subscription is expired
+    const now = new Date();
+    const isExpired = community.planEndDate && new Date(community.planEndDate) < now;
+
+    if (isExpired && community.subscriptionStatus === 'active') {
+      community.subscriptionStatus = 'expired';
+      await community.save();
+    }
+
+    // Calculate days until expiry
+    let daysUntilExpiry = null;
+    if (community.planEndDate) {
+      daysUntilExpiry = Math.ceil((new Date(community.planEndDate) - now) / (1000 * 60 * 60 * 24));
+    }
+
+    res.json({
+      success: true,
+      community: {
+        name: community.name,
+        subscriptionPlan: community.subscriptionPlan,
+        subscriptionStatus: community.subscriptionStatus,
+        planStartDate: community.planStartDate,
+        planEndDate: community.planEndDate,
+        daysUntilExpiry: daysUntilExpiry,
+        isExpired: isExpired,
+        isExpiringSoon: daysUntilExpiry && daysUntilExpiry <= 7 && daysUntilExpiry > 0
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching subscription status:', error);
+    res.status(500).json({ message: 'Failed to fetch subscription status' });
+  }
 });
 import fs from 'fs';
 
@@ -562,329 +948,329 @@ const upload2 = multer({
 
 // Render new community page
 managerRouter.get('/new-community', (req, res) => {
-    res.render('communityManager/new-community');
+  res.render('communityManager/new-community');
 });
 
 // Create new community with photo upload
 managerRouter.post('/communities', upload2.array('photos', 10), async (req, res) => {
-    try {
-        const {
-            name,
-            location,
-            email,
-            description,
-            totalMembers,
-            subscriptionPlan,
-            paymentMethod,
-            commonSpaces
-        } = req.body;
+  try {
+    const {
+      name,
+      location,
+      email,
+      description,
+      totalMembers,
+      subscriptionPlan,
+      paymentMethod,
+      commonSpaces
+    } = req.body;
 
-        // Validate required fields
-        if (!name || !location || !email || !paymentMethod) {
-            return res.status(400).json({
-                success: false,
-                message: 'Please fill in all required fields.'
-            });
-        }
-
-        // Check if community with same name or email already exists
-        const existingCommunity = await Community.findOne({
-            $or: [{ name }, { email }]
-        });
-
-        if (existingCommunity) {
-            return res.status(400).json({
-                success: false,
-                message: 'A community with this name or email already exists.'
-            });
-        }
-
-        // Process uploaded photos
-        const photos = [];
-        if (req.files && req.files.length > 0) {
-            req.files.forEach(file => {
-                photos.push({
-                    filename: file.filename,
-                    originalName: file.originalname,
-                    path: `/uploads/communities/${file.filename}`,
-                    size: file.size,
-                    mimeType: file.mimetype,
-                    uploadedAt: new Date()
-                });
-            });
-        }
-
-        // Parse common spaces if provided
-        let parsedCommonSpaces = [];
-        if (commonSpaces) {
-            try {
-                parsedCommonSpaces = JSON.parse(commonSpaces);
-            } catch (error) {
-                console.error('Error parsing common spaces:', error);
-            }
-        }
-
-        // Calculate subscription dates
-        const planStartDate = new Date();
-        const planEndDate = new Date();
-        planEndDate.setMonth(planEndDate.getMonth() + 1); // Add 1 month
-
-        // Get plan pricing
-        const planPrices = {
-            basic: 999,
-            standard: 1999,
-            premium: 3999
-        };
-
-        // Generate transaction ID
-        const transactionId = `TXN${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-
-        // Create community
-        const newCommunity = new Community({
-            name: name.trim(),
-            location: location.trim(),
-            email: email.trim(),
-            description: description?.trim() || '',
-            totalMembers: parseInt(totalMembers) || 0,
-            subscriptionPlan,
-            subscriptionStatus: 'active', // Set as active after successful payment
-            planStartDate,
-            planEndDate,
-            profile: {
-                photos: photos
-            },
-            commonSpaces: parsedCommonSpaces.map(space => ({
-                ...space,
-                createdBy: req.session?.managerId || null
-            })),
-            communityManager: req.session?.managerId || null,
-            
-            // Add subscription history entry
-            subscriptionHistory: [{
-                transactionId,
-                planName: `${subscriptionPlan.charAt(0).toUpperCase() + subscriptionPlan.slice(1)} Plan`,
-                planType: subscriptionPlan,
-                amount: planPrices[subscriptionPlan],
-                paymentMethod,
-                paymentDate: new Date(),
-                planStartDate,
-                planEndDate,
-                duration: 'monthly',
-                status: 'completed',
-                isRenewal: false,
-                processedBy: req.session?.managerId || null,
-                metadata: {
-                    userAgent: req.get('User-Agent'),
-                    ipAddress: req.ip
-                }
-            }],
-
-            // Legacy payment history for backward compatibility
-            paymentHistory: [{
-                date: new Date(),
-                amount: planPrices[subscriptionPlan],
-                method: paymentMethod,
-                transactionId,
-                invoiceUrl: null
-            }]
-        });
-        const x=await CommunityManager.findById(req.user.id)
-        x.assignedCommunity=newCommunity._id
-        
-        await x.save()
-        await newCommunity.save();
-        
-        res.status(201).json({
-            success: true,
-            message: 'Community created successfully!',
-            data: {
-                communityId: newCommunity._id,
-                name: newCommunity.name,
-                subscriptionPlan: newCommunity.subscriptionPlan,
-                transactionId
-            }
-        });
-
-    } catch (error) {
-        console.error('Error creating community:', error);
-
-        // Clean up uploaded files if community creation fails
-        if (req.files && req.files.length > 0) {
-            req.files.forEach(async (file) => {
-                try {
-                    await fs.unlink(file.path);
-                } catch (unlinkError) {
-                    console.error('Error deleting file:', unlinkError);
-                }
-            });
-        }
-
-        // Handle specific errors
-        if (error.name === 'ValidationError') {
-            return res.status(400).json({
-                success: false,
-                message: 'Validation error: ' + Object.values(error.errors)[0].message
-            });
-        }
-
-        if (error.code === 11000) {
-            return res.status(400).json({
-                success: false,
-                message: 'A community with this name or email already exists.'
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: 'An error occurred while creating the community. Please try again.'
-        });
+    // Validate required fields
+    if (!name || !location || !email || !paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please fill in all required fields.'
+      });
     }
+
+    // Check if community with same name or email already exists
+    const existingCommunity = await Community.findOne({
+      $or: [{ name }, { email }]
+    });
+
+    if (existingCommunity) {
+      return res.status(400).json({
+        success: false,
+        message: 'A community with this name or email already exists.'
+      });
+    }
+
+    // Process uploaded photos
+    const photos = [];
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        photos.push({
+          filename: file.filename,
+          originalName: file.originalname,
+          path: `/uploads/communities/${file.filename}`,
+          size: file.size,
+          mimeType: file.mimetype,
+          uploadedAt: new Date()
+        });
+      });
+    }
+
+    // Parse common spaces if provided
+    let parsedCommonSpaces = [];
+    if (commonSpaces) {
+      try {
+        parsedCommonSpaces = JSON.parse(commonSpaces);
+      } catch (error) {
+        console.error('Error parsing common spaces:', error);
+      }
+    }
+
+    // Calculate subscription dates
+    const planStartDate = new Date();
+    const planEndDate = new Date();
+    planEndDate.setMonth(planEndDate.getMonth() + 1); // Add 1 month
+
+    // Get plan pricing
+    const planPrices = {
+      basic: 999,
+      standard: 1999,
+      premium: 3999
+    };
+
+    // Generate transaction ID
+    const transactionId = `TXN${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+    // Create community
+    const newCommunity = new Community({
+      name: name.trim(),
+      location: location.trim(),
+      email: email.trim(),
+      description: description?.trim() || '',
+      totalMembers: parseInt(totalMembers) || 0,
+      subscriptionPlan,
+      subscriptionStatus: 'active', // Set as active after successful payment
+      planStartDate,
+      planEndDate,
+      profile: {
+        photos: photos
+      },
+      commonSpaces: parsedCommonSpaces.map(space => ({
+        ...space,
+        createdBy: req.session?.managerId || null
+      })),
+      communityManager: req.session?.managerId || null,
+
+      // Add subscription history entry
+      subscriptionHistory: [{
+        transactionId,
+        planName: `${subscriptionPlan.charAt(0).toUpperCase() + subscriptionPlan.slice(1)} Plan`,
+        planType: subscriptionPlan,
+        amount: planPrices[subscriptionPlan],
+        paymentMethod,
+        paymentDate: new Date(),
+        planStartDate,
+        planEndDate,
+        duration: 'monthly',
+        status: 'completed',
+        isRenewal: false,
+        processedBy: req.session?.managerId || null,
+        metadata: {
+          userAgent: req.get('User-Agent'),
+          ipAddress: req.ip
+        }
+      }],
+
+      // Legacy payment history for backward compatibility
+      paymentHistory: [{
+        date: new Date(),
+        amount: planPrices[subscriptionPlan],
+        method: paymentMethod,
+        transactionId,
+        invoiceUrl: null
+      }]
+    });
+    const x = await CommunityManager.findById(req.user.id)
+    x.assignedCommunity = newCommunity._id
+
+    await x.save()
+    await newCommunity.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Community created successfully!',
+      data: {
+        communityId: newCommunity._id,
+        name: newCommunity.name,
+        subscriptionPlan: newCommunity.subscriptionPlan,
+        transactionId
+      }
+    });
+
+  } catch (error) {
+    console.error('Error creating community:', error);
+
+    // Clean up uploaded files if community creation fails
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(async (file) => {
+        try {
+          await fs.unlink(file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting file:', unlinkError);
+        }
+      });
+    }
+
+    // Handle specific errors
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error: ' + Object.values(error.errors)[0].message
+      });
+    }
+
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'A community with this name or email already exists.'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while creating the community. Please try again.'
+    });
+  }
 });
 
 // Get community details
 managerRouter.get('/communities/:id', async (req, res) => {
-    try {
-        const community = await Community.findById(req.params.id)
-            .populate('communityManager', 'name email')
-            .lean();
+  try {
+    const community = await Community.findById(req.params.id)
+      .populate('communityManager', 'name email')
+      .lean();
 
-        if (!community) {
-            return res.status(404).json({
-                success: false,
-                message: 'Community not found.'
-            });
-        }
-
-        res.json({
-            success: true,
-            data: community
-        });
-
-    } catch (error) {
-        console.error('Error fetching community:', error);
-        res.status(500).json({
-            success: false,
-            message: 'An error occurred while fetching community details.'
-        });
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: 'Community not found.'
+      });
     }
+
+    res.json({
+      success: true,
+      data: community
+    });
+
+  } catch (error) {
+    console.error('Error fetching community:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while fetching community details.'
+    });
+  }
 });
 
 // Get all communities for the logged-in manager
 managerRouter.get('/communities', async (req, res) => {
-    try {
-        const managerId = req.session?.managerId;
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+  try {
+    const managerId = req.session?.managerId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-        const query = managerId ? { communityManager: managerId } : {};
+    const query = managerId ? { communityManager: managerId } : {};
 
-        const communities = await Community.find(query)
-            .select('name location email status totalMembers subscriptionPlan subscriptionStatus planEndDate profile.photos')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .lean();
+    const communities = await Community.find(query)
+      .select('name location email status totalMembers subscriptionPlan subscriptionStatus planEndDate profile.photos')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
-        const total = await Community.countDocuments(query);
+    const total = await Community.countDocuments(query);
 
-        res.json({
-            success: true,
-            data: {
-                communities,
-                pagination: {
-                    page,
-                    limit,
-                    total,
-                    pages: Math.ceil(total / limit)
-                }
-            }
-        });
+    res.json({
+      success: true,
+      data: {
+        communities,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
 
-    } catch (error) {
-        console.error('Error fetching communities:', error);
-        res.status(500).json({
-            success: false,
-            message: 'An error occurred while fetching communities.'
-        });
-    }
+  } catch (error) {
+    console.error('Error fetching communities:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while fetching communities.'
+    });
+  }
 });
 
 // Payment stats endpoint
 managerRouter.get('/payment-stats', async (req, res) => {
-    try {
-        const managerId = req.session?.managerId;
-        const now = new Date();
-        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  try {
+    const managerId = req.session?.managerId;
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-        const matchCondition = {
-            'subscriptionHistory.paymentDate': { $gte: firstDayOfMonth }
-        };
+    const matchCondition = {
+      'subscriptionHistory.paymentDate': { $gte: firstDayOfMonth }
+    };
 
-        if (managerId) {
-            matchCondition.communityManager = managerId;
-        }
-
-        const stats = await Community.aggregate([
-            { $match: matchCondition },
-            { $unwind: '$subscriptionHistory' },
-            {
-                $match: {
-                    'subscriptionHistory.paymentDate': { $gte: firstDayOfMonth },
-                    'subscriptionHistory.status': 'completed'
-                }
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalAmount: { $sum: '$subscriptionHistory.amount' },
-                    pendingAmount: {
-                        $sum: {
-                            $cond: [
-                                { $eq: ['$subscriptionHistory.status', 'pending'] },
-                                '$subscriptionHistory.amount',
-                                0
-                            ]
-                        }
-                    },
-                    totalTransactions: { $sum: 1 }
-                }
-            }
-        ]);
-
-        res.json({
-            success: true,
-            data: stats[0] || { 
-                totalAmount: 0, 
-                pendingAmount: 0, 
-                totalTransactions: 0 
-            }
-        });
-
-    } catch (error) {
-        console.error('Error fetching payment stats:', error);
-        res.status(500).json({
-            success: false,
-            message: 'An error occurred while fetching payment statistics.'
-        });
+    if (managerId) {
+      matchCondition.communityManager = managerId;
     }
+
+    const stats = await Community.aggregate([
+      { $match: matchCondition },
+      { $unwind: '$subscriptionHistory' },
+      {
+        $match: {
+          'subscriptionHistory.paymentDate': { $gte: firstDayOfMonth },
+          'subscriptionHistory.status': 'completed'
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: '$subscriptionHistory.amount' },
+          pendingAmount: {
+            $sum: {
+              $cond: [
+                { $eq: ['$subscriptionHistory.status', 'pending'] },
+                '$subscriptionHistory.amount',
+                0
+              ]
+            }
+          },
+          totalTransactions: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.json({
+      success: true,
+      data: stats[0] || {
+        totalAmount: 0,
+        pendingAmount: 0,
+        totalTransactions: 0
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching payment stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while fetching payment statistics.'
+    });
+  }
 });
 function getSubscriptionPlanName(planType) {
-    const planNames = {
-        'basic': 'Basic Plan',
-        'standard': 'Standard Plan',
-        'premium': 'Premium Plan'
-    };
-    return planNames[planType] || 'Unknown Plan';
+  const planNames = {
+    'basic': 'Basic Plan',
+    'standard': 'Standard Plan',
+    'premium': 'Premium Plan'
+  };
+  return planNames[planType] || 'Unknown Plan';
 }
 // Helper function to get plan price
 function getPlanPrice(planType) {
-    const planPrices = {
-        'basic': 999,
-        'standard': 1999,
-        'premium': 3999
-    };
-    return planPrices[planType] || 0;
+  const planPrices = {
+    'basic': 999,
+    'standard': 1999,
+    'premium': 3999
+  };
+  return planPrices[planType] || 0;
 }
 
 
@@ -966,7 +1352,7 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
 
       const password = await sendPassword(email);
       console.log(password);
-      
+
       const hashedPassword = await bcrypt.hash(password, 10);
 
       r.password = hashedPassword;
@@ -997,10 +1383,10 @@ managerRouter.get("/userManagement/resident/:id", async (req, res) => {
 managerRouter.delete("/userManagement/resident/:id", async (req, res) => {
   const id = req.params.id;
 
-  const r = await Resident.deleteOne({_id:id});
+  const r = await Resident.deleteOne({ _id: id });
 
 
-  res.status(200).json({ ok: true});
+  res.status(200).json({ ok: true });
 });
 
 
@@ -1258,10 +1644,7 @@ managerRouter.get("/payments", async (req, res) => {
 });
 
 managerRouter.get("/ad", async (req, res) => {
-  const ads = await Ad.find({
-    community: req.user.community,
-    status: "active",
-  });
+  const ads = await Ad.find({ community: req.user.community,status:"active" });
 
   res.render("communityManager/Advertisement", { path: "ad", ads });
 });
