@@ -1,3 +1,5 @@
+// Updated CSB.js - Frontend JavaScript
+
 // Function to open a popup
 function openForm(type) {
   document.getElementById(type + "FormPopup").style.display = "flex";
@@ -28,7 +30,8 @@ function handleDateChange() {
   if (date) {
     // Reset time selections when date changes
     resetTimeSlots();
-    // Here you could fetch available slots for the selected date and facility
+    // TODO: Here you could fetch available slots for the selected date and facility
+    // fetchAvailableSlots(facility, date);
   }
 }
 
@@ -119,6 +122,20 @@ function handleTimeSlotChange(checkbox) {
   updateSelectedTimeDisplay();
 }
 
+// Show loading state
+function showLoading(button) {
+  const originalText = button.innerHTML;
+  button.innerHTML = '<i class="bi bi-spinner bi-spin"></i> Loading...';
+  button.disabled = true;
+  return originalText;
+}
+
+// Hide loading state
+function hideLoading(button, originalText) {
+  button.innerHTML = originalText;
+  button.disabled = false;
+}
+
 // Wait for DOM to fully load
 document.addEventListener("DOMContentLoaded", () => {
   // Open booking form
@@ -172,32 +189,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Cancel button handling
   document.querySelectorAll(".action-btn.cancel").forEach((button) => {
-    button.addEventListener("click", async () => {
+    button.addEventListener("click", async (e) => {
+      e.preventDefault();
+      
       const bookingId = button.getAttribute("data-id");
+      const originalText = showLoading(button);
+
+      // Confirm cancellation
+      if (!confirm("Are you sure you want to cancel this booking?")) {
+        hideLoading(button, originalText);
+        return;
+      }
 
       try {
-        const res = await fetch(
-          `/resident/commonSpace/cancelled/${bookingId}`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        const res = await fetch(`/resident/commonSpace/cancelled/${bookingId}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
 
-        alert("Booking cancelled successfully.");
-        window.location.reload();
+        const result = await res.json();
+        
+        if (res.ok) {
+          alert("Booking cancelled successfully.");
+          window.location.reload();
+        } else {
+          throw new Error(result.error || "Failed to cancel booking");
+        }
       } catch (error) {
-        console.error(error);
-        alert("Could not cancel the booking.");
+        console.error("Cancellation error:", error);
+        alert("Could not cancel the booking. Please try again.");
+        hideLoading(button, originalText);
       }
     });
   });
 
   // View button handling — opens Booking Details popup
   document.querySelectorAll(".action-btn.view").forEach((button) => {
-    button.addEventListener("click", async () => {
+    button.addEventListener("click", async (e) => {
+      e.preventDefault();
+      
       const bookingId = button.getAttribute("data-id");
-      console.log("Booking ID:", bookingId);
+      const originalText = showLoading(button);
+      console.log("Fetching details for Booking ID:", bookingId);
 
       try {
         const response = await fetch(`/resident/commonSpace/${bookingId}`, {
@@ -206,76 +239,76 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify({ bookingId }),
         });
 
-        const b = await response.json(); // assuming `b` is the booking object
+        if (!response.ok) {
+          throw new Error("Failed to fetch booking details");
+        }
+
+        const data = await response.json();
+        const b = data.commonspace;
         console.log("Booking Details:", b);
 
-        // Populate popup fields
-        document.getElementById("detail-id").innerText =
-          b.commonspace._id || "-";
-        document.getElementById(
-          "detail-status"
-        ).innerHTML = `<span class="status-badge status-${b.commonspace.status}">${b.commonspace.status}</span>`;
-        document.getElementById("detail-facility").textContent =
-          b.commonspace.name || "-";
-        document.getElementById("detail-date").textContent =
-          b.commonspace.Date || b.commonspace.date || "-";
-        document.getElementById("detail-time").textContent = `${
-          b.commonspace.from || b.commonspace.startTime || "-"
-        } - ${b.commonspace.to || b.commonspace.endTime || "-"}`;
+        // Populate popup fields with safe fallbacks
+        document.getElementById("detail-id").textContent = b._id ? b._id.toString().slice(-6) : "-";
+        
+        // Status with proper styling
+        const statusElement = document.getElementById("detail-status");
+        statusElement.innerHTML = `<span class="status-badge status-${b.status?.toLowerCase() || 'unknown'}">${b.status || 'Unknown'}</span>`;
+        
+        document.getElementById("detail-facility").textContent = b.name || "-";
+        document.getElementById("detail-date").textContent = b.Date || b.date || "-";
+        document.getElementById("detail-time").textContent = `${b.from || b.startTime || "-"} - ${b.to || b.endTime || "-"}`;
 
-        const createdAt = new Date(b.commonspace.createdAt);
-        document.getElementById("detail-created").textContent =
-          createdAt.toLocaleString();
+        // Format created date
+        if (b.createdAt) {
+          const createdAt = new Date(b.createdAt);
+          document.getElementById("detail-created").textContent = createdAt.toLocaleString();
+        } else {
+          document.getElementById("detail-created").textContent = "-";
+        }
 
-        document.getElementById("detail-purpose").textContent =
-          b.commonspace.description || b.commonspace.purpose || "-";
+        document.getElementById("detail-purpose").textContent = b.description || b.purpose || "No purpose specified";
 
-        // Optional fields: show/hide based on values
-        if (
-          b.commonspace.status === "Cancelled" ||
-          b.commonspace.cancellationReason
-        ) {
-          document.getElementById("cancellation-section").style.display =
-            "block";
-          document.getElementById("detail-cancellation-reason").textContent =
-            b.commonspace.cancellationReason || "-";
-          document.getElementById("detail-cancelled-by").textContent =
-            b.commonspace.cancelledBy || "Admin";
+        // Cancellation section
+        if (b.status === "Cancelled" || b.cancellationReason) {
+          document.getElementById("cancellation-section").style.display = "block";
+          document.getElementById("detail-cancellation-reason").textContent = b.cancellationReason || "No reason provided";
+          document.getElementById("detail-cancelled-by").textContent = b.cancelledBy || "System";
           
-          if (b.commonspace.cancelledAt) {
-            const cancelledAt = new Date(b.commonspace.cancelledAt);
-            document.getElementById("detail-cancelled-at").textContent =
-              cancelledAt.toLocaleString();
+          if (b.cancelledAt) {
+            const cancelledAt = new Date(b.cancelledAt);
+            document.getElementById("detail-cancelled-at").textContent = cancelledAt.toLocaleString();
+          } else {
+            document.getElementById("detail-cancelled-at").textContent = "-";
           }
         } else {
-          document.getElementById("cancellation-section").style.display =
-            "none";
+          document.getElementById("cancellation-section").style.display = "none";
         }
 
         // Manager comment section
-        if (b.commonspace.managerComment) {
+        if (b.managerComment) {
           document.getElementById("manager-comment-section").style.display = "block";
-          document.getElementById("detail-manager-comment").textContent =
-            b.commonspace.managerComment || "-";
+          document.getElementById("detail-manager-comment").textContent = b.managerComment;
         } else {
           document.getElementById("manager-comment-section").style.display = "none";
         }
 
+        // Feedback section
         if (b.feedback || b.rating) {
           document.getElementById("feedback-section").style.display = "block";
-          document.getElementById("detail-feedback").textContent =
-            b.feedback || "-";
-          document.getElementById("detail-rating").textContent =
-            b.rating || "-";
+          document.getElementById("detail-feedback").textContent = b.feedback || "-";
+          document.getElementById("detail-rating").textContent = b.rating || "-";
         } else {
           document.getElementById("feedback-section").style.display = "none";
         }
 
         // Show popup
         document.getElementById("bookingDetailsPopup").style.display = "flex";
+        
       } catch (err) {
         console.error("Error fetching booking details:", err);
-        alert("Failed to load booking details.");
+        alert("Failed to load booking details. Please try again.");
+      } finally {
+        hideLoading(button, originalText);
       }
     });
   });
@@ -300,10 +333,24 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const fromTime = document.getElementById("hiddenFromTime").value;
     const toTime = document.getElementById("hiddenToTime").value;
+    const facility = document.getElementById("facility").value;
+    const date = document.getElementById("bookingDate").value;
     
     if (!fromTime || !toTime) {
       e.preventDefault();
       alert("Please select valid time slots.");
+      return;
+    }
+    
+    if (!facility) {
+      e.preventDefault();
+      alert("Please select a facility.");
+      return;
+    }
+    
+    if (!date) {
+      e.preventDefault();
+      alert("Please select a date.");
       return;
     }
     
@@ -312,5 +359,9 @@ document.addEventListener("DOMContentLoaded", () => {
     timeSlotsCheckboxes.forEach(checkbox => {
       checkbox.disabled = true;
     });
+    
+    // Show loading state on submit button
+    const submitButton = this.querySelector('button[type="submit"]');
+    showLoading(submitButton);
   });
 });
