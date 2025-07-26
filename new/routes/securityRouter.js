@@ -67,11 +67,15 @@ securityRouter.get("/dashboard", async (req, res) => {
     $or: [{ status: "active" }, { status: "checkedOut" }],
   });
 
+  const sec = await Security.findById(req.user.id);
+
+
+
   const ads = await Ad.find({ community: req.user.community });
 
   console.log(ads);
 
-  res.render("security/dashboard", { path: "d", visitors, ads });
+  res.render("security/dashboard", { path: "d", visitors, ads,sec });
 });
 
 securityRouter.get("/", (req, res) => {

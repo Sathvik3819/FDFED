@@ -12,7 +12,7 @@ import { authorizeR } from "../controllers/authorization.js";
 import Ad from "../models/Ad.js";
 import communities from "../models/communities.js";
 
-import {OTP} from '../controllers/OTP.js'
+import { OTP } from "../controllers/OTP.js";
 
 import multer from "multer";
 
@@ -39,14 +39,46 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+function getTimeAgo(date) {
+  const now = new Date(Date.now());
+  const diffMs = now - new Date(date);
+  const diffSeconds = Math.floor(diffMs / 1000);
+
+  console.log(now, date, diffMs, diffSeconds);
+
+  if (diffSeconds < 60)
+    return `${diffSeconds} second${diffSeconds !== 1 ? "s" : ""} ago`;
+
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  if (diffMinutes < 60)
+    return `${diffMinutes} minute${diffMinutes !== 1 ? "s" : ""} ago`;
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24)
+    return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+}
+
 residentRouter.get("/commonSpace", async (req, res) => {
   const booking = await CommonSpaces.find({ bookedBy: req.user.id });
 
-  console.log("Booking Data:", booking);
+  const resi = await Resident.findById(req.user.id);
+
+  resi.notifications.forEach(async (n) => {
+    n.timeAgo = getTimeAgo(resi.notifications[0].createdAt);
+  });
+  await resi.save();
 
   const ads = await Ad.find({ community: req.user.community });
 
-  res.render("resident/commonSpace", { path: "cbs", bookings: booking, ads });
+  res.render("resident/commonSpace", {
+    path: "cbs",
+    bookings: booking,
+    ads,
+    resi,
+  });
 });
 
 residentRouter.post("/commonSpace/:id", async (req, res) => {
@@ -144,61 +176,52 @@ const formatDate = (rawDate) => {
 
 residentRouter.get("/dashboard", async (req, res) => {
   const recents = [];
+  const notifications = [];
 
   const ads = await Ad.find({ community: req.user.community });
-
   const issues = await Issue.find({ resident: req.user.id });
   const commonSpaces = await CommonSpaces.find({ bookedBy: req.user.id });
   const payments = await Payment.find({ sender: req.user.id });
+  const preApp = await VisitorPreApproval.find({ approvedBy: req.user.id });
+  const resi = await Resident.findById(req.user.id);
 
-  // Add issues
+  // Add to recents (creation-based timeline)
   recents.push(
     ...issues.map((issue) => ({
       type: "Issue",
       title: issue.issueID,
-      dateRaw: new Date(issue.createdAt),
-      date: formatDate(issue.createdAt),
-    }))
-  );
-
-  // Add common space bookings
-  recents.push(
+      date: new Date(issue.createdAt),
+    })),
+    ...preApp.map((i) => ({
+      type: "PreApproval",
+      title: i._id,
+      date: new Date(i.createdAt),
+    })),
     ...commonSpaces.map((space) => ({
       type: "CommonSpace",
       title: space.name,
-      dateRaw: new Date(space.createdAt),
-      date: formatDate(space.createdAt),
-    }))
-  );
-
-  // Add payments
-  recents.push(
+      date: new Date(space.createdAt),
+    })),
     ...payments.map((payment) => ({
       type: "Payment",
       title: payment.title,
-      dateRaw: new Date(payment.paymentDate),
-      date: formatDate(payment.paymentDate),
+      date: new Date(payment.paymentDate),
     }))
   );
 
+  
+
+  recents.sort((a, b) => b.updatedAt - a.updatedAt);
+
   console.log(recents);
-
-  // Sort by dateRaw descending
-  recents.sort((a, b) => b.dateRaw - a.dateRaw);
-
-  // Remove dateRaw for display
-  const cleanedRecents = recents.map(({ dateRaw, ...rest }) => rest);
-
-  // Log for debugging
-  cleanedRecents.forEach((r) => {
-    console.log(`${r.type} — ${r.title} — ${r.date}`);
-  });
+  
 
   // Render with recent data
   res.render("resident/dashboard", {
     path: "d",
-    recents: cleanedRecents,
+    recents,
     ads,
+    resi,
   });
 });
 
@@ -384,8 +407,7 @@ residentRouter.get("/payments", async (req, res) => {
       .populate("receiver", "name")
       .sort({ paymentDeadline: -1 });
 
-      console.log(payments);
-      
+    console.log(payments);
 
     res.render("resident/payments", { path: "p", payments, ads });
   } catch (error) {
@@ -416,8 +438,9 @@ residentRouter.get("/payment/:paymentId", async (req, res) => {
     const payment = await Payment.findOne({
       _id: paymentId,
       sender: userId,
-    }).populate("receiver")
-    .populate("sender");
+    })
+      .populate("receiver")
+      .populate("sender");
 
     if (!payment) {
       return res.status(404).json({ error: "Payment receipt not found" });
@@ -539,11 +562,9 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
 
     newVisitor.ID = uniqueId;
 
-    const o = OTP()
+    const o = OTP();
 
     await newVisitor.save();
-
-
 
     console.log(newVisitor);
 
@@ -629,6 +650,17 @@ residentRouter.post("/change-password", async (req, res) => {
   await resident.save();
 
   res.json({ ok: true, message: "Password changed successfully." });
+});
+
+residentRouter.get("/clearNotification", async (req, res) => {
+  const resi = await Resident.updateOne(
+    { _id: req.user.id },
+    { $set: { notifications: [] } }
+  );
+
+  console.log(resi.notifications);
+
+  res.json({ ok: true });
 });
 
 export default residentRouter;
