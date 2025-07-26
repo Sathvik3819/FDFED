@@ -40,7 +40,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-<<<<<<< HEAD
+
 function getTimeAgo(date) {
   const now = new Date(Date.now());
   const diffMs = now - new Date(date);
@@ -62,16 +62,13 @@ function getTimeAgo(date) {
   const diffDays = Math.floor(diffHours / 24);
   return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
 }
-=======
-// Updated routes for common space booking
->>>>>>> c86b71ab2aa042c42609a6438e37e745a38a58d0
 
 residentRouter.get("/commonSpace", async (req, res) => {
   try {
     const bookings = await CommonSpaces.find({ bookedBy: req.user.id }).sort({ createdAt: -1 });
     console.log("Booking Data:", bookings);
 
-<<<<<<< HEAD
+
   const resi = await Resident.findById(req.user.id);
 
   resi.notifications.forEach(async (n) => {
@@ -80,32 +77,24 @@ residentRouter.get("/commonSpace", async (req, res) => {
   await resi.save();
 
   const ads = await Ad.find({ community: req.user.community });
-
+   const availableSpaces = community ? community.commonSpaces : [];
   res.render("resident/commonSpace", {
     path: "cbs",
     bookings: booking,
     ads,
     resi,
+    availableSpaces:availableSpaces
   });
-=======
-    const ads = await Ad.find({ community: req.user.community });
+
     
-    // Get community data to fetch available common spaces
-    const community = await Community.findById(req.user.community);
-    const availableSpaces = community ? community.commonSpaces : [];
-    console.log(availableSpaces)
-    res.render("resident/commonSpace", { 
-      path: "cbs", 
-      bookings: bookings, 
-      ads: ads,
-      availableSpaces: availableSpaces 
-    });
+    
+  
   } catch (error) {
     console.error("Error fetching common space data:", error);
     req.flash("message", "Error loading common space data.");
     res.redirect("/resident/dashboardx");
   }
->>>>>>> c86b71ab2aa042c42609a6438e37e745a38a58d0
+
 });
 
 residentRouter.post("/commonSpace/:id", async (req, res) => {
