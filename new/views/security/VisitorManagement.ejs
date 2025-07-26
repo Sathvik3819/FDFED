@@ -19,8 +19,6 @@
     <link rel="stylesheet" href="/../../css/nav.css" />
 
     <style>
-     
-
       .section-title {
         position: relative;
         padding-bottom: 15px;
@@ -375,6 +373,33 @@
         opacity: 0.8;
       }
 
+      form {
+        padding: 20px;
+      }
+
+      .form-title {
+        width: 300px;
+        border-bottom: 3px solid;
+        border-image: linear-gradient(to right, blue, rgb(123, 0, 255),rgb(146, 145, 145)) 1;
+      }
+
+      .btn-cancel{
+        padding: 8px;
+        background-color: rgba(184, 184, 184, 0.823);
+        border: none;
+        outline: none;
+        border-radius: 8px;
+      }
+
+      .btn-submit{
+        padding: 8px;
+        background-color: orangered;
+        border: none;
+        outline: none;
+        border-radius: 8px;
+        color: white;
+      }
+
       /* Responsive Styles */
       @media (max-width: 992px) {
         .bodyContainer {
@@ -501,6 +526,66 @@
       .visitor-card:nth-child(8) {
         animation-delay: 0.8s;
       }
+
+      .popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .popup-content {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        animation: popupFadeIn 0.3s ease-out;
+      }
+
+      @keyframes popupFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.75rem;
+        color: var(--danger);
+        cursor: pointer;
+        transition: var(--transition);
+        background: none;
+        border: none;
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
+
+      .close-btn:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+        transform: rotate(90deg);
+      }
     </style>
   </head>
 
@@ -570,10 +655,10 @@
           </div>
         </div>
 
-        <a href="/security/addVisitor" class="add-visitor-section">
+        <div class="add-visitor-section">
           <i class="bi bi-plus-lg"></i>
           <div>Add New Visitor</div>
-        </a>
+        </div>
 
         <!-- Search and Filter Section -->
         <div class="search-section">
@@ -721,13 +806,17 @@
               </div>
               <div class="detail-row">
                 <div class="detail-label">Entry Date:</div>
-                <div class="detail-value"><%= new Date(v.entryDate).toLocaleDateString('en-US', { year:
-                  'numeric', month: 'long', day: 'numeric' }) %></div>
+                <div class="detail-value">
+                  <%= new Date(v.entryDate).toLocaleDateString('en-US', { year:
+                  'numeric', month: 'long', day: 'numeric' }) %>
+                </div>
               </div>
               <div class="detail-row">
                 <div class="detail-label">Entry Time:</div>
-                <div class="detail-value"><%= new Date(v.entryTime).toLocaleTimeString('en-US', { hour:
-                  '2-digit', minute: '2-digit', hour12: true }) %></div>
+                <div class="detail-value">
+                  <%= new Date(v.entryTime).toLocaleTimeString('en-US', { hour:
+                  '2-digit', minute: '2-digit', hour12: true }) %>
+                </div>
               </div>
             </div>
 
@@ -819,6 +908,111 @@
           </div>
           <% } %>
         </div>
+      </div>
+    </div>
+
+    <div id="visitorPopup" class="popup">
+      <div class="popup-content">
+        <span class="close-btn" onclick="closeForm('visitor')">&times;</span>
+        <h3 class="form-title">Add a visitor</h3>
+        <form id="visitorForm" action="/security/addVisitor" method="POST">
+          <div class="mb-4">
+            <label for="visitorType" class="form-label">Type of visitor</label>
+            <select
+              class="form-select"
+              name="visitorType"
+              id="visitorType"
+              required
+            >
+              <option value="" disabled selected>Select visitor type</option>
+              <option value="Guest">Guest</option>
+              <option value="Delivery">Delivery</option>
+              <option value="Worker">Worker</option>
+              <option value="Service">Service Provider</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <label for="fullName" class="form-label">Full name</label>
+              <input
+                type="text"
+                class="form-control"
+                name="fullName"
+                id="fullName"
+                required
+                placeholder="Enter visitor's full name"
+              />
+            </div>
+            <div class="col-md-6 mb-4">
+              <label for="contact" class="form-label">Contact number</label>
+              <input
+                type="tel"
+                class="form-control"
+                name="contact"
+                id="contact"
+                required
+                placeholder="10 digit mobile number"
+                pattern="[0-9]{10}"
+                maxlength="10"
+              />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <label for="visitDate" class="form-label">Visit date</label>
+              <input
+                type="date"
+                class="form-control"
+                name="visitDate"
+                required
+                min=""
+              />
+            </div>
+            <div class="col-md-6 mb-4">
+              <label for="email" class="form-label">Email address</label>
+              <input
+                type="email"
+                class="form-control"
+                name="email"
+                id="email"
+                required
+                placeholder="visitor@example.com"
+              />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <label for="visitTime" class="form-label">Visit time</label>
+              <input type="time" class="form-control" id="visitTime" required />
+            </div>
+            <div class="col-md-6 mb-4">
+              <label for="vehicleNo" class="form-label"
+                >Vehicle number (if any)</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                name="vehicleNo"
+                id="vehicleNo"
+                placeholder="Optional"
+              />
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 justify-content-between mt-4">
+            <a href="/security/visitorManagement" style="text-decoration: none">
+              <button type="button" class="btn-cancel">
+                <i class="bi bi-x-circle"></i> Cancel
+              </button>
+            </a>
+            <button type="submit" class="btn-submit">
+              <i class="bi bi-check-circle"></i> Submit Request
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 

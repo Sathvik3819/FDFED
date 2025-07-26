@@ -31,11 +31,6 @@ const issueSchema = new Schema({
     ref: "Worker", // Reference to the Worker assigned to the issue
     default: null,
   },
-  createdAt: {
-    type: String,
-    default: Date.now,
-  },
-
   resolvedAt: {
     type: String,
     default: null,
@@ -56,7 +51,7 @@ const issueSchema = new Schema({
 
   feedback: String,
   rating: Number,
-});
+},{timestamps:true});
 
 // Automatically update the `updatedAt` field when the document is modified
 issueSchema.pre("save", function (next) {

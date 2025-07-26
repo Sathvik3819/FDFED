@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
   const menuToggle = document.querySelector(".menu-toggle");
   const mobileMenu = document.querySelector(".mobile-menu");
 
@@ -63,12 +63,29 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Notification tooltip hover effect
   const notification = document.querySelector(".notification");
+  const nottip = document.querySelector(".notif-tooltip");
+  const notc = document.querySelector(".notif-count");
+  let o = 0;
   if (notification) {
-    notification.addEventListener("click", function () {
-      // You can add notification dropdown functionality here
-      console.log("Notification clicked");
+    notification.addEventListener("click", async function () {
+      
+      if (!o) {
+        nottip.style.display = "flex";
+        o = 1;
+      } else {
+        nottip.style.display = "none";
+        console.log("clearing");
+        o = 0;
+      }
     });
   }
 });
+
+  // const response = await fetch("/resident/clearNotification", {
+  //         method: "GET",
+  //       });
+  //       const res = await response.json();
+  //       if (!res.ok) {
+  //         alert("error in clearing notifications");
+  //       }

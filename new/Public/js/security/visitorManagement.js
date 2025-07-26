@@ -1,3 +1,18 @@
+function openForm(type) {
+  document.getElementById(type + "Popup").style.display = "flex";
+}
+
+
+function closeForm(type) {
+  if (type === "details") {
+    document.getElementById("bookingDetailsPopup").style.display = "none";
+  } else {
+    document.getElementById(type + "Popup").style.display = "none";
+  }
+}
+
+
+
 document.addEventListener("DOMContentLoaded", function () {
   const tabs = document.querySelectorAll(".visitor-tab");
 
@@ -21,6 +36,12 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById(`${tabName}-visitors`).classList.add("active");
     });
   });
+
+  const add = document.querySelectorAll(".add-visitor-section");
+
+  add[0].addEventListener("click",()=>{
+    openForm('visitor');
+  })
 
   const actionButtons = document.querySelectorAll(".check-btn");
 
