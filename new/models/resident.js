@@ -21,7 +21,7 @@ const residentSchema = new mongoose.Schema(
     raisedIssues: [{ type: mongoose.Schema.Types.ObjectId, ref: "Issue" }],
     paymentHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Payment" }],
     community: { type: mongoose.Schema.Types.ObjectId, ref: 'Community', required: true } ,// Linked to Community
-    notifications:[{n:{type:String},status:{type:String},createdAt:{type:Date},timeAgo:String}]
+    notifications:[{n:{type:String},createdAt:{type:Date},timeAgo:String,belongs:String}]
   },
   { timestamps: true }
 );

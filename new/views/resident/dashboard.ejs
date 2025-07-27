@@ -18,45 +18,128 @@
     />
     <link rel="stylesheet" href="../../css/nav.css" />
     <style>
-      .info-card {
-        transition: var(--transition);
-        border: none !important;
-        border-radius: var(--border-radius) !important;
+      /* Add these styles to your existing CSS */
+
+      .notification-box {
+        padding: 15px;
+        background: white;
+        border-radius: var(--border-radius);
         box-shadow: var(--shadow);
         height: 100%;
-        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .notification-box h5 {
+        background: aliceblue !important;
+        color: rgb(0, 86, 162) !important;
+        padding: 12px 15px !important;
+        border-radius: var(--border-radius);
+        margin: -15px -15px 15px -15px !important;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .notification-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-right: 5px;
+      }
+
+      .notification-card {
+        background: white;
+        border-radius: 12px;
+        padding: 10px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border-left: 5px solid var(--danger);
         position: relative;
         overflow: hidden;
       }
 
-      .info-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 5px;
-        height: 100%;
+      .notification-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       }
 
-      .info-card:nth-child(1)::before {
-        background: var(--success);
+      .notification-content {
+        padding-left: 10px;
       }
 
-      .info-card:nth-child(2)::before {
-        background: var(--warning);
+      .notification-message {
+        font-size: 15px;
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #333;
+        line-height: 1.4;
       }
 
-      .info-card:nth-child(3)::before {
-        background: var(--primary);
+      .notification-time {
+        font-size: 12px;
+        color: var(--gray);
+        display: flex;
+        align-items: center;
+        gap: 5px;
       }
 
-      .info-card:nth-child(4)::before {
-        background: var(--danger);
+      /* Different colors for different notification types */
+      .notification-card.alert {
+        border-left-color: var(--danger);
       }
 
-      .info-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      .notification-card.warning {
+        border-left-color: var(--warning);
+      }
+
+      .notification-card.success {
+        border-left-color: var(--success);
+      }
+
+      /* Empty state styling */
+      .notification-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 30px 20px;
+        color: var(--gray);
+      }
+
+      .notification-empty i {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        color: #e0e0e0;
+      }
+
+      .notification-empty p {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      /* Scrollbar styling */
+      .notification-container::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .notification-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .notification-container::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+      }
+
+      .notification-container::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
       }
 
       .activity-entry {
@@ -119,7 +202,7 @@
 
       .activity-grid {
         display: grid;
-        grid-template-columns: 3fr 1fr;
+        grid-template-columns: 3fr 2fr;
         gap: 30px;
         margin-bottom: 20px;
       }
@@ -161,7 +244,7 @@
         color: var(--success);
       }
 
-      .PreApproval{
+      .PreApproval {
         background-color: rgba(255, 68, 0, 0.421);
         color: rgb(229, 61, 0);
       }
@@ -320,19 +403,46 @@
             <% } %>
           </div>
 
-          <div class="d-flex flex-column notification-box">
-            <h5 style="background-color: aliceblue; padding: 10px">
-              Notifications
-            </h5>
-            <div
-              class="w-100 h-100 d-flex flex-column gap-3"
-              style="
-                background-color: rgba(240, 248, 255, 0.554);
-                padding: 10px;
-              "
-            >
-              <div class="info-card" style="max-height: 25%"></div>
-
+          <div class="notification-box">
+            <h5><i class="bi bi-bell-fill"></i> Notifications</h5>
+            <div class="notification-container">
+              <% if (locals.resi.notifications && resi.notifications.length > 0)
+              { %> <% resi.notifications.forEach(e => { %>
+              <div class="notification-card <%= e.type || '' %>">
+                <span
+                  class="notification-content d-flex gap-3"
+                  style="max-height: 60px"
+                >
+                  <% if (e.belongs==="Issue") { %>
+                  <i class="bi bi-tools fs-3" style="color: #fd0d0d" ></i>
+                  <% } else if (e.belongs==="CS") { %>
+                  <i
+                    class="bi bi-calendar-check-fill fs-3"
+                    style="color: #fd0d0d"
+                  ></i>
+                  <% } else if (e.belongs==="Payment") { %>
+                  <i
+                    class="bi bi-credit-card-fill fs-3"
+                    style="color: #fd0d0d"
+                  ></i>
+                  <% } else if (e.belongs==="PA") { %>
+                  <i
+                    class="bi bi-clipboard-check-fill fs-3"
+                    style="color: #fd0d0d"
+                  ></i>
+                  <% } %>
+                  <div>
+                    <p class="notification-message"><%= e.n %></p>
+                    <p class="notification-time">🕐 <%= e.timeAgo %></p>
+                  </div>
+                </span>
+              </div>
+              <% }) %> <% } else { %>
+              <div class="notification-empty">
+                <i class="bi bi-bell-slash"></i>
+                <p>No notifications yet</p>
+              </div>
+              <% } %>
             </div>
           </div>
         </div>
