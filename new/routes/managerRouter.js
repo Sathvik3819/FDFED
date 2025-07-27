@@ -1413,11 +1413,18 @@ managerRouter.post("/userManagement/security", async (req, res) => {
         Shift,
         community: req.user.community,
       });
+       req.flash("alert-msg", "New Security created");
+    const password = await sendPassword(email);
+      console.log(password);
 
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      r.password = hashedPassword;
+
+      await r.save();
       console.log("new security : ", r);
     }
-    req.flash("alert-msg", "New Security created");
-
+   
     res.redirect("/manager/userManagement");
   } catch (err) {
     console.error(err);
@@ -1434,6 +1441,15 @@ managerRouter.get("/userManagement/security/:id", async (req, res) => {
 
   res.status(200).json({ success: true, r });
 });
+managerRouter.delete("/userManagement/security/:id", async (req, res) => {
+  const id = req.params.id;
+
+  const r = await Security.deleteOne({ _id: id });
+
+
+  res.status(200).json({ ok: true });
+});
+
 
 managerRouter.post("/userManagement/worker", async (req, res) => {
   try {
@@ -1473,9 +1489,17 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
       });
 
       console.log("new worker : ", r);
-    }
-    req.flash("alert-msg", "New Worker created");
+       req.flash("alert-msg", "New Security created");
+    const password = await sendPassword(email);
+      console.log(password);
 
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      r.password = hashedPassword;
+
+      await r.save();
+    }
+    
     res.redirect("/manager/userManagement");
   } catch (err) {
     console.error(err);
@@ -1490,6 +1514,15 @@ managerRouter.get("/userManagement/worker/:id", async (req, res) => {
 
   res.status(200).json({ success: true, w });
 });
+managerRouter.delete("/userManagement/worker/:id", async (req, res) => {
+  const id = req.params.id;
+
+  const r = await Worker.deleteOne({ _id: id });
+
+
+  res.status(200).json({ ok: true });
+});
+
 
 managerRouter.get("/dashboard", async (req, res) => {
   const ads = await Ad.find({ community: req.user.community });

@@ -618,8 +618,26 @@ residentRouter.get("/preApprovals", async (req, res) => {
 //pre approval routes
 residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
   try {
-    const { visitorName, contactNumber, dateOfVisit, timeOfVisit, purpose } =
-      req.body;
+    // Add validation for req.body
+    if (!req.body) {
+      return res.status(400).json({ message: "Request body is missing" });
+    }
+
+    const { 
+      visitorName, 
+      contactNumber, 
+      dateOfVisit, 
+      timeOfVisit, 
+      purpose 
+    } = req.body;
+
+    // Validate required fields
+    if (!visitorName || !contactNumber || !dateOfVisit || !timeOfVisit || !purpose) {
+      return res.status(400).json({ 
+        message: "Missing required fields",
+        required: ["visitorName", "contactNumber", "dateOfVisit", "timeOfVisit", "purpose"]
+      });
+    }
 
     const resident = await Resident.findById(req.user.id).populate("community");
     if (!resident) {
@@ -643,19 +661,32 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
     await resident.save();
 
     const uniqueId = generateCustomID(newVisitor._id.toString(), "PA", null);
-
     newVisitor.ID = uniqueId;
 
     const o = OTP();
-
     await newVisitor.save();
 
-    console.log(newVisitor);
+    // Return JSON response
+    return res.status(201).json({
+      success: true,
+      preapproval: {
+        _id: newVisitor._id,
+        ID: uniqueId,
+        visitorName,
+        contactNumber,
+        dateOfVisit: date,
+        timeOfVisit,
+        purpose,
+        status: 'approved'
+      }
+    });
 
-    return res.redirect("/resident/preApprovals");
   } catch (err) {
     console.error("Error in pre-approving visitor:", err);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ 
+      message: "Internal server error",
+      error: err.message 
+    });
   }
 });
 
