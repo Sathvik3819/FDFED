@@ -20,11 +20,7 @@ import Ad from "../models/Ad.js";
 import Payment from "../models/payment.js";
 import visitor from "../models/visitors.js";
 
-<<<<<<< Updated upstream
 import { sendPassword } from '../controllers/OTP.js'
-=======
-import { sendPassword } from "../controllers/OTP.js";
->>>>>>> Stashed changes
 
 function generateCustomID(userEmail, facility, countOrRandom = null) {
   const id = userEmail.toUpperCase().slice(0, 2);
@@ -54,10 +50,10 @@ managerRouter.get("/commonSpace", async (req, res) => {
   const csb = await CommonSpaces.find({ community: c });
   const ads = await Ad.find({ community: req.user.community });
   const community = await Community.findById(req.user.community)
-      .select('commonSpaces')
-      .lean();
+    .select('commonSpaces')
+    .lean();
 
-  res.render("communityManager/CSB", { path: "cbs", csb,community:community });
+  res.render("communityManager/CSB", { path: "cbs", csb, community: community });
 });
 
 function mergeBusySlots(slots) {
@@ -154,7 +150,7 @@ managerRouter.get("/commonSpace/checkAvailability/:id", async (req, res) => {
 managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
   const id = req.params.id;
   try {
-    const b = await CommonSpaces.findById(id).populate('bookedBy');
+    const b = await CommonSpaces.findById(id);
 
     if (!b) {
       return res.status(404).json({ message: "Booking not found" });
@@ -185,14 +181,6 @@ managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
     });
 
     b.payment = payment._id;
-
-    b.bookedBy.notifications.push({
-      n:`Common Space ${b.ID} is approved`,
-      createdAt:new Date(Date.now()),
-      belongs:"CS"
-    });
-
-    await b.bookedBy.save();
     await b.save();
 
     req.flash("alert-msg", `${b._id} approved successfully`);
@@ -219,14 +207,6 @@ managerRouter.post("/commonSpace/reject/:id", async (req, res) => {
     b.status = "Rejected";
     b.feedback = reason;
 
-    b.bookedBy.notifications.push({
-      n:`Common Space ${b.ID} is rejected`,
-      createdAt:new Date(Date.now()),
-      belongs:"CS"
-    });
-
-    await b.bookedBy.save();
-
     await b.save();
 
     res.status(200).json({ message: "rejected" });
@@ -236,32 +216,31 @@ managerRouter.post("/commonSpace/reject/:id", async (req, res) => {
   }
 });
 
-<<<<<<< Updated upstream
 // Add new space
 managerRouter.post('/api/community/spaces', async (req, res) => {
   try {
     // Validate required fields
     const { type, name } = req.body;
     if (!type || !name) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Space type and name are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Space type and name are required'
       });
     }
 
     // Check if user has community access
     if (!req.user || !req.user.community) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized access' 
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized access'
       });
     }
 
     const community = await Community.findById(req.user.community);
     if (!community) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Community not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Community not found'
       });
     }
 
@@ -270,9 +249,9 @@ managerRouter.post('/api/community/spaces', async (req, res) => {
       space => space.name.toLowerCase() === name.toLowerCase()
     );
     if (existingSpace) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'A space with this name already exists' 
+      return res.status(400).json({
+        success: false,
+        message: 'A space with this name already exists'
       });
     }
 
@@ -281,7 +260,7 @@ managerRouter.post('/api/community/spaces', async (req, res) => {
       type: type.trim(),
       name: name.trim(),
       bookable: req.body.bookable !== undefined ? Boolean(req.body.bookable) : true,
-      maxBookingDurationHours: req.body.maxBookingDurationHours ? 
+      maxBookingDurationHours: req.body.maxBookingDurationHours ?
         Math.max(1, parseInt(req.body.maxBookingDurationHours)) : null,
       bookingRules: req.body.bookingRules ? req.body.bookingRules.trim() : '',
       createdAt: new Date(),
@@ -291,15 +270,15 @@ managerRouter.post('/api/community/spaces', async (req, res) => {
     community.commonSpaces.push(newSpace);
     await community.save();
 
-    res.status(201).json({ 
-      success: true, 
+    res.status(201).json({
+      success: true,
       message: 'Space created successfully',
-      space: newSpace 
+      space: newSpace
     });
   } catch (error) {
     console.error('Error creating space:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -312,25 +291,25 @@ managerRouter.put('/api/community/spaces/:id', async (req, res) => {
     // Validate space ID
     const spaceId = req.params.id;
     if (!spaceId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Space ID is required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Space ID is required'
       });
     }
 
     // Check if user has community access
     if (!req.user || !req.user.community) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized access' 
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized access'
       });
     }
 
     const community = await Community.findById(req.user.community);
     if (!community) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Community not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Community not found'
       });
     }
 
@@ -339,32 +318,32 @@ managerRouter.put('/api/community/spaces/:id', async (req, res) => {
     );
 
     if (spaceIndex === -1) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Space not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Space not found'
       });
     }
 
     // Validate required fields if provided
     const { type, name } = req.body;
     if ((type !== undefined && !type.trim()) || (name !== undefined && !name.trim())) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Space type and name cannot be empty' 
+      return res.status(400).json({
+        success: false,
+        message: 'Space type and name cannot be empty'
       });
     }
 
     // Check for duplicate names (excluding current space)
     if (name && name.trim()) {
       const duplicateSpace = community.commonSpaces.find(
-        (space, index) => 
-          index !== spaceIndex && 
+        (space, index) =>
+          index !== spaceIndex &&
           space.name.toLowerCase() === name.trim().toLowerCase()
       );
       if (duplicateSpace) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'A space with this name already exists' 
+        return res.status(400).json({
+          success: false,
+          message: 'A space with this name already exists'
         });
       }
     }
@@ -378,7 +357,7 @@ managerRouter.put('/api/community/spaces/:id', async (req, res) => {
     if (name !== undefined) updateData.name = name.trim();
     if (req.body.bookable !== undefined) updateData.bookable = Boolean(req.body.bookable);
     if (req.body.maxBookingDurationHours !== undefined) {
-      updateData.maxBookingDurationHours = req.body.maxBookingDurationHours ? 
+      updateData.maxBookingDurationHours = req.body.maxBookingDurationHours ?
         Math.max(1, parseInt(req.body.maxBookingDurationHours)) : null;
     }
     if (req.body.bookingRules !== undefined) {
@@ -390,15 +369,15 @@ managerRouter.put('/api/community/spaces/:id', async (req, res) => {
 
     await community.save();
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Space updated successfully',
-      space: community.commonSpaces[spaceIndex] 
+      space: community.commonSpaces[spaceIndex]
     });
   } catch (error) {
     console.error('Error updating space:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -411,39 +390,39 @@ managerRouter.delete('/api/community/spaces/:id', async (req, res) => {
     // Validate space ID
     const spaceId = req.params.id;
     if (!spaceId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Space ID is required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Space ID is required'
       });
     }
 
     // Check if user has community access
     if (!req.user || !req.user.community) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized access' 
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized access'
       });
     }
 
     const community = await Community.findById(req.user.community);
     if (!community) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Community not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Community not found'
       });
     }
 
     const originalCount = community.commonSpaces.length;
-    
+
     // Find the space to be deleted for additional checks
     const spaceToDelete = community.commonSpaces.find(
       space => space._id.toString() === spaceId
     );
 
     if (!spaceToDelete) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Common space not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Common space not found'
       });
     }
 
@@ -464,16 +443,16 @@ managerRouter.delete('/api/community/spaces/:id', async (req, res) => {
 
     // Double-check that something was actually removed
     if (community.commonSpaces.length === originalCount) {
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to delete space' 
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to delete space'
       });
     }
 
     await community.save();
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Common space deleted successfully',
       deletedSpace: {
         id: spaceId,
@@ -483,8 +462,8 @@ managerRouter.delete('/api/community/spaces/:id', async (req, res) => {
     });
   } catch (error) {
     console.error('Error deleting common space:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -496,25 +475,25 @@ managerRouter.post('/api/community/booking-rules', async (req, res) => {
   try {
     // Validate input
     if (req.body.rules === undefined) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Booking rules are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Booking rules are required'
       });
     }
 
     // Check if user has community access
     if (!req.user || !req.user.community) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized access' 
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized access'
       });
     }
 
     const community = await Community.findById(req.user.community);
     if (!community) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Community not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Community not found'
       });
     }
 
@@ -525,15 +504,15 @@ managerRouter.post('/api/community/booking-rules', async (req, res) => {
 
     await community.save();
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Booking rules updated successfully',
       rules: sanitizedRules
     });
   } catch (error) {
     console.error('Error updating booking rules:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -545,29 +524,29 @@ managerRouter.get('/api/community/spaces', async (req, res) => {
   try {
     // Check if user has community access
     if (!req.user || !req.user.community) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized access' 
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized access'
       });
     }
 
     const community = await Community.findById(req.user.community);
     if (!community) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Community not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Community not found'
       });
     }
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       spaces: community.commonSpaces,
       totalSpaces: community.commonSpaces.length
     });
   } catch (error) {
     console.error('Error fetching spaces:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -579,25 +558,25 @@ managerRouter.get('/api/community/spaces/:id', async (req, res) => {
   try {
     const spaceId = req.params.id;
     if (!spaceId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Space ID is required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Space ID is required'
       });
     }
 
     // Check if user has community access
     if (!req.user || !req.user.community) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized access' 
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized access'
       });
     }
 
     const community = await Community.findById(req.user.community);
     if (!community) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Community not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Community not found'
       });
     }
 
@@ -606,32 +585,29 @@ managerRouter.get('/api/community/spaces/:id', async (req, res) => {
     );
 
     if (!space) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Space not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Space not found'
       });
     }
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       space: space
     });
   } catch (error) {
     console.error('Error fetching space:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Internal server error',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
-=======
->>>>>>> Stashed changes
 // Middleware to check subscription status
 async function checkSubscription(req, res, next) {
   try {
     // Skip check for payment-related routes
-<<<<<<< Updated upstream
     if (req.path.startsWith('/payments') ||
       req.path.startsWith('/subscription') ||
       req.path === '/all-communities' ||
@@ -644,22 +620,6 @@ async function checkSubscription(req, res, next) {
       req.path === '/all-payments' ||
       req.path === '/new-community' ||
       req.path === '/create-with-payment') {
-=======
-    if (
-      req.path.startsWith("/payments") ||
-      req.path.startsWith("/subscription") ||
-      req.path === "/all-communities" ||
-      req.path === "/residents" ||
-      req.path === "/communities" ||
-      req.path === "/currentcManager" ||
-      req.path === "/community-details" ||
-      req.path === "/subscription-status" ||
-      req.path === "/subscription-payment" ||
-      req.path === "/all-payments" ||
-      req.path === "/new-community" ||
-      req.path === "/create-with-payment"
-    ) {
->>>>>>> Stashed changes
       return next();
     }
 
@@ -668,7 +628,6 @@ async function checkSubscription(req, res, next) {
     const manager = await CommunityManager.findById(managerId);
 
     if (!manager) {
-<<<<<<< Updated upstream
       return res.status(404).render('error', { message: 'Community manager not found' });
     }
 
@@ -677,66 +636,27 @@ async function checkSubscription(req, res, next) {
 
     if (!community) {
       return res.status(404).render('error', { message: 'Community not found' });
-=======
-      return res
-        .status(404)
-        .render("error", { message: "Community manager not found" });
-    }
-
-    const community = await Community.findById(
-      manager.assignedCommunity
-    ).select("subscriptionStatus planEndDate");
-
-    if (!community) {
-      return res
-        .status(404)
-        .render("error", { message: "Community not found" });
->>>>>>> Stashed changes
     }
 
     // Check if subscription is active
     const now = new Date();
-<<<<<<< Updated upstream
     const isExpired = community.planEndDate && new Date(community.planEndDate) < now;
 
     if (isExpired || community.subscriptionStatus !== 'active') {
-=======
-    const isExpired =
-      community.planEndDate && new Date(community.planEndDate) < now;
-
-    if (isExpired || community.subscriptionStatus !== "active") {
->>>>>>> Stashed changes
       // Store the original URL in session for redirecting back after payment
       req.session.returnTo = req.originalUrl;
 
       // Add a flash message
-<<<<<<< Updated upstream
       req.flash('warning', 'Your subscription has expired or is inactive. Please complete the payment to continue.');
 
       // Redirect to payment page
       return res.redirect('/manager/payments');
-=======
-      req.flash(
-        "warning",
-        "Your subscription has expired or is inactive. Please complete the payment to continue."
-      );
-
-      // Redirect to payment page
-      return res.redirect("/manager/payments");
->>>>>>> Stashed changes
     }
 
     next();
   } catch (error) {
-<<<<<<< Updated upstream
     console.error('Subscription check error:', error);
     res.status(500).render('error', { message: 'Error checking subscription status' });
-=======
-    console.error("Subscription check error:", error);
-    res
-      .status(500)
-      .render("error", { message: "Error checking subscription status" });
->>>>>>> Stashed changes
   }
 }
 
@@ -752,21 +672,14 @@ async function getSubscriptionStatus(req) {
       return null;
     }
 
-<<<<<<< Updated upstream
     const community = await Community.findById(manager.assignedCommunity)
       .select('subscriptionStatus planEndDate subscriptionPlan');
-=======
-    const community = await Community.findById(
-      manager.assignedCommunity
-    ).select("subscriptionStatus planEndDate subscriptionPlan");
->>>>>>> Stashed changes
 
     if (!community) {
       return null;
     }
 
     const now = new Date();
-<<<<<<< Updated upstream
     const isExpired = community.planEndDate && new Date(community.planEndDate) < now;
     const daysUntilExpiry = community.planEndDate
       ? Math.ceil((new Date(community.planEndDate) - now) / (1000 * 60 * 60 * 24))
@@ -781,40 +694,16 @@ async function getSubscriptionStatus(req) {
     };
   } catch (error) {
     console.error('Error getting subscription status:', error);
-=======
-    const isExpired =
-      community.planEndDate && new Date(community.planEndDate) < now;
-    const daysUntilExpiry = community.planEndDate
-      ? Math.ceil(
-          (new Date(community.planEndDate) - now) / (1000 * 60 * 60 * 24)
-        )
-      : 0;
-
-    return {
-      status: isExpired ? "expired" : community.subscriptionStatus,
-      plan: community.subscriptionPlan,
-      isExpired,
-      daysUntilExpiry,
-      isExpiringSoon: daysUntilExpiry <= 7 && daysUntilExpiry > 0,
-    };
-  } catch (error) {
-    console.error("Error getting subscription status:", error);
->>>>>>> Stashed changes
     return null;
   }
 }
 // Get community details with subscription info
-<<<<<<< Updated upstream
 managerRouter.get('/community-details', async (req, res) => {
-=======
-managerRouter.get("/community-details", async (req, res) => {
->>>>>>> Stashed changes
   try {
     const managerId = req.user.id;
     const manager = await CommunityManager.findById(managerId);
 
     if (!manager) {
-<<<<<<< Updated upstream
       return res.status(404).json({ message: 'Community manager not found' });
     }
 
@@ -829,34 +718,11 @@ managerRouter.get("/community-details", async (req, res) => {
   } catch (error) {
     console.error('Error fetching community details:', error);
     res.status(500).json({ message: 'Failed to fetch community details' });
-=======
-      return res.status(404).json({ message: "Community manager not found" });
-    }
-
-    const community = await Community.findById(
-      manager.assignedCommunity
-    ).select(
-      "name subscriptionPlan subscriptionStatus planStartDate planEndDate subscriptionHistory"
-    );
-
-    if (!community) {
-      return res.status(404).json({ message: "Community not found" });
-    }
-    console.log(community);
-    res.json(community);
-  } catch (error) {
-    console.error("Error fetching community details:", error);
-    res.status(500).json({ message: "Failed to fetch community details" });
->>>>>>> Stashed changes
   }
 });
 
 // Handle subscription payment
-<<<<<<< Updated upstream
 managerRouter.post('/subscription-payment', async (req, res) => {
-=======
-managerRouter.post("/subscription-payment", async (req, res) => {
->>>>>>> Stashed changes
   try {
     const {
       communityId,
@@ -866,22 +732,12 @@ managerRouter.post("/subscription-payment", async (req, res) => {
       planDuration,
       transactionId,
       paymentDate,
-<<<<<<< Updated upstream
       isRenewal
-=======
-      isRenewal,
->>>>>>> Stashed changes
     } = req.body;
 
     // Validate required fields
     if (!subscriptionPlan || !amount || !paymentMethod) {
-<<<<<<< Updated upstream
       return res.status(400).json({ message: 'Missing required payment information' });
-=======
-      return res
-        .status(400)
-        .json({ message: "Missing required payment information" });
->>>>>>> Stashed changes
     }
 
     // Get the community
@@ -889,47 +745,27 @@ managerRouter.post("/subscription-payment", async (req, res) => {
     const manager = await CommunityManager.findById(managerId);
 
     if (!manager) {
-<<<<<<< Updated upstream
       return res.status(404).json({ message: 'Community manager not found' });
-=======
-      return res.status(404).json({ message: "Community manager not found" });
->>>>>>> Stashed changes
     }
 
     const community = await Community.findById(communityId);
     if (!community) {
-<<<<<<< Updated upstream
       return res.status(404).json({ message: 'Community not found' });
-=======
-      return res.status(404).json({ message: "Community not found" });
->>>>>>> Stashed changes
     }
 
     // Calculate plan end date
     const startDate = new Date(paymentDate);
     const endDate = new Date(startDate);
 
-<<<<<<< Updated upstream
     if (planDuration === 'monthly') {
       endDate.setMonth(endDate.getMonth() + 1);
     } else if (planDuration === 'yearly') {
-=======
-    if (planDuration === "monthly") {
-      endDate.setMonth(endDate.getMonth() + 1);
-    } else if (planDuration === "yearly") {
->>>>>>> Stashed changes
       endDate.setFullYear(endDate.getFullYear() + 1);
     }
 
     // Create subscription payment record
     const subscriptionPayment = {
-<<<<<<< Updated upstream
       transactionId: transactionId || `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-=======
-      transactionId:
-        transactionId ||
-        `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
->>>>>>> Stashed changes
       planName: getSubscriptionPlanName(subscriptionPlan),
       planType: subscriptionPlan,
       amount: amount,
@@ -939,7 +775,6 @@ managerRouter.post("/subscription-payment", async (req, res) => {
       planStartDate: startDate,
       planEndDate: endDate,
       duration: planDuration,
-<<<<<<< Updated upstream
       status: 'completed',
       isRenewal: isRenewal || false,
       processedBy: managerId,
@@ -947,24 +782,11 @@ managerRouter.post("/subscription-payment", async (req, res) => {
         userAgent: req.get('User-Agent'),
         ipAddress: req.ip || req.connection.remoteAddress
       }
-=======
-      status: "completed",
-      isRenewal: isRenewal || false,
-      processedBy: managerId,
-      metadata: {
-        userAgent: req.get("User-Agent"),
-        ipAddress: req.ip || req.connection.remoteAddress,
-      },
->>>>>>> Stashed changes
     };
 
     // Update community subscription details
     community.subscriptionPlan = subscriptionPlan;
-<<<<<<< Updated upstream
     community.subscriptionStatus = 'active';
-=======
-    community.subscriptionStatus = "active";
->>>>>>> Stashed changes
     community.planStartDate = startDate;
     community.planEndDate = endDate;
 
@@ -980,16 +802,11 @@ managerRouter.post("/subscription-payment", async (req, res) => {
     // Prepare response
     const response = {
       success: true,
-<<<<<<< Updated upstream
       message: 'Subscription payment processed successfully',
-=======
-      message: "Subscription payment processed successfully",
->>>>>>> Stashed changes
       transactionId: subscriptionPayment.transactionId,
       planName: subscriptionPayment.planName,
       amount: subscriptionPayment.amount,
       planEndDate: subscriptionPayment.planEndDate,
-<<<<<<< Updated upstream
       subscriptionStatus: community.subscriptionStatus
     };
 
@@ -1000,33 +817,17 @@ managerRouter.post("/subscription-payment", async (req, res) => {
     res.status(500).json({
       message: 'Payment processing failed',
       error: error.message
-=======
-      subscriptionStatus: community.subscriptionStatus,
-    };
-
-    res.status(200).json(response);
-  } catch (error) {
-    console.error("Subscription payment error:", error);
-    res.status(500).json({
-      message: "Payment processing failed",
-      error: error.message,
->>>>>>> Stashed changes
     });
   }
 });
 
 // Get subscription history
-<<<<<<< Updated upstream
 managerRouter.get('/subscription-history', async (req, res) => {
-=======
-managerRouter.get("/subscription-history", async (req, res) => {
->>>>>>> Stashed changes
   try {
     const managerId = req.user.id;
     const manager = await CommunityManager.findById(managerId);
 
     if (!manager) {
-<<<<<<< Updated upstream
       return res.status(404).json({ message: 'Community manager not found' });
     }
 
@@ -1035,62 +836,32 @@ managerRouter.get("/subscription-history", async (req, res) => {
 
     if (!community) {
       return res.status(404).json({ message: 'Community not found' });
-=======
-      return res.status(404).json({ message: "Community manager not found" });
-    }
-
-    const community = await Community.findById(
-      manager.assignedCommunity
-    ).select("subscriptionHistory");
-
-    if (!community) {
-      return res.status(404).json({ message: "Community not found" });
->>>>>>> Stashed changes
     }
 
     // Sort history by payment date (newest first)
     const sortedHistory = community.subscriptionHistory
-<<<<<<< Updated upstream
       ? community.subscriptionHistory.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))
-=======
-      ? community.subscriptionHistory.sort(
-          (a, b) => new Date(b.paymentDate) - new Date(a.paymentDate)
-        )
->>>>>>> Stashed changes
       : [];
 
     res.json({
       success: true,
       history: sortedHistory,
-<<<<<<< Updated upstream
       totalPayments: sortedHistory.length
     });
 
   } catch (error) {
     console.error('Error fetching subscription history:', error);
     res.status(500).json({ message: 'Failed to fetch subscription history' });
-=======
-      totalPayments: sortedHistory.length,
-    });
-  } catch (error) {
-    console.error("Error fetching subscription history:", error);
-    res.status(500).json({ message: "Failed to fetch subscription history" });
->>>>>>> Stashed changes
   }
 });
 
 // Get current subscription status
-<<<<<<< Updated upstream
 managerRouter.get('/subscription-status', async (req, res) => {
-=======
-managerRouter.get("/subscription-status", async (req, res) => {
->>>>>>> Stashed changes
   try {
     const managerId = req.user.id;
     const manager = await CommunityManager.findById(managerId);
 
     if (!manager) {
-<<<<<<< Updated upstream
       return res.status(404).json({ message: 'Community manager not found' });
     }
 
@@ -1099,48 +870,21 @@ managerRouter.get("/subscription-status", async (req, res) => {
 
     if (!community) {
       return res.status(404).json({ message: 'Community not found' });
-=======
-      return res.status(404).json({ message: "Community manager not found" });
-    }
-
-    const community = await Community.findById(
-      manager.assignedCommunity
-    ).select(
-      "name subscriptionPlan subscriptionStatus planStartDate planEndDate"
-    );
-
-    if (!community) {
-      return res.status(404).json({ message: "Community not found" });
->>>>>>> Stashed changes
     }
 
     // Check if subscription is expired
     const now = new Date();
-<<<<<<< Updated upstream
     const isExpired = community.planEndDate && new Date(community.planEndDate) < now;
 
     if (isExpired && community.subscriptionStatus === 'active') {
       community.subscriptionStatus = 'expired';
-=======
-    const isExpired =
-      community.planEndDate && new Date(community.planEndDate) < now;
-
-    if (isExpired && community.subscriptionStatus === "active") {
-      community.subscriptionStatus = "expired";
->>>>>>> Stashed changes
       await community.save();
     }
 
     // Calculate days until expiry
     let daysUntilExpiry = null;
     if (community.planEndDate) {
-<<<<<<< Updated upstream
       daysUntilExpiry = Math.ceil((new Date(community.planEndDate) - now) / (1000 * 60 * 60 * 24));
-=======
-      daysUntilExpiry = Math.ceil(
-        (new Date(community.planEndDate) - now) / (1000 * 60 * 60 * 24)
-      );
->>>>>>> Stashed changes
     }
 
     res.json({
@@ -1153,7 +897,6 @@ managerRouter.get("/subscription-status", async (req, res) => {
         planEndDate: community.planEndDate,
         daysUntilExpiry: daysUntilExpiry,
         isExpired: isExpired,
-<<<<<<< Updated upstream
         isExpiringSoon: daysUntilExpiry && daysUntilExpiry <= 7 && daysUntilExpiry > 0
       }
     });
@@ -1161,18 +904,12 @@ managerRouter.get("/subscription-status", async (req, res) => {
   } catch (error) {
     console.error('Error fetching subscription status:', error);
     res.status(500).json({ message: 'Failed to fetch subscription status' });
-=======
-        isExpiringSoon:
-          daysUntilExpiry && daysUntilExpiry <= 7 && daysUntilExpiry > 0,
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching subscription status:", error);
-    res.status(500).json({ message: "Failed to fetch subscription status" });
->>>>>>> Stashed changes
   }
 });
-import fs from "fs";
+import fs from 'fs';
+
+
+
 
 const storage2 = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -1185,17 +922,18 @@ const storage2 = multer.diskStorage({
   },
 
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  },
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
 });
+
 
 const fileFilter = (req, file, cb) => {
   // Check file type
-  if (file.mimetype.startsWith("image/")) {
+  if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files are allowed!"), false);
+    cb(new Error('Only image files are allowed!'), false);
   }
 };
 
@@ -1204,12 +942,11 @@ const upload2 = multer({
   fileFilter: fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
-    files: 10, // Maximum 10 files
-  },
+    files: 10 // Maximum 10 files
+  }
 });
 
 // Render new community page
-<<<<<<< Updated upstream
 managerRouter.get('/new-community', (req, res) => {
   res.render('communityManager/new-community');
 });
@@ -1395,224 +1132,17 @@ managerRouter.get('/communities/:id', async (req, res) => {
   try {
     const community = await Community.findById(req.params.id)
       .populate('communityManager', 'name email')
-=======
-managerRouter.get("/new-community", (req, res) => {
-  res.render("communityManager/new-community");
-});
-
-// Create new community with photo upload
-managerRouter.post(
-  "/communities",
-  upload2.array("photos", 10),
-  async (req, res) => {
-    try {
-      const {
-        name,
-        location,
-        email,
-        description,
-        totalMembers,
-        subscriptionPlan,
-        paymentMethod,
-        commonSpaces,
-      } = req.body;
-
-      // Validate required fields
-      if (!name || !location || !email || !paymentMethod) {
-        return res.status(400).json({
-          success: false,
-          message: "Please fill in all required fields.",
-        });
-      }
-
-      // Check if community with same name or email already exists
-      const existingCommunity = await Community.findOne({
-        $or: [{ name }, { email }],
-      });
-
-      if (existingCommunity) {
-        return res.status(400).json({
-          success: false,
-          message: "A community with this name or email already exists.",
-        });
-      }
-
-      // Process uploaded photos
-      const photos = [];
-      if (req.files && req.files.length > 0) {
-        req.files.forEach((file) => {
-          photos.push({
-            filename: file.filename,
-            originalName: file.originalname,
-            path: `/uploads/communities/${file.filename}`,
-            size: file.size,
-            mimeType: file.mimetype,
-            uploadedAt: new Date(),
-          });
-        });
-      }
-
-      // Parse common spaces if provided
-      let parsedCommonSpaces = [];
-      if (commonSpaces) {
-        try {
-          parsedCommonSpaces = JSON.parse(commonSpaces);
-        } catch (error) {
-          console.error("Error parsing common spaces:", error);
-        }
-      }
-
-      // Calculate subscription dates
-      const planStartDate = new Date();
-      const planEndDate = new Date();
-      planEndDate.setMonth(planEndDate.getMonth() + 1); // Add 1 month
-
-      // Get plan pricing
-      const planPrices = {
-        basic: 999,
-        standard: 1999,
-        premium: 3999,
-      };
-
-      // Generate transaction ID
-      const transactionId = `TXN${Date.now()}${Math.random()
-        .toString(36)
-        .substr(2, 9)
-        .toUpperCase()}`;
-
-      // Create community
-      const newCommunity = new Community({
-        name: name.trim(),
-        location: location.trim(),
-        email: email.trim(),
-        description: description?.trim() || "",
-        totalMembers: parseInt(totalMembers) || 0,
-        subscriptionPlan,
-        subscriptionStatus: "active", // Set as active after successful payment
-        planStartDate,
-        planEndDate,
-        profile: {
-          photos: photos,
-        },
-        commonSpaces: parsedCommonSpaces.map((space) => ({
-          ...space,
-          createdBy: req.session?.managerId || null,
-        })),
-        communityManager: req.session?.managerId || null,
-
-        // Add subscription history entry
-        subscriptionHistory: [
-          {
-            transactionId,
-            planName: `${
-              subscriptionPlan.charAt(0).toUpperCase() +
-              subscriptionPlan.slice(1)
-            } Plan`,
-            planType: subscriptionPlan,
-            amount: planPrices[subscriptionPlan],
-            paymentMethod,
-            paymentDate: new Date(),
-            planStartDate,
-            planEndDate,
-            duration: "monthly",
-            status: "completed",
-            isRenewal: false,
-            processedBy: req.session?.managerId || null,
-            metadata: {
-              userAgent: req.get("User-Agent"),
-              ipAddress: req.ip,
-            },
-          },
-        ],
-
-        // Legacy payment history for backward compatibility
-        paymentHistory: [
-          {
-            date: new Date(),
-            amount: planPrices[subscriptionPlan],
-            method: paymentMethod,
-            transactionId,
-            invoiceUrl: null,
-          },
-        ],
-      });
-      const x = await CommunityManager.findById(req.user.id);
-      x.assignedCommunity = newCommunity._id;
-
-      await x.save();
-      await newCommunity.save();
-
-      res.status(201).json({
-        success: true,
-        message: "Community created successfully!",
-        data: {
-          communityId: newCommunity._id,
-          name: newCommunity.name,
-          subscriptionPlan: newCommunity.subscriptionPlan,
-          transactionId,
-        },
-      });
-    } catch (error) {
-      console.error("Error creating community:", error);
-
-      // Clean up uploaded files if community creation fails
-      if (req.files && req.files.length > 0) {
-        req.files.forEach(async (file) => {
-          try {
-            await fs.unlink(file.path);
-          } catch (unlinkError) {
-            console.error("Error deleting file:", unlinkError);
-          }
-        });
-      }
-
-      // Handle specific errors
-      if (error.name === "ValidationError") {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Validation error: " + Object.values(error.errors)[0].message,
-        });
-      }
-
-      if (error.code === 11000) {
-        return res.status(400).json({
-          success: false,
-          message: "A community with this name or email already exists.",
-        });
-      }
-
-      res.status(500).json({
-        success: false,
-        message:
-          "An error occurred while creating the community. Please try again.",
-      });
-    }
-  }
-);
-
-// Get community details
-managerRouter.get("/communities/:id", async (req, res) => {
-  try {
-    const community = await Community.findById(req.params.id)
-      .populate("communityManager", "name email")
->>>>>>> Stashed changes
       .lean();
 
     if (!community) {
       return res.status(404).json({
         success: false,
-<<<<<<< Updated upstream
         message: 'Community not found.'
-=======
-        message: "Community not found.",
->>>>>>> Stashed changes
       });
     }
 
     res.json({
       success: true,
-<<<<<<< Updated upstream
       data: community
     });
 
@@ -1621,25 +1151,12 @@ managerRouter.get("/communities/:id", async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'An error occurred while fetching community details.'
-=======
-      data: community,
-    });
-  } catch (error) {
-    console.error("Error fetching community:", error);
-    res.status(500).json({
-      success: false,
-      message: "An error occurred while fetching community details.",
->>>>>>> Stashed changes
     });
   }
 });
 
 // Get all communities for the logged-in manager
-<<<<<<< Updated upstream
 managerRouter.get('/communities', async (req, res) => {
-=======
-managerRouter.get("/communities", async (req, res) => {
->>>>>>> Stashed changes
   try {
     const managerId = req.session?.managerId;
     const page = parseInt(req.query.page) || 1;
@@ -1649,13 +1166,7 @@ managerRouter.get("/communities", async (req, res) => {
     const query = managerId ? { communityManager: managerId } : {};
 
     const communities = await Community.find(query)
-<<<<<<< Updated upstream
       .select('name location email status totalMembers subscriptionPlan subscriptionStatus planEndDate profile.photos')
-=======
-      .select(
-        "name location email status totalMembers subscriptionPlan subscriptionStatus planEndDate profile.photos"
-      )
->>>>>>> Stashed changes
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -1671,7 +1182,6 @@ managerRouter.get("/communities", async (req, res) => {
           page,
           limit,
           total,
-<<<<<<< Updated upstream
           pages: Math.ceil(total / limit)
         }
       }
@@ -1682,38 +1192,19 @@ managerRouter.get("/communities", async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'An error occurred while fetching communities.'
-=======
-          pages: Math.ceil(total / limit),
-        },
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching communities:", error);
-    res.status(500).json({
-      success: false,
-      message: "An error occurred while fetching communities.",
->>>>>>> Stashed changes
     });
   }
 });
 
 // Payment stats endpoint
-<<<<<<< Updated upstream
 managerRouter.get('/payment-stats', async (req, res) => {
-=======
-managerRouter.get("/payment-stats", async (req, res) => {
->>>>>>> Stashed changes
   try {
     const managerId = req.session?.managerId;
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const matchCondition = {
-<<<<<<< Updated upstream
       'subscriptionHistory.paymentDate': { $gte: firstDayOfMonth }
-=======
-      "subscriptionHistory.paymentDate": { $gte: firstDayOfMonth },
->>>>>>> Stashed changes
     };
 
     if (managerId) {
@@ -1722,26 +1213,16 @@ managerRouter.get("/payment-stats", async (req, res) => {
 
     const stats = await Community.aggregate([
       { $match: matchCondition },
-<<<<<<< Updated upstream
       { $unwind: '$subscriptionHistory' },
       {
         $match: {
           'subscriptionHistory.paymentDate': { $gte: firstDayOfMonth },
           'subscriptionHistory.status': 'completed'
         }
-=======
-      { $unwind: "$subscriptionHistory" },
-      {
-        $match: {
-          "subscriptionHistory.paymentDate": { $gte: firstDayOfMonth },
-          "subscriptionHistory.status": "completed",
-        },
->>>>>>> Stashed changes
       },
       {
         $group: {
           _id: null,
-<<<<<<< Updated upstream
           totalAmount: { $sum: '$subscriptionHistory.amount' },
           pendingAmount: {
             $sum: {
@@ -1755,21 +1236,6 @@ managerRouter.get("/payment-stats", async (req, res) => {
           totalTransactions: { $sum: 1 }
         }
       }
-=======
-          totalAmount: { $sum: "$subscriptionHistory.amount" },
-          pendingAmount: {
-            $sum: {
-              $cond: [
-                { $eq: ["$subscriptionHistory.status", "pending"] },
-                "$subscriptionHistory.amount",
-                0,
-              ],
-            },
-          },
-          totalTransactions: { $sum: 1 },
-        },
-      },
->>>>>>> Stashed changes
     ]);
 
     res.json({
@@ -1777,7 +1243,6 @@ managerRouter.get("/payment-stats", async (req, res) => {
       data: stats[0] || {
         totalAmount: 0,
         pendingAmount: 0,
-<<<<<<< Updated upstream
         totalTransactions: 0
       }
     });
@@ -1787,70 +1252,57 @@ managerRouter.get("/payment-stats", async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'An error occurred while fetching payment statistics.'
-=======
-        totalTransactions: 0,
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching payment stats:", error);
-    res.status(500).json({
-      success: false,
-      message: "An error occurred while fetching payment statistics.",
->>>>>>> Stashed changes
     });
   }
 });
 function getSubscriptionPlanName(planType) {
   const planNames = {
-<<<<<<< Updated upstream
     'basic': 'Basic Plan',
     'standard': 'Standard Plan',
     'premium': 'Premium Plan'
   };
   return planNames[planType] || 'Unknown Plan';
-=======
-    basic: "Basic Plan",
-    standard: "Standard Plan",
-    premium: "Premium Plan",
-  };
-  return planNames[planType] || "Unknown Plan";
->>>>>>> Stashed changes
 }
 // Helper function to get plan price
 function getPlanPrice(planType) {
   const planPrices = {
-<<<<<<< Updated upstream
     'basic': 999,
     'standard': 1999,
     'premium': 3999
-=======
-    basic: 999,
-    standard: 1999,
-    premium: 3999,
->>>>>>> Stashed changes
   };
   return planPrices[planType] || 0;
 }
 
-managerRouter.get("/all-payments", PaymentController.getAllPayments);
+
+
+
+managerRouter.get('/all-payments', PaymentController.getAllPayments);
 
 // Create a new payment
-managerRouter.post("/payments", PaymentController.createPayment);
+managerRouter.post('/payments', PaymentController.createPayment);
 
 // Get all residents
-managerRouter.get("/residents", PaymentController.getAllResidents);
+managerRouter.get('/residents', PaymentController.getAllResidents);
 
 // Get current logged-in user information
-managerRouter.get("/currentcManager", PaymentController.getCurrentcManager);
+managerRouter.get('/currentcManager', PaymentController.getCurrentcManager);
+
 
 // Get a specific payment by ID
-managerRouter.get("/payments/:id", PaymentController.getPaymentById);
+managerRouter.get('/payments/:id', PaymentController.getPaymentById);
 
 // Update a payment status
-managerRouter.put("/payments/:id", PaymentController.updatePayment);
+managerRouter.put('/payments/:id', PaymentController.updatePayment);
 
 // Delete a payment
-managerRouter.delete("/payments/:id", PaymentController.deletePayment);
+managerRouter.delete('/payments/:id', PaymentController.deletePayment);
+
+
+
+
+
+
+
 
 managerRouter.get("/userManagement", async (req, res) => {
   const ads = await Ad.find({ community: req.user.community });
@@ -1927,17 +1379,16 @@ managerRouter.get("/userManagement/resident/:id", async (req, res) => {
   res.status(200).json({ success: true, r });
 });
 
+
 managerRouter.delete("/userManagement/resident/:id", async (req, res) => {
   const id = req.params.id;
 
   const r = await Resident.deleteOne({ _id: id });
 
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
   res.status(200).json({ ok: true });
 });
+
 
 managerRouter.post("/userManagement/security", async (req, res) => {
   try {
@@ -1962,8 +1413,7 @@ managerRouter.post("/userManagement/security", async (req, res) => {
         Shift,
         community: req.user.community,
       });
-       req.flash("alert-msg", "New Security created");
-    const password = await sendPassword(email);
+      const password = await sendPassword(email);
       console.log(password);
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -1971,9 +1421,12 @@ managerRouter.post("/userManagement/security", async (req, res) => {
       r.password = hashedPassword;
 
       await r.save();
+
+      console.log("new resident : ", r);
       console.log("new security : ", r);
     }
-   
+    req.flash("alert-msg", "New Security created");
+
     res.redirect("/manager/userManagement");
   } catch (err) {
     console.error(err);
@@ -1998,7 +1451,6 @@ managerRouter.delete("/userManagement/security/:id", async (req, res) => {
 
   res.status(200).json({ ok: true });
 });
-
 
 managerRouter.post("/userManagement/worker", async (req, res) => {
   try {
@@ -2035,11 +1487,7 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
         salary,
         availabilityStatus,
         community: req.user.community,
-      });
-
-      console.log("new worker : ", r);
-       req.flash("alert-msg", "New Security created");
-    const password = await sendPassword(email);
+      }); const password = await sendPassword(email);
       console.log(password);
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -2047,8 +1495,13 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
       r.password = hashedPassword;
 
       await r.save();
+
+      console.log("new resident : ", r);
+
+      console.log("new worker : ", r);
     }
-    
+    req.flash("alert-msg", "New Worker created");
+
     res.redirect("/manager/userManagement");
   } catch (err) {
     console.error(err);
@@ -2071,8 +1524,6 @@ managerRouter.delete("/userManagement/worker/:id", async (req, res) => {
 
   res.status(200).json({ ok: true });
 });
-
-
 managerRouter.get("/dashboard", async (req, res) => {
   const ads = await Ad.find({ community: req.user.community });
 
@@ -2173,7 +1624,7 @@ managerRouter.get("/issueResolving", async (req, res) => {
 managerRouter.post("/issue/assign", async (req, res) => {
   const { id, issueID, worker, deadline, remarks } = req.body;
   try {
-    const issue = await Issue.findById(id).populate("resident");
+    const issue = await Issue.findById(id);
     console.log(issue);
 
     if (!issue) {
@@ -2184,14 +1635,6 @@ managerRouter.post("/issue/assign", async (req, res) => {
     issue.deadline = deadline;
     issue.remarks = remarks;
     issue.status = "Assigned";
-
-    issue.resident.notifications.push({
-      n: `worker has assigned to issue ${issue.issueID}`,
-      createdAt: new Date(Date.now()),
-      belongs: "Issue",
-    });
-
-    await issue.resident.save();
     await issue.save();
 
     // Find the worker and update their assigned issues
@@ -2234,7 +1677,7 @@ managerRouter.get("/payments", async (req, res) => {
 });
 
 managerRouter.get("/ad", async (req, res) => {
-  const ads = await Ad.find({ community: req.user.community,status:"active" });
+  const ads = await Ad.find({ community: req.user.community, status: "active" });
 
   res.render("communityManager/Advertisement", { path: "ad", ads });
 });

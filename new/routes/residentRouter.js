@@ -40,10 +40,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
 function getTimeAgo(date) {
   const now = new Date(Date.now());
   const diffMs = now - new Date(date);
@@ -71,44 +68,39 @@ residentRouter.get("/commonSpace", async (req, res) => {
     const bookings = await CommonSpaces.find({ bookedBy: req.user.id }).sort({ createdAt: -1 });
     console.log("Booking Data:", bookings);
 
-<<<<<<< Updated upstream
 
-  const resi = await Resident.findById(req.user.id);
+    const resi = await Resident.findById(req.user.id);
 
-  resi.notifications.forEach(async (n) => {
-    n.timeAgo = getTimeAgo(resi.notifications[0].createdAt);
-  });
-  await resi.save();
+    resi.notifications.forEach(async (n) => {
+      n.timeAgo = getTimeAgo(resi.notifications[0].createdAt);
+    });
+    await resi.save();
 
-  const ads = await Ad.find({ community: req.user.community });
-  const community=await Community.findById(req.user.community)
-   const availableSpaces = community ? community.commonSpaces : [];
-   console.log(bookings)
-    console.log(resi)
-     console.log(availableSpaces)
-  res.render("resident/commonSpace", {
-    path: "cbs",
-    bookings: bookings,
-    ads,
-    resi,
-    availableSpaces:availableSpaces
-  });
-
-=======
     const ads = await Ad.find({ community: req.user.community });
->>>>>>> Stashed changes
-    
-    
-  
+    const community = await Community.findById(req.user.community)
+    const availableSpaces = community ? community.commonSpaces : [];
+    console.log(bookings)
+    console.log(resi)
+    console.log(availableSpaces)
+    res.render("resident/commonSpace", {
+      path: "cbs",
+      bookings: bookings,
+      ads,
+      resi,
+      availableSpaces: availableSpaces
+    });
+
+
+
+
+
   } catch (error) {
     console.error("Error fetching common space data:", error);
     req.flash("message", "Error loading common space data.");
     res.redirect("/resident/dashboardx");
   }
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
+
 });
 
 residentRouter.post("/commonSpace/:id", async (req, res) => {
@@ -149,7 +141,7 @@ residentRouter.post("/commonSpace", async (req, res) => {
     const bookingDate = new Date(date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     if (bookingDate < today) {
       req.flash("message", "Cannot book for past dates.");
       return res.redirect("/resident/commonSpace");
@@ -199,7 +191,7 @@ residentRouter.post("/commonSpace", async (req, res) => {
 
     req.flash("message", "Booking request submitted successfully!");
     return res.redirect("/resident/commonSpace");
-    
+
   } catch (error) {
     console.error("Error creating booking:", error);
     req.flash("message", "Something went wrong. Please try again.");
@@ -237,7 +229,7 @@ residentRouter.get("/commonSpace/cancelled/:id", async (req, res) => {
 
     console.log("Booking cancelled:", bookingId, "by user:", req.user.id);
     return res.json({ result: "Booking cancelled successfully" });
-    
+
   } catch (error) {
     console.error("Error cancelling booking:", error);
     res.status(500).json({ error: "Server error" });
@@ -287,39 +279,39 @@ residentRouter.get("/dashboard", async (req, res) => {
       date: new Date(payment.paymentDate),
     }))
   );
-const startOfMonth = new Date();
-startOfMonth.setDate(1);
-startOfMonth.setHours(0, 0, 0, 0);
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
 
-const endOfMonth = new Date(startOfMonth);
-endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+  const endOfMonth = new Date(startOfMonth);
+  endOfMonth.setMonth(endOfMonth.getMonth() + 1);
   const pendingPayments = await Payment.find({
-  sender: req.user.id,
-  status: "pending", // or use `isPaid: false` if that fits your schema
-  paymentDeadline: { $gte: startOfMonth, $lt: endOfMonth },
-});
-const pendingCommonSpacesBookings = await CommonSpaces.find({
-  bookedBy: req.user.id,
-  status: "pending", // or use `isPaid: false` if that fits your schema
- 
-});
+    sender: req.user.id,
+    status: "pending", // or use `isPaid: false` if that fits your schema
+    paymentDeadline: { $gte: startOfMonth, $lt: endOfMonth },
+  });
+  const pendingCommonSpacesBookings = await CommonSpaces.find({
+    bookedBy: req.user.id,
+    status: "pending", // or use `isPaid: false` if that fits your schema
+
+  });
   recents.sort((a, b) => b.updatedAt - a.updatedAt);
 
   resi.notifications.forEach(n => {
     n.timeAgo = getTimeAgo(n.createdAt)
   });
 
-  resi.notifications.sort((a,b)=>b.createdAt - a.createdAt)
+  resi.notifications.sort((a, b) => b.createdAt - a.createdAt)
 
   const now = new Date();
-const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
 
-resi.notifications = resi.notifications.filter(n => {
-  const notificationDate = new Date(n.createdAt);
-  return notificationDate >= twentyFourHoursAgo;
-});
-  
+  resi.notifications = resi.notifications.filter(n => {
+    const notificationDate = new Date(n.createdAt);
+    return notificationDate >= twentyFourHoursAgo;
+  });
+
 
   await resi.save()
 
@@ -647,17 +639,17 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
       return res.status(400).json({ message: "Request body is missing" });
     }
 
-    const { 
-      visitorName, 
-      contactNumber, 
-      dateOfVisit, 
-      timeOfVisit, 
-      purpose 
+    const {
+      visitorName,
+      contactNumber,
+      dateOfVisit,
+      timeOfVisit,
+      purpose
     } = req.body;
 
     // Validate required fields
     if (!visitorName || !contactNumber || !dateOfVisit || !timeOfVisit || !purpose) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Missing required fields",
         required: ["visitorName", "contactNumber", "dateOfVisit", "timeOfVisit", "purpose"]
       });
@@ -707,9 +699,9 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
 
   } catch (err) {
     console.error("Error in pre-approving visitor:", err);
-    return res.status(500).json({ 
+    return res.status(500).json({
       message: "Internal server error",
-      error: err.message 
+      error: err.message
     });
   }
 });
