@@ -1,4 +1,7 @@
-// Updated CSB.js - Frontend JavaScript
+// Updated CSB.js - Frontend JavaScript with Max Hours Limit
+
+// Store facility data globally
+let facilityData = {};
 
 // Function to open a popup
 function openForm(type) {
@@ -17,10 +20,24 @@ function closeForm(type) {
 // Handle facility change
 function handleFacilityChange() {
   const facility = document.getElementById("facility").value;
+  const maxHoursDisplay = document.getElementById("maxHoursDisplay");
+  
   if (facility) {
     // Reset date and time selections when facility changes
     document.getElementById("bookingDate").value = "";
     resetTimeSlots();
+    
+    // Find facility data and display max hours
+    const selectedFacility = facilityData[facility];
+    if (selectedFacility && selectedFacility.maxHours) {
+      maxHoursDisplay.textContent = `Maximum booking duration: ${selectedFacility.maxHours} hour(s)`;
+      maxHoursDisplay.style.color = "#007bff";
+    } else {
+      maxHoursDisplay.textContent = "Maximum booking duration: 5 hour(s) (default)";
+      maxHoursDisplay.style.color = "#6c757d";
+    }
+  } else {
+    maxHoursDisplay.textContent = "";
   }
 }
 
@@ -43,6 +60,15 @@ function resetTimeSlots() {
     checkbox.parentElement.classList.remove('selected');
   });
   updateSelectedTimeDisplay();
+}
+
+// Get maximum hours for selected facility
+function getMaxHoursForFacility() {
+  const facility = document.getElementById("facility").value;
+  if (facility && facilityData[facility] && facilityData[facility].maxHours) {
+    return facilityData[facility].maxHours;
+  }
+  return 5; // Default maximum hours
 }
 
 // Update selected time display and hidden inputs
@@ -99,8 +125,22 @@ function areSlotsContinuous(slots) {
   return true;
 }
 
-// Handle time slot checkbox change
+// Handle time slot checkbox change with facility-specific max hours
 function handleTimeSlotChange(checkbox) {
+  const maxHours = getMaxHoursForFacility();
+  
+  // If checking a new slot, check limits first
+  if (checkbox.checked) {
+    const currentlySelected = document.querySelectorAll('input[name="timeSlots"]:checked').length;
+    
+    // Check if trying to select more than facility's max hours
+    if (currentlySelected > maxHours) {
+      checkbox.checked = false;
+      alert(`You can select a maximum of ${maxHours} consecutive time slots for this facility.`);
+      return;
+    }
+  }
+  
   const selectedSlots = Array.from(document.querySelectorAll('input[name="timeSlots"]:checked'))
     .map(cb => cb.value);
   
@@ -136,8 +176,24 @@ function hideLoading(button, originalText) {
   button.disabled = false;
 }
 
+// Initialize facility data from server-side data
+function initializeFacilityData() {
+  // This will be populated from the EJS template
+  if (typeof window.availableSpaces !== 'undefined') {
+    window.availableSpaces.forEach(space => {
+      facilityData[space.name] = {
+        maxHours: space.maxHours || 5, // Default to 5 if not specified
+        // Add other facility properties as needed
+      };
+    });
+  }
+}
+
 // Wait for DOM to fully load
 document.addEventListener("DOMContentLoaded", () => {
+  // Initialize facility data
+  initializeFacilityData();
+  
   // Open booking form
   document.getElementById("bookFacilityBtn")?.addEventListener("click", () => {
     openForm("booking");
@@ -325,9 +381,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Form submission handling
   document.getElementById("bookingForm")?.addEventListener("submit", function(e) {
     const selectedSlots = document.querySelectorAll('input[name="timeSlots"]:checked');
+    const maxHours = getMaxHoursForFacility();
+    
     if (selectedSlots.length === 0) {
       e.preventDefault();
       alert("Please select at least one time slot.");
+      return;
+    }
+    
+    if (selectedSlots.length > maxHours) {
+      e.preventDefault();
+      alert(`You can select a maximum of ${maxHours} time slots for this facility.`);
       return;
     }
     

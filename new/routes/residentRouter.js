@@ -77,10 +77,14 @@ residentRouter.get("/commonSpace", async (req, res) => {
   await resi.save();
 
   const ads = await Ad.find({ community: req.user.community });
+  const community=await Community.findById(req.user.community)
    const availableSpaces = community ? community.commonSpaces : [];
+   console.log(bookings)
+    console.log(resi)
+     console.log(availableSpaces)
   res.render("resident/commonSpace", {
     path: "cbs",
-    bookings: booking,
+    bookings: bookings,
     ads,
     resi,
     availableSpaces:availableSpaces
@@ -154,10 +158,6 @@ residentRouter.post("/commonSpace", async (req, res) => {
     const fromMinutes = fromHour * 60 + fromMin;
     const toMinutes = toHour * 60 + toMin;
 
-    if (toMinutes <= fromMinutes) {
-      req.flash("message", "End time must be after start time.");
-      return res.redirect("/resident/commonSpace");
-    }
 
 
     // Create the booking
@@ -277,9 +277,22 @@ residentRouter.get("/dashboard", async (req, res) => {
       date: new Date(payment.paymentDate),
     }))
   );
+const startOfMonth = new Date();
+startOfMonth.setDate(1);
+startOfMonth.setHours(0, 0, 0, 0);
 
-  
-
+const endOfMonth = new Date(startOfMonth);
+endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+  const pendingPayments = await Payment.find({
+  sender: req.user.id,
+  status: "pending", // or use `isPaid: false` if that fits your schema
+  paymentDeadline: { $gte: startOfMonth, $lt: endOfMonth },
+});
+const pendingCommonSpacesBookings = await CommonSpaces.find({
+  bookedBy: req.user.id,
+  status: "pending", // or use `isPaid: false` if that fits your schema
+ 
+});
   recents.sort((a, b) => b.updatedAt - a.updatedAt);
 
   console.log(recents);
@@ -291,6 +304,8 @@ residentRouter.get("/dashboard", async (req, res) => {
     recents,
     ads,
     resi,
+    pendingPayments,
+    pendingCommonSpacesBookings,
   });
 });
 

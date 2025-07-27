@@ -1297,7 +1297,7 @@
               <% } %>
             </select>
           </div>
-          
+          <p id="maxHoursDisplay" style="margin-top: 5px; font-weight: bold;"></p>
           <div class="form-group">
             <label for="bookingDate">Select Date *</label>
             <input type="date" id="bookingDate" name="date" required onchange="handleDateChange()" min="<%= new Date().toISOString().split('T')[0] %>">
