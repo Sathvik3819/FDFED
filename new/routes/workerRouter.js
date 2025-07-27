@@ -59,16 +59,19 @@ workerRouter.get("/tasks", async (req, res) => {
 workerRouter.post("/issueResolving/resolve/:id", async (req, res) => {
   const issueId = req.params.id;
   try {
-    const issue = await Issue.findById(issueId);
+    const issue = await Issue.findById(issueId).populate('resident');
     if (!issue) {
       return res.status(404).json({ message: "Issue not found" });
     }
     issue.status = "Review Pending";
-    issue.resolvedAt = new Date().toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    issue.resolvedAt = new Date();
+    issue.resident.notifications.push({
+      n:`Issue ${issue.issueID} is resolved `,
+      createdAt:new Date(),
+      belongs:"Issue"
+    })
+
+    await issue.resident.save();
     await issue.save();
     res.status(200).json({ success: true });
   } catch (error) {

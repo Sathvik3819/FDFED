@@ -119,7 +119,7 @@ securityRouter.post("/preApproval/action", async (req, res) => {
     }
 
     // Fetch the visitor record
-    const vis = await VisitorPreApproval.findById(ID);
+    const vis = await VisitorPreApproval.findById(ID).populate('approvedBy');
     if (!vis) {
       return res
         .status(404)
@@ -130,6 +130,13 @@ securityRouter.post("/preApproval/action", async (req, res) => {
     vis.isCheckedIn = status === "Approved"; 
     vis.vehicleNumber = vehicleNumber; 
 
+    vis.approvedBy.notifications.push({
+      n:`Pre approved Visitor ${vis.ID} is ${vis.status}`,
+      createdAt:new Date(Date.now()),
+      belongs:"PA"
+    });
+
+    await vis.approvedBy.save();
     await vis.save();
 
     console.log(vis.status);

@@ -40,7 +40,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 function getTimeAgo(date) {
   const now = new Date(Date.now());
   const diffMs = now - new Date(date);
@@ -68,6 +71,7 @@ residentRouter.get("/commonSpace", async (req, res) => {
     const bookings = await CommonSpaces.find({ bookedBy: req.user.id }).sort({ createdAt: -1 });
     console.log("Booking Data:", bookings);
 
+<<<<<<< Updated upstream
 
   const resi = await Resident.findById(req.user.id);
 
@@ -90,6 +94,9 @@ residentRouter.get("/commonSpace", async (req, res) => {
     availableSpaces:availableSpaces
   });
 
+=======
+    const ads = await Ad.find({ community: req.user.community });
+>>>>>>> Stashed changes
     
     
   
@@ -98,7 +105,10 @@ residentRouter.get("/commonSpace", async (req, res) => {
     req.flash("message", "Error loading common space data.");
     res.redirect("/resident/dashboardx");
   }
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 });
 
 residentRouter.post("/commonSpace/:id", async (req, res) => {
@@ -295,8 +305,23 @@ const pendingCommonSpacesBookings = await CommonSpaces.find({
 });
   recents.sort((a, b) => b.updatedAt - a.updatedAt);
 
-  console.log(recents);
+  resi.notifications.forEach(n => {
+    n.timeAgo = getTimeAgo(n.createdAt)
+  });
+
+  resi.notifications.sort((a,b)=>b.createdAt - a.createdAt)
+
+  const now = new Date();
+const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+
+resi.notifications = resi.notifications.filter(n => {
+  const notificationDate = new Date(n.createdAt);
+  return notificationDate >= twentyFourHoursAgo;
+});
   
+
+  await resi.save()
 
   // Render with recent data
   res.render("resident/dashboard", {
@@ -416,7 +441,6 @@ residentRouter.post("/issueRaising", async (req, res) => {
       title: category,
       description: description,
       status: "Pending",
-      createdAt: creat,
       workerAssigned: null,
     });
 
