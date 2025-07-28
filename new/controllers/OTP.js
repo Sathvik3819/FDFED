@@ -2,7 +2,10 @@ import nodemailer from "nodemailer";
 import Resident from "../models/resident.js";
 import Worker from "../models/workers.js";
 import Security from "../models/security.js";
-
+ 
+ import dotenv from "dotenv";
+ dotenv.config();
+ 
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -18,13 +21,13 @@ async function OTP(email) {
     port: 587,
     secure: false,
     auth: {
-      user: "sathvikchiluka@gmail.com",
-      pass: "ehho qecv dlaz rtrr",
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
 
   let mes = {
-    from: '"Urban ease" <sathvikchiluka@gmail.com>',
+    from: '"Urban ease" ',
     to: email,
     subject: "Your One-Time Password (OTP) for Account Access",
     text: `Dear User,\n\nYour OTP is: ${otp}\n\nDo not share it with anyone.`,
@@ -83,13 +86,13 @@ async function sendPassword(email) {
     port: 587,
     secure: false,
     auth: {
-      user: "sathvikchiluka@gmail.com",
-      pass: "ehho qecv dlaz rtrr",
+      user:  process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
 
   let mes = {
-    from: '"Urban ease Team" <sathvikchiluka@gmail.com>',
+    from: '"Urban ease Team" ',
     to: email,
     subject: "Password To Login",
     text: `Dear User,\n\nYour OTP is: ${password}\n\nDo not share it with anyone.`,
