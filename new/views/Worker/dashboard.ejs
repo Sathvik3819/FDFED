@@ -210,17 +210,28 @@
       <!-- AD SECTION -->
     <div class="adCon d-flex justify-content-center align-items-center">
         <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.length > 0) { %> <% ads.forEach(ad => { %>
+          <% if (locals.ads && ads.filter(ad => ad.status==="active").length > 0) { %> <% ads.filter(ad => ad.status==="active").forEach(ad => { %>
           <img
             src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
             class="ad-slide"
             alt="Ad"
             height="100px"
             width="200px"
-           
           />
           <% }) %> <% } else { %>
-          <p class="ad-text">Advertisement</p>
+          <div
+            class="d-flex justify-content-center align-items-center"
+            style="
+              background-color: rgba(158, 207, 250, 0.539);
+              border-radius: 8px;
+              color: rgb(0, 80, 193);
+              border: 3px dotted blue;
+              height: 100%;
+              width: 100%;
+            "
+          >
+            <p class="ad-text fs-4" style="font-weight: 600">Advertisement</p>
+          </div>
           <% } %>
         </div>
       </div>
