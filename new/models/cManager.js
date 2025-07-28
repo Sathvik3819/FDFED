@@ -28,7 +28,7 @@ const communityManagerSchema = new mongoose.Schema(
 communityManagerSchema.pre('remove', async function (next) {
   try {
     // Find communities created by this manager
-    const communities = await Community.find({ managerId: this._id });
+    const communities = await Community.find({ CommunityManager: this._id });
 
     // Get their IDs
     const communityIds = communities.map(c => c._id);
