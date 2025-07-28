@@ -19,7 +19,6 @@
     <link rel="stylesheet" href="../../css/nav.css" />
     <style>
       /* CSS Variables */
-
       /* Layout Components */
       .A {
         display: flex;
@@ -27,17 +26,14 @@
         gap: 2rem;
         align-items: flex-start;
       }
-
       .A > div:first-child {
         flex: 1;
         min-width: 300px;
       }
-
       .A > div:last-child {
         flex: 1.2;
         min-width: 350px;
       }
-
       /* Section Titles */
       .section-title {
         position: relative;
@@ -45,7 +41,6 @@
         margin-bottom: 1.5rem;
         border-bottom: 2px solid var(--light-gray);
       }
-
       .section-title::after {
         content: "";
         position: absolute;
@@ -56,7 +51,6 @@
         background: linear-gradient(90deg, var(--primary), var(--secondary));
         border-radius: 3px;
       }
-
       /* Stats Grid */
       .stats-grid {
         display: grid;
@@ -64,7 +58,6 @@
         gap: 1.5rem;
         margin-bottom: 2rem;
       }
-
       .stat-card {
         background: white;
         border-radius: var(--border-radius);
@@ -73,23 +66,19 @@
         border-left: 6px solid;
         transition: var(--transition);
       }
-
       .stat-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
       }
-
       .card-value {
         font-size: 2.5rem;
         font-weight: 700;
         margin: 0.5rem 0;
       }
-
       .card-label {
         color: var(--gray);
         font-size: 1.1rem;
       }
-
       /* Bookings Grid */
       .bookings-grid {
         display: grid;
@@ -97,7 +86,6 @@
         gap: 1.5rem;
         margin-top: 1.5rem;
       }
-
       .booking-card {
         background: white;
         border-radius: var(--border-radius);
@@ -106,12 +94,10 @@
         transition: var(--transition);
         border-left: 4px solid var(--primary);
       }
-
       .booking-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
       }
-
       .booking-card-header {
         display: flex;
         justify-content: space-between;
@@ -120,38 +106,31 @@
         padding-bottom: 0.75rem;
         border-bottom: 1px solid var(--light-gray);
       }
-
       .booking-id {
         font-weight: 600;
         color: var(--primary);
         font-size: 0.9rem;
       }
-
       .booking-details {
         margin-bottom: 1rem;
       }
-
       .booking-detail {
         display: flex;
         margin-bottom: 0.75rem;
       }
-
       .detail-label {
         font-weight: 600;
         color: var(--dark);
         min-width: 100px;
       }
-
       .detail-value {
         color: var(--gray);
       }
-
       .booking-actions {
         display: flex;
         gap: 0.75rem;
         margin-top: 1rem;
       }
-
       .action-btn {
         padding: 0.5rem 1rem;
         border-radius: 5px;
@@ -164,23 +143,19 @@
         cursor: pointer;
         font-weight: 500;
       }
-
       .action-btn.view {
         background-color: var(--info);
         color: white;
       }
-
       .action-btn.cancel {
         background-color: var(--danger);
         color: white;
       }
-
       .action-btn:hover {
         opacity: 0.9;
         transform: translateY(-2px);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
-
       /* Status Badges */
       .status-badge {
         display: inline-flex;
@@ -193,7 +168,6 @@
         letter-spacing: 0.3px;
         box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
       }
-
       .status-badge::before {
         content: "";
         display: inline-block;
@@ -204,32 +178,26 @@
         background: currentColor;
         opacity: 0.7;
       }
-
       .status-Pending {
         background-color: rgba(234, 179, 8, 0.1);
         color: #b45309;
       }
-
       .status-Approved {
         background-color: rgba(16, 185, 129, 0.1);
         color: #047857;
       }
-
       .status-Rejected {
         background-color: rgba(239, 68, 68, 0.1);
         color: #b91c1c;
       }
-
       .status-Cancelled {
         background-color: rgba(107, 114, 128, 0.1);
         color: #4b5563;
       }
-
       .status-Completed {
         background-color: rgba(6, 182, 212, 0.1);
         color: #0e7490;
       }
-
       /* Popup Styles */
       .popup {
         display: none;
@@ -243,7 +211,6 @@
         justify-content: center;
         align-items: center;
       }
-
       .popup-content {
         background: white;
         padding: 2rem;
@@ -257,7 +224,6 @@
         animation: popupFadeIn 0.3s ease-out;
         margin: 10px;
       }
-
       @keyframes popupFadeIn {
         from {
           opacity: 0;
@@ -268,7 +234,6 @@
           transform: translateY(0);
         }
       }
-
       .close-btn {
         position: absolute;
         top: 1rem;
@@ -286,12 +251,10 @@
         justify-content: center;
         border-radius: 50%;
       }
-
       .close-btn:hover {
         background-color: rgba(220, 53, 69, 0.1);
         transform: rotate(90deg);
       }
-
       .popup-header {
         display: flex;
         justify-content: space-between;
@@ -301,7 +264,6 @@
         border-bottom: 2px solid var(--light-gray);
         position: relative;
       }
-
       .popup-header h3 {
         margin: 0;
         color: var(--dark);
@@ -309,7 +271,6 @@
         font-weight: 600;
         letter-spacing: -0.5px;
       }
-
       /* Form Styles */
       #bookingForm {
         max-width: 1000px;
@@ -319,19 +280,16 @@
         border-radius: var(--border-radius);
         box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
       }
-
       .form-group {
         margin-bottom: 1.5rem;
         display: flex;
         flex-direction: column;
       }
-
       .form-group label {
         font-weight: 600;
         color: var(--dark);
         font-size: 0.9rem;
       }
-
       .form-group input,
       .form-group select,
       .form-group textarea {
@@ -342,7 +300,6 @@
         transition: var(--transition);
         background: white;
       }
-
       .form-group input:focus,
       .form-group select:focus,
       .form-group textarea:focus {
@@ -350,14 +307,12 @@
         outline: none;
         box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
       }
-
       .form-actions {
         display: flex;
         gap: 1rem;
         margin-top: 1.5rem;
         justify-content: flex-end;
       }
-
       .form-actions .btn {
         padding: 0.75rem 1.5rem;
         border-radius: 8px;
@@ -366,22 +321,18 @@
         border: none;
         cursor: pointer;
       }
-
       .form-actions .btn-secondary {
         background-color: var(--secondary);
         color: white;
       }
-
       .form-actions .btn-primary {
         background-color: var(--primary);
         color: white;
       }
-
       .form-actions .btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
-
       /* Time Slots Styling */
       .time-slots-container {
         margin: 10px 0;
@@ -393,7 +344,6 @@
         position: relative;
         overflow: hidden;
       }
-
       .time-slots-container::before {
         content: "";
         position: absolute;
@@ -405,7 +355,6 @@
         background-size: 200% 100%;
         animation: shimmer 3s ease-in-out infinite;
       }
-
       @keyframes shimmer {
         0%,
         100% {
@@ -415,7 +364,6 @@
           background-position: -200% 0;
         }
       }
-
       .time-slots-header {
         display: flex;
         align-items: center;
@@ -424,7 +372,6 @@
         padding-bottom: 12px;
         border-bottom: 2px solid #e8f4f8;
       }
-
       .time-slots-title {
         font-size: 1.1rem;
         font-weight: 700;
@@ -434,12 +381,10 @@
         gap: 8px;
         margin: 0;
       }
-
       .time-slots-title i {
         font-size: 1.2rem;
         color: #007bff;
       }
-
       .time-period-info {
         background: rgba(0, 123, 255, 0.1);
         padding: 6px 12px;
@@ -449,14 +394,12 @@
         font-weight: 600;
         border: 1px solid rgba(0, 123, 255, 0.2);
       }
-
       .time-slots-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
         gap: 12px;
         margin-bottom: 20px;
       }
-
       .time-slot {
         position: relative;
         display: flex;
@@ -476,7 +419,6 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         overflow: hidden;
       }
-
       .time-slot::before {
         content: "";
         position: absolute;
@@ -492,11 +434,9 @@
         );
         transition: left 0.5s ease;
       }
-
       .time-slot:hover::before {
         left: 100%;
       }
-
       .time-slot:hover {
         border-color: #007bff;
         background: linear-gradient(135deg, #f0f7ff 0%, #e3f2fd 100%);
@@ -504,7 +444,6 @@
         box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
         color: #0056b3;
       }
-
       .time-slot.selected {
         background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
         border-color: #004085;
@@ -513,7 +452,6 @@
         box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
         position: relative;
       }
-
       .time-slot.selected::after {
         content: "✓";
         position: absolute;
@@ -532,13 +470,11 @@
         border: 2px solid white;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       }
-
       .time-slot.selected:hover {
         background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
         transform: translateY(-2px) scale(1.05);
         box-shadow: 0 10px 30px rgba(0, 123, 255, 0.5);
       }
-
       .time-slot.disabled {
         background: linear-gradient(135deg, #f5f5f5 0%, #e9ecef 100%);
         border-color: #ced4da;
@@ -547,7 +483,6 @@
         opacity: 0.6;
         position: relative;
       }
-
       .time-slot.disabled::after {
         content: "✕";
         position: absolute;
@@ -558,18 +493,15 @@
         font-size: 1.2rem;
         font-weight: bold;
       }
-
       .time-slot.disabled:hover {
         transform: none;
         box-shadow: none;
         border-color: #ced4da;
         background: linear-gradient(135deg, #f5f5f5 0%, #e9ecef 100%);
       }
-
       .time-slot input[type="checkbox"] {
         display: none;
       }
-
       /* Range Selection Styles */
       .time-slot.in-range {
         background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
@@ -577,20 +509,17 @@
         color: #1565c0;
         transform: translateY(-1px);
       }
-
       .time-slot.range-start {
         background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
         border-color: #004085;
         color: white;
         position: relative;
       }
-
       .time-slot.range-end {
         background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
         border-color: #004085;
         color: white;
       }
-
       .time-slot.range-start::before {
         content: "START";
         position: absolute;
@@ -607,7 +536,6 @@
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         z-index: 10;
       }
-
       .time-slot.range-end::after {
         content: "END";
         position: absolute;
@@ -624,7 +552,6 @@
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         z-index: 10;
       }
-
       .booking-instructions {
         background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
         border: 2px solid #c3e6c3;
@@ -636,7 +563,6 @@
         position: relative;
         overflow: hidden;
       }
-
       .booking-instructions::before {
         content: "💡";
         position: absolute;
@@ -644,7 +570,6 @@
         left: 16px;
         font-size: 1.2rem;
       }
-
       .booking-instructions h4 {
         margin: 0 0 10px 30px;
         color: #1e5e1e;
@@ -654,19 +579,16 @@
         align-items: center;
         gap: 8px;
       }
-
       .booking-instructions ul {
         margin: 10px 0 0 50px;
         padding: 0;
         list-style: none;
       }
-
       .booking-instructions li {
         margin-bottom: 6px;
         position: relative;
         padding-left: 16px;
       }
-
       .booking-instructions li::before {
         content: "→";
         position: absolute;
@@ -674,7 +596,6 @@
         color: #28a745;
         font-weight: bold;
       }
-
       .selected-time-display {
         background: linear-gradient(135deg, #fff8f0 0%, #fef7ed 100%);
         border: 2px solid #fed7aa;
@@ -688,25 +609,21 @@
         align-items: center;
         box-shadow: 0 4px 12px rgba(249, 115, 22, 0.1);
       }
-
       .selected-time-display::before {
         content: "⏰";
         font-size: 1.5rem;
         margin-right: 12px;
       }
-
       .selected-time-display strong {
         color: #ea580c;
         font-weight: 700;
         margin-right: 8px;
       }
-
       .selected-time-display .no-selection {
         color: #9ca3af;
         font-style: italic;
         font-weight: 500;
       }
-
       .selected-time-display .time-range {
         color: #1f2937;
         font-weight: 600;
@@ -715,14 +632,12 @@
         border-radius: 20px;
         border: 1px solid rgba(249, 115, 22, 0.2);
       }
-
       /* Detail Components */
       .details-container {
         display: flex;
         flex-direction: column;
         gap: 1.2rem;
       }
-
       .detail-group {
         display: grid;
         grid-template-columns: 140px 1fr;
@@ -734,26 +649,22 @@
         border-left: 3px solid var(--primary);
         transition: var(--transition);
       }
-
       .detail-group:hover {
         background: rgba(248, 249, 250, 0.8);
         transform: translateX(5px);
       }
-
       .detail-group .detail-label {
         font-weight: 600;
         color: var(--dark);
         font-size: 0.9rem;
         min-width: 140px;
       }
-
       .detail-group .detail-value {
         color: var(--gray);
         font-size: 0.95rem;
         line-height: 1.5;
         word-break: break-word;
       }
-
       .detail-section {
         margin-top: 2rem;
         padding: 1.5rem;
@@ -766,7 +677,6 @@
         border-left: 4px solid var(--primary);
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       }
-
       .detail-section h5 {
         margin: 0 0 1rem 0;
         color: var(--dark);
@@ -778,7 +688,6 @@
         align-items: center;
         gap: 0.5rem;
       }
-
       .detail-section h5::before {
         content: "";
         width: 20px;
@@ -786,50 +695,39 @@
         background: linear-gradient(90deg, var(--primary), var(--secondary));
         border-radius: 3px;
       }
-
       #cancellation-section {
         border-left-color: var(--danger);
       }
-
       #cancellation-section h5::before {
         background: linear-gradient(90deg, var(--danger), #ff6b6b);
       }
-
       #feedback-section {
         border-left-color: var(--success);
       }
-
       #feedback-section h5::before {
         background: linear-gradient(90deg, var(--success), #4caf50);
       }
-
       /* Scrollbar Styling */
       .popup-content::-webkit-scrollbar {
         width: 6px;
       }
-
       .popup-content::-webkit-scrollbar-track {
         background: rgba(0, 0, 0, 0.03);
         border-radius: 3px;
       }
-
       .popup-content::-webkit-scrollbar-thumb {
         background: rgba(0, 0, 0, 0.15);
         border-radius: 3px;
       }
-
       .popup-content::-webkit-scrollbar-thumb:hover {
         background: rgba(0, 0, 0, 0.25);
       }
-
       .no-bookings {
         width: 100%;
         padding-top: 10%;
-       
         text-align: center;
         box-shadow: var(--shadow);
       }
-
       .no-bookings {
          grid-column-start: 1;
         grid-column-end: 4;
@@ -844,14 +742,9 @@
         color: #303031;
         font-size: 1.5rem;
       }
-
       .no-bookings p {
-        
         margin-top: 1rem;
       }
-
-    
-
       /* Responsive Design */
       @media (max-width: 1024px) {
         .popup-content {
@@ -859,51 +752,41 @@
           max-width: 900px;
           padding: 1.5rem;
         }
-
         .A {
           gap: 1.5rem;
           flex-direction: column;
         }
       }
-
       @media (max-width: 768px) {
         .bodyContainer {
           padding: 1rem;
         }
-
         .contentCon {
           padding: 1.5rem;
         }
-
         .bookings-grid {
           grid-template-columns: 1fr;
         }
-
         .booking-actions {
           flex-direction: column;
         }
-
         .action-btn {
           width: 100%;
           justify-content: center;
         }
-
         .detail-group {
           grid-template-columns: 1fr;
           gap: 0.5rem;
         }
-
         .detail-group .detail-label {
           min-width: auto;
           margin-bottom: 0.25rem;
           color: var(--primary);
           font-size: 0.85rem;
         }
-
         .detail-group .detail-value {
           font-size: 0.9rem;
         }
-
         .popup-content {
           width: 95%;
           max-width: none;
@@ -911,77 +794,63 @@
           margin: 5px;
           max-height: 98vh;
         }
-
         .A {
           flex-direction: column;
           gap: 1.5rem;
         }
-
         .A > div:first-child,
         .A > div:last-child {
           min-width: auto;
           width: 100%;
         }
-
         .form-actions {
           flex-direction: column;
           gap: 0.75rem;
         }
-
         .form-actions .btn {
           width: 100%;
           justify-content: center;
         }
-
         .time-slots-grid {
           grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
           gap: 10px;
         }
-
         .time-slot {
           padding: 12px 6px;
           font-size: 0.85rem;
           min-height: 48px;
         }
-
         .time-slots-container {
           padding: 20px 16px;
         }
-
         .time-slots-header {
           flex-direction: column;
           gap: 8px;
           text-align: center;
         }
-
         .detail-section {
           padding: 1rem;
         }
-
         .section-title::after {
           width: 80px;
         }
       }
-
       @media (max-width: 600px) {
         .time-slots-grid {
           grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
           gap: 8px;
         }
-
         .time-slot {
           padding: 10px 4px;
           font-size: 0.8rem;
           min-height: 44px;
         }
-
         .popup-content {
           width: 98%;
           padding: 1rem;
           margin: 5px;
           border-radius: 8px;
         }
-
         .close-btn {
           width: 2rem;
           height: 2rem;
@@ -989,166 +858,133 @@
           top: 0.5rem;
           right: 0.5rem;
         }
-
         .popup-header h3 {
           font-size: 1.25rem;
           margin-right: 2.5rem;
         }
-
         .form-group {
           margin-bottom: 1.25rem;
         }
-
         .form-group label {
           font-size: 0.9rem;
           margin-bottom: 0.4rem;
         }
-
         .form-group input,
         .form-group select,
         .form-group textarea {
           padding: 0.65rem;
           font-size: 0.95rem;
         }
-
         .time-slots-container {
           padding: 16px 12px;
         }
-
         .booking-instructions {
           padding: 12px 16px;
           font-size: 0.85rem;
         }
-
         .booking-instructions ul {
           margin-left: 40px;
         }
-
         .selected-time-display {
           padding: 12px 16px;
           font-size: 0.9rem;
           min-height: 50px;
         }
       }
-
       @media (max-width: 480px) {
         .stats-grid {
           grid-template-columns: 1fr;
         }
-
         .card-value {
           font-size: 2rem;
         }
-
         .popup {
           padding: 5px;
         }
-
         .popup-content {
           width: 98%;
           padding: 0.75rem;
           margin: 5px;
           max-height: 98vh;
         }
-
         .popup-header h3 {
           font-size: 1.1rem;
         }
-
         .form-group {
           margin-bottom: 1rem;
         }
-
         .form-group input,
         .form-group select,
         .form-group textarea {
           padding: 0.6rem;
           font-size: 0.9rem;
         }
-
         .form-title {
           font-size: 1.25rem;
         }
-
         .detail-group {
           padding: 0.5rem;
         }
-
         .detail-section {
           margin-top: 1rem;
           padding: 0.75rem;
         }
-
         .detail-section h5 {
           font-size: 1rem;
         }
-
         .bookings-grid {
           grid-template-columns: 1fr;
           gap: 1rem;
         }
-
         .booking-card {
           padding: 1rem;
         }
-
         .time-slots-grid {
           grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
           gap: 6px;
         }
-
         .time-slot {
           padding: 8px 4px;
           font-size: 0.75rem;
           min-height: 40px;
         }
-
         .time-slots-container {
           padding: 12px 8px;
           margin: 15px 0;
         }
-
         .time-slots-title {
           font-size: 1rem;
         }
-
         .time-period-info {
           font-size: 0.8rem;
           padding: 4px 10px;
         }
-
         .booking-instructions {
           padding: 10px 12px;
           font-size: 0.8rem;
           margin-bottom: 15px;
         }
-
         .booking-instructions h4 {
           font-size: 0.9rem;
           margin-left: 25px;
         }
-
         .booking-instructions ul {
           margin-left: 35px;
         }
-
         .selected-time-display {
           padding: 10px 12px;
           font-size: 0.85rem;
           min-height: 45px;
         }
-
         .form-actions {
           margin-top: 1rem;
           gap: 0.5rem;
         }
-
         .form-actions .btn {
           padding: 0.6rem 1rem;
           font-size: 0.9rem;
         }
       }
-
       @media (max-width: 360px) {
         .popup-content {
           width: 100%;
@@ -1157,7 +993,6 @@
           border-radius: 0;
           max-height: 100vh;
         }
-
         .close-btn {
           width: 1.75rem;
           height: 1.75rem;
@@ -1165,67 +1000,54 @@
           top: 0.25rem;
           right: 0.25rem;
         }
-
         .popup-header h3 {
           font-size: 1rem;
           margin-right: 2rem;
         }
-
         .form-group {
           margin-bottom: 0.75rem;
         }
-
         .form-group label {
           font-size: 0.85rem;
         }
-
         .form-group input,
         .form-group select,
         .form-group textarea {
           padding: 0.5rem;
           font-size: 0.85rem;
         }
-
         .detail-group {
           padding: 0.5rem;
           gap: 0.25rem;
         }
-
         .time-slots-grid {
           grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
           gap: 4px;
         }
-
         .time-slot {
           padding: 6px 2px;
           font-size: 0.7rem;
           min-height: 36px;
         }
-
         .time-slots-container {
           padding: 8px 6px;
         }
-
         .booking-instructions {
           padding: 8px 10px;
           font-size: 0.75rem;
         }
-
         .booking-instructions h4 {
           font-size: 0.85rem;
           margin-left: 20px;
         }
-
         .booking-instructions ul {
           margin-left: 30px;
         }
-
         .selected-time-display {
           padding: 8px 10px;
           font-size: 0.8rem;
           min-height: 40px;
         }
-
         .form-actions .btn {
           padding: 0.5rem 0.75rem;
           font-size: 0.85rem;
@@ -1351,7 +1173,6 @@
             <i class="bi bi-x"></i>
           </button>
         </div>
-
         <form id="bookingForm" action="/resident/commonSpace" method="POST">
           <div class="A">
             <div>
@@ -1367,14 +1188,7 @@
                   <% if (locals.availableSpaces && availableSpaces.length > 0) {
                   %> <% availableSpaces.forEach(space => { %>
                   <option value="<%= space.name %>"><%= space.name %></option>
-                  <% }) %> <% } else { %>
-                  <!-- Fallback options if no spaces are configured -->
-                  <option value="Guest Suite">Guest Suite</option>
-                  <option value="Banquet Hall">Banquet Hall</option>
-                  <option value="Swimming Pool">Swimming Pool</option>
-                  <option value="Gym">Gym</option>
-                  <option value="Community Hall">Community Hall</option>
-                  <% } %>
+                  <% }) %> <% }  %>
                 </select>
               </div>
               <p
@@ -1392,11 +1206,9 @@
                   min="<%= new Date().toISOString().split('T')[0] %>"
                 />
               </div>
-
               <!-- Hidden inputs for time range -->
               <input type="hidden" id="hiddenFromTime" name="from" />
               <input type="hidden" id="hiddenToTime" name="to" />
-
               <!-- Purpose field -->
               <div class="form-group">
                 <label for="purpose">Purpose (Optional)</label>
@@ -1407,7 +1219,6 @@
                   placeholder="Brief description of the purpose..."
                 ></textarea>
               </div>
-
               <div class="form-actions">
                 <button
                   type="button"
@@ -1421,12 +1232,10 @@
                 </button>
               </div>
             </div>
-
             <div>
               <!-- Enhanced Time slots section -->
               <div class="form-group">
                 <label>Select Time Slots *</label>
-
                 <div class="time-slots-container" id="timeSlotsContainer">
                   <div class="time-slots-header">
                     <h4 class="time-slots-title">
@@ -1435,7 +1244,6 @@
                     </h4>
                     <div class="time-period-info">6:00 AM - 10:00 PM</div>
                   </div>
-
                   <div class="time-slots-grid">
                     <% for (let hour = 6; hour <= 21; hour++) { %> <% const
                     timeStr = String(hour).padStart(2, '0') + ':00'; let
@@ -1454,7 +1262,6 @@
                     </div>
                     <% } %>
                   </div>
-
                   <div class="selected-time-display">
                     <strong>Selected Time: </strong>
                     <span id="selectedTimeText" class="no-selection"
@@ -1468,7 +1275,6 @@
         </form>
       </div>
     </div>
-
     <!-- Booking Details Popup -->
     <div id="bookingDetailsPopup" class="popup" style="display: none">
       <div class="popup-content">
@@ -1482,43 +1288,35 @@
             <i class="bi bi-x"></i>
           </button>
         </div>
-
         <div class="booking-details-content">
           <div class="detail-row">
             <span class="detail-label">Booking ID:</span>
             <span class="detail-value" id="detail-id">-</span>
           </div>
-
           <div class="detail-row">
             <span class="detail-label">Status:</span>
             <span class="detail-value" id="detail-status">-</span>
           </div>
-
           <div class="detail-row">
             <span class="detail-label">Facility:</span>
             <span class="detail-value" id="detail-facility">-</span>
           </div>
-
           <div class="detail-row">
             <span class="detail-label">Date:</span>
             <span class="detail-value" id="detail-date">-</span>
           </div>
-
           <div class="detail-row">
             <span class="detail-label">Time:</span>
             <span class="detail-value" id="detail-time">-</span>
           </div>
-
           <div class="detail-row">
             <span class="detail-label">Created:</span>
             <span class="detail-value" id="detail-created">-</span>
           </div>
-
           <div class="detail-row">
             <span class="detail-label">Purpose:</span>
             <span class="detail-value" id="detail-purpose">-</span>
           </div>
-
           <!-- Cancellation section (shown only when cancelled) -->
           <div id="cancellation-section" style="display: none">
             <hr />
@@ -1538,7 +1336,6 @@
               <span class="detail-value" id="detail-cancelled-at">-</span>
             </div>
           </div>
-
           <!-- Manager comment section -->
           <div id="manager-comment-section" style="display: none">
             <hr />
@@ -1547,7 +1344,6 @@
               <span class="detail-value" id="detail-manager-comment">-</span>
             </div>
           </div>
-
           <!-- Feedback section -->
           <div id="feedback-section" style="display: none">
             <hr />
@@ -1564,8 +1360,7 @@
         </div>
       </div>
     </div>
-
-    <script src="../../js/resident/CSB.js"></script>
-    <script src="../../js/sidebar.js"></script>
+<script src="../../js/resident/CSB.js"></script>
+<script src="../../js/sidebar.js"></script>
   </body>
 </html>

@@ -1041,7 +1041,6 @@ managerRouter.post('/communities', upload2.array('photos', 10), async (req, res)
       },
       commonSpaces: parsedCommonSpaces.map(space => ({
         ...space,
-        createdBy: req.session?.managerId || null
       })),
       communityManager: req.session?.managerId || null,
 

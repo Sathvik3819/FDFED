@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const CommunitySchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true, trim: true },
   location: { type: String, required: true },
@@ -7,7 +6,6 @@ const CommunitySchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   status: { type: String, enum: ["Active", "Inactive"], default: "Active" },
   totalMembers: { type: Number, default: 0 },
-
   // Profile/Photos section
   profile: {
     photos: [{
@@ -27,7 +25,6 @@ const CommunitySchema = new mongoose.Schema({
       uploadedAt: Date
     }
   },
-
   // Subscription fields
   subscriptionPlan: {
     type: String,
@@ -41,7 +38,6 @@ const CommunitySchema = new mongoose.Schema({
   },
   planStartDate: Date,
   planEndDate: Date,
-
   // Legacy payment history (keep for backward compatibility)
   paymentHistory: [{
     date: Date,
@@ -50,7 +46,6 @@ const CommunitySchema = new mongoose.Schema({
     transactionId: String,
     invoiceUrl: String
   }],
-
   // NEW: Detailed subscription history (matches your route code)
   subscriptionHistory: [{
     transactionId: { type: String, required: true },
@@ -64,13 +59,11 @@ const CommunitySchema = new mongoose.Schema({
     duration: { type: String, enum: ['monthly', 'yearly'], default: 'monthly' },
     status: { type: String, enum: ['completed', 'pending', 'failed'], default: 'pending' },
     isRenewal: { type: Boolean, default: false },
-  
     metadata: {
       userAgent: String,
       ipAddress: String
     }
   }],
-  
   commonSpaces: [{
     type: {
       type: String,
@@ -78,20 +71,12 @@ const CommunitySchema = new mongoose.Schema({
         "Clubhouse",
         "Banquet Hall",
         "Community Hall",
-        "Multipurpose Hall",
         "Swimming Pool",
         "Tennis Court",
         "Badminton Court",
         "Basketball Court",
-        "Indoor Games Room",
         "Amphitheatre",
-        "Co-working Space",
         "Guest Room",
-        "Barbecue Area",
-        "Yoga Deck",
-        "Terrace Area",
-        "Rooftop Garden",
-        "Mini Theatre",
         "Other" // ← used when they type custom name
       ],
       required: true
@@ -104,13 +89,8 @@ const CommunitySchema = new mongoose.Schema({
     },
     bookable: { type: Boolean, default: true },
     maxBookingDurationHours: { type: Number },
-    bookingRules: { type: String },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "CommunityManager"
-    }
+    bookingRules: { type: String }
   }],
-
   // Reference to community manager
   communityManager: {
     type: mongoose.Schema.Types.ObjectId,
@@ -119,18 +99,15 @@ const CommunitySchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
 // Add index for better query performance
 CommunitySchema.index({ subscriptionStatus: 1, planEndDate: 1 });
 CommunitySchema.index({ 'subscriptionHistory.paymentDate': -1 });
-
 // Add virtual property to check if subscription is expired
 CommunitySchema.virtual('isExpired').get(function () {
   if (!this.planEndDate || !this.subscriptionStatus) return true;
   return this.subscriptionStatus === 'expired' ||
     (this.subscriptionStatus === 'active' && new Date() > new Date(this.planEndDate));
 });
-
 // Add virtual property to check if subscription is expiring soon (within 7 days)
 CommunitySchema.virtual('isExpiringSoon').get(function () {
   if (!this.planEndDate || this.subscriptionStatus !== 'active') return false;
@@ -138,7 +115,6 @@ CommunitySchema.virtual('isExpiringSoon').get(function () {
   sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
   return new Date(this.planEndDate) <= sevenDaysFromNow;
 });
-
 // Add method to update subscription status
 CommunitySchema.methods.updateSubscriptionStatus = function () {
   if (this.planEndDate && new Date() > new Date(this.planEndDate)) {
@@ -146,6 +122,5 @@ CommunitySchema.methods.updateSubscriptionStatus = function () {
   }
   return this;
 };
-
 const Community = mongoose.model("Community", CommunitySchema);
 export default Community;

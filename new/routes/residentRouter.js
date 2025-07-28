@@ -235,7 +235,37 @@ residentRouter.get("/commonSpace/cancelled/:id", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+residentRouter.get('/api/facilities', async (req, res) => {
+  try {
+    // Fetch facilities from your database
+    // Replace this with your actual database query
+  const community = await Community.findById(req.user.community).select("commonSpaces");
+const facilities = community.commonSpaces || [];
 
+    // Format the data for frontend consumption
+    const facilitiesData = facilities.map(facility => ({
+      name: facility.name,
+      maxBookingDurationHours: facility.maxBookingDurationHours || 10, // default to 4 hours
+      id: facility._id,
+      // Add any other properties you need
+      description: facility.description,
+      capacity: facility.capacity,
+      amenities: facility.amenities
+    }));
+    
+    res.json({
+      success: true,
+      facilities: facilitiesData
+    });
+    
+  } catch (error) {
+    console.error('Error fetching facilities:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch facilities data'
+    });
+  }
+});
 const formatDate = (rawDate) => {
   return new Date(rawDate).toLocaleDateString("en-IN", {
     day: "2-digit",
