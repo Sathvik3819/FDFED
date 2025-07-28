@@ -529,6 +529,36 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       }
 
+
+      .no-bookings {
+        width: 100%;
+        padding-top: 10%;
+       
+        text-align: center;
+        box-shadow: var(--shadow);
+      }
+
+      .no-bookings {
+         grid-column-start: 1;
+        grid-column-end: 4;
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin: 2rem auto;
+        font-weight: 600;
+        border: 1px solid #f0f0f0;
+        color: #303031;
+        font-size: 1.5rem;
+      }
+
+      .no-bookings p {
+        
+        margin-top: 1rem;
+      }
+
+
       /* Responsive Styles for Receipt Container */
       @media (max-width: 992px) {
         .receipt-details {
@@ -762,7 +792,7 @@
         </div>
 
         <div class="payments-grid">
-          <% if (locals.payments) { %> <% payments.forEach(p => { %>
+          <% if (locals.payments && payments.length>0 ) { %> <% payments.forEach(p => { %>
           <div class="payment-card">
             <div class="payment-card-header">
               <h3 class="payment-title"><%= p.ID %></h3>
@@ -817,7 +847,9 @@
 
             <input type="hidden" class="payment-id" value="<%= p._id %>" />
           </div>
-          <% }) %> <% } %>
+          <% }) %> <% } else { %>
+            <div class="no-bookings d-flex gap-3 justify-content-center align-items-center text-muted "><i class="bi bi-wallet2"></i>  <p>No payments found</p></div>
+          <% } %>
         </div>
       </div>
     </div>

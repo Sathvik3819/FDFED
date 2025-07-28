@@ -822,6 +822,36 @@
         background: rgba(0, 0, 0, 0.25);
       }
 
+      .no-bookings {
+        width: 100%;
+        padding-top: 10%;
+       
+        text-align: center;
+        box-shadow: var(--shadow);
+      }
+
+      .no-bookings {
+         grid-column-start: 1;
+        grid-column-end: 4;
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin: 2rem auto;
+        font-weight: 600;
+        border: 1px solid #f0f0f0;
+        color: #303031;
+        font-size: 1.5rem;
+      }
+
+      .no-bookings p {
+        
+        margin-top: 1rem;
+      }
+
+    
+
       /* Responsive Design */
       @media (max-width: 1024px) {
         .popup-content {
@@ -1258,7 +1288,8 @@
         <div>
           <h4 class="table-title">Recent Bookings</h4>
           <div class="bookings-grid">
-            <% if (locals.bookings) { %><% bookings.forEach(b=> { %>
+            <% if (locals.bookings && bookings.length > 0) { %><%
+            bookings.forEach(b=> { %>
             <div class="booking-card <%= b.status %>">
               <div class="booking-card-header">
                 <span class="booking-id"
@@ -1300,7 +1331,7 @@
               </div>
             </div>
             <% }) %><% } else { %>
-            <div class="no-bookings"><p>No bookings found</p></div>
+            <div class="no-bookings d-flex gap-3 justify-content-center align-items-center text-muted "><i class="bi bi-calendar fs-3"></i> <p>No bookings found</p></div>
             <% } %>
           </div>
         </div>
