@@ -14,15 +14,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const searchInput = document.getElementById('searchInput');
   const statusFilter = document.getElementById('statusFilter');
   const locationFilter = document.getElementById('locationFilter');
-  const prevPageBtn = document.getElementById('prevPage');
-  const nextPageBtn = document.getElementById('nextPage');
-  const communitiesTableBody = document.getElementById('communitiesTableBody');
-  const paginationContainer = document.getElementById('pagination');
 
+  const communitiesTableBody = document.getElementById('communitiesTableBody');
+  
   // Variables
   let communities = []; // Will be populated with data from the server
-  let currentPage = 1;
-  let recordsPerPage = 8;
   let filteredCommunities = [];
   let selectedCommunityId = null;
   let isEditing = false;
@@ -36,8 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (searchInput) searchInput.addEventListener('input', filterCommunities);
   if (statusFilter) statusFilter.addEventListener('change', filterCommunities);
   if (locationFilter) locationFilter.addEventListener('change', filterCommunities);
-  if (prevPageBtn) prevPageBtn.addEventListener('click', goToPreviousPage);
-  if (nextPageBtn) nextPageBtn.addEventListener('click', goToNextPage);
 
   // Close modals
   modalCloseButtons.forEach(button => {
@@ -48,18 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Initialize page
-  initializePage();
-
-  // Function to initialize the page
-  async function initializePage() {
-    await fetchCommunities();
-    displayCommunities();
-    updatePagination();
-    setupPageButtons();
-    setupActionButtons();
-  }
-
   // Toggle sidebar
   function toggleSidebar() {
     sidebar.classList.toggle('show');
@@ -67,26 +49,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Fetch all communities from server
   async function fetchCommunities() {
-    try {
-      // If we already have communities, use them (for initial server-side rendering)
-      if (window.initialCommunities && window.initialCommunities.length > 0) {
-        communities = window.initialCommunities;
-        filteredCommunities = [...communities];
-        return;
-      }
-      
-      const response = await fetch('/admin/api/communities');
-      if (!response.ok) throw new Error('Failed to fetch communities');
-      
-      const data = await response.json();
-      communities = data.communities;
-      filteredCommunities = [...communities];
-    } catch (error) {
-      console.error('Error fetching communities:', error);
-      // Display error notification to user
-      showNotification('Error loading communities. Please try again.', 'error');
+  try {
+    // Determine how many to fetch based on screen size
+    const screenWidth = window.innerWidth;
+    let limit = 10; // Default
+    
+    if (screenWidth < 768) {
+      limit = 5; // Mobile
+    } else if (screenWidth < 1024) {
+      limit = 6; // Tablet
     }
+    
+    // If we already have communities, use them (for initial server-side rendering)
+    if (window.initialCommunities && window.initialCommunities.length > 0) {
+      communities = window.initialCommunities;
+      filteredCommunities = [...communities];
+      return;
+    }
+    
+    const response = await fetch(`/admin/api/communities?limit=${limit}`);
+    if (!response.ok) throw new Error('Failed to fetch communities');
+    
+    const data = await response.json();
+    communities = data.communities;
+    filteredCommunities = [...communities];
+  } catch (error) {
+    console.error('Error fetching communities:', error);
+    showNotification('Error loading communities. Please try again.', 'error');
   }
+}
 
   // Setup action buttons for each community row
   function setupActionButtons() {
@@ -116,83 +107,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Generate and setup pagination buttons
-  function setupPageButtons() {
-    const totalPages = Math.ceil(filteredCommunities.length / recordsPerPage);
-    
-    // Clear existing page buttons (except prev/next)
-    const pageButtonsContainer = document.getElementById('pagination');
-    const pageButtons = pageButtonsContainer.querySelectorAll('.page-btn:not(#prevPage):not(#nextPage)');
-    pageButtons.forEach(button => button.remove());
-    
-    // Insert new page buttons before nextPage button
-    const nextPageBtn = document.getElementById('nextPage');
-    for (let i = 1; i <= Math.min(totalPages, 5); i++) {
-      const pageBtn = document.createElement('button');
-      pageBtn.className = 'page-btn' + (i === currentPage ? ' active' : '');
-      pageBtn.textContent = i;
-      
-      pageBtn.addEventListener('click', () => {
-        currentPage = i;
-        updateActivePageButton();
-        displayCommunities();
-        updatePagination();
-      });
-      
-      pageButtonsContainer.insertBefore(pageBtn, nextPageBtn);
-    }
-    
-    updateActivePageButton();
-  }
-
-  // Update active page button
-  function updateActivePageButton() {
-    const pageButtons = document.querySelectorAll('.page-btn:not(#prevPage):not(#nextPage)');
-    
-    pageButtons.forEach((button, index) => {
-      if (parseInt(button.textContent) === currentPage) {
-        button.classList.add('active');
-      } else {
-        button.classList.remove('active');
-      }
-    });
-    
-    // Enable/disable prev/next buttons
-    if (currentPage === 1) {
-      prevPageBtn.classList.add('disabled');
-    } else {
-      prevPageBtn.classList.remove('disabled');
-    }
-    
-    const totalPages = Math.ceil(filteredCommunities.length / recordsPerPage);
-    if (currentPage === totalPages || totalPages === 0) {
-      nextPageBtn.classList.add('disabled');
-    } else {
-      nextPageBtn.classList.remove('disabled');
-    }
-  }
-
-  // Go to previous page
-  function goToPreviousPage() {
-    if (currentPage > 1 && !prevPageBtn.classList.contains('disabled')) {
-      currentPage--;
-      updateActivePageButton();
-      displayCommunities();
-      updatePagination();
-    }
-  }
-
-  // Go to next page
-  function goToNextPage() {
-    const totalPages = Math.ceil(filteredCommunities.length / recordsPerPage);
-    if (currentPage < totalPages && !nextPageBtn.classList.contains('disabled')) {
-      currentPage++;
-      updateActivePageButton();
-      displayCommunities();
-      updatePagination();
-    }
-  }
-
   // Filter communities based on search input and filters
   function filterCommunities() {
     const searchTerm = searchInput.value.toLowerCase();
@@ -212,64 +126,71 @@ document.addEventListener('DOMContentLoaded', function() {
       return matchSearch && matchStatus && matchLocation;
     });
     
-    currentPage = 1;
     displayCommunities();
-    updatePagination();
-    setupPageButtons();
   }
 
-  // Display communities based on current page and filters
-  function displayCommunities() {
-    const startIndex = (currentPage - 1) * recordsPerPage;
-    const endIndex = startIndex + recordsPerPage;
-    const displayedCommunities = filteredCommunities.slice(startIndex, endIndex);
-    
-    let html = '';
-    if (displayedCommunities.length === 0) {
-      html = '<tr><td colspan="7" class="text-center">No communities found</td></tr>';
-    } else {
-      displayedCommunities.forEach(community => {
-        const formattedDate = new Date(community.createdAt).toLocaleDateString();
-        html += `
-          <tr data-id="${community._id}">
-            <td>${community.name}</td>
-            <td>${community.location}</td>
-            <td>${community.totalMembers || 0}</td>
-            <td>${formattedDate}</td>
-            <td><span class="table-status status-${community.status.toLowerCase()}">${community.status}</span></td>
-            <td>${community.communityManager ? community.communityManager.name : 'Unassigned'}</td>
-            <td>
-              <div class="table-actions">
-                <button class="btn btn-sm btn-icon btn-view" data-id="${community._id}">
-                  <i class="fas fa-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-icon btn-edit" data-id="${community._id}">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-sm btn-icon btn-delete" data-id="${community._id}">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
-    }
-    
-    communitiesTableBody.innerHTML = html;
-    setupActionButtons();
+  // Display first 7 communities with option to show more
+ function displayCommunities() {
+  const header = document.querySelector('.header'); // adjust selector as needed
+  const filterSection = document.querySelector('.filter-section'); // adjust selector as needed
+
+  const headerHeight = header ? header.offsetHeight : 0;
+  const filterHeight = filterSection ? filterSection.offsetHeight : 0;
+  const rowHeight = 56; // Approximate average table row height (px). Adjust as needed.
+
+  const totalAvailableHeight = window.innerHeight - headerHeight - filterHeight - 100; // buffer for paddings/margins
+  const initialRowsToShow = Math.floor(totalAvailableHeight / rowHeight);
+
+  const showAll = communitiesTableBody.getAttribute('data-show-all') === 'true';
+  const displayedCommunities = showAll ? filteredCommunities : filteredCommunities.slice(0, initialRowsToShow-1);
+
+  let html = '';
+  if (displayedCommunities.length === 0) {
+    html = '<tr><td colspan="7" class="text-center">No communities found</td></tr>';
+  } else {
+    displayedCommunities.forEach(community => {
+      const formattedDate = new Date(community.createdAt).toLocaleDateString();
+      html += `
+        <tr data-id="${community._id}">
+          <td>${community.name}</td>
+          <td>${community.location}</td>
+          <td>${community.totalMembers || 0}</td>
+          <td>${formattedDate}</td>
+          <td><span class="table-status status-${community.status.toLowerCase()}">${community.status}</span></td>
+          <td>${community.communityManager ? community.communityManager.name : 'Unassigned'}</td>
+          <td>
+            <div class="table-actions">
+              <button class="btn btn-sm btn-icon btn-view" data-id="${community._id}">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-icon btn-edit" data-id="${community._id}">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-sm btn-icon btn-delete" data-id="${community._id}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+
+   
   }
 
-  // Update pagination information
-  function updatePagination() {
-    const totalRecords = filteredCommunities.length;
-    const startRecord = totalRecords === 0 ? 0 : (currentPage - 1) * recordsPerPage + 1;
-    const endRecord = Math.min(startRecord + recordsPerPage - 1, totalRecords);
-    
-    document.getElementById('startRecord').textContent = startRecord;
-    document.getElementById('endRecord').textContent = endRecord;
-    document.getElementById('totalRecords').textContent = totalRecords;
+  communitiesTableBody.innerHTML = html;
+  setupActionButtons();
+
+  const toggleBtn = document.getElementById('toggleDisplayBtn');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const currentlyShowingAll = communitiesTableBody.getAttribute('data-show-all') === 'true';
+      communitiesTableBody.setAttribute('data-show-all', !currentlyShowingAll);
+      displayCommunities();
+    });
   }
+}
+
 
   // Open the Add Community modal
   function openAddCommunityModal() {
@@ -408,8 +329,6 @@ document.addEventListener('DOMContentLoaded', function() {
       // Refresh data
       await fetchCommunities();
       displayCommunities();
-      updatePagination();
-      setupPageButtons();
       
       showNotification(isEditing ? 'Community updated successfully!' : 'Community added successfully!', 'success');
     } catch (error) {
@@ -436,15 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Refresh data
       await fetchCommunities();
-      
-      // Update UI
-      if (filteredCommunities.length === 0 && currentPage > 1) {
-        currentPage--;
-      }
-      
       displayCommunities();
-      updatePagination();
-      setupPageButtons();
       
       showNotification('Community deleted successfully!', 'success');
     } catch (error) {
@@ -588,4 +499,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Initialize with any server-side data
   initializeWithServerData();
+  // Add this near your other event listeners
+window.addEventListener('resize', () => {
+  // Only refresh if we're not showing all communities
+  if (communitiesTableBody.getAttribute('data-show-all') !== 'true') {
+    displayCommunities();
+  }
+});
+  // Initial fetch and display
+  fetchCommunities().then(() => {
+    displayCommunities();
+  });
 });

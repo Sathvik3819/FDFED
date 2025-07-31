@@ -11,14 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveManagerBtn = document.getElementById('saveManager');
     const confirmDeleteBtn = document.getElementById('confirmDelete');
     const editFromViewBtn = document.getElementById('editFromView');
-    
-    // Pagination elements
-    const prevPageBtn = document.getElementById('prevPage');
-    const nextPageBtn = document.getElementById('nextPage');
-    const startRecordSpan = document.getElementById('startRecord');
-    const endRecordSpan = document.getElementById('endRecord');
-    const totalRecordsSpan = document.getElementById('totalRecords');
-    const paginationContainer = document.getElementById('pagination');
+  
     
     // Toggle sidebar functionality
     const menuToggle = document.getElementById('menu-toggle');
@@ -37,24 +30,28 @@ document.addEventListener('DOMContentLoaded', function() {
     let managers = [];
     let filteredManagers = [];
     
-    // Pagination variables
-    let currentPage = 1;
-    const recordsPerPage = 8;
-    
     // Fetch all managers from the API
     async function fetchManagers() {
       try {
+        // Determine how many to fetch based on screen size
+        const screenWidth = window.innerWidth;
+        let limit = 10; // Default
+        
+        if (screenWidth < 768) {
+          limit = 5; // Mobile
+        } else if (screenWidth < 1024) {
+          limit = 6; // Tablet
+        }
+        
         // Show loading indicator
         managersTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Loading managers...</td></tr>';
         
-        const response = await fetch('/admin/api/community-managers');
+        const response = await fetch(`/admin/api/community-managers?limit=${limit}`);
         const data = await response.json();
         
         if (data.success) {
           managers = data.managers;
           filteredManagers = [...managers];
-          currentPage = 1; // Reset to first page when fetching new data
-          updatePagination();
           renderManagers();
         } else {
           showToast('Error fetching managers: ' + data.error, 'error');
@@ -116,115 +113,67 @@ document.addEventListener('DOMContentLoaded', function() {
         return matchesSearch && matchesCommunity;
       });
       
-      // Reset to first page when filtering
-      currentPage = 1;
-      updatePagination();
       renderManagers();
     }
     
-    // Update pagination display
-    function updatePagination() {
-      const totalPages = Math.ceil(filteredManagers.length / recordsPerPage);
-      const startIndex = (currentPage - 1) * recordsPerPage;
-      const endIndex = Math.min(startIndex + recordsPerPage, filteredManagers.length);
-      
-      startRecordSpan.textContent = filteredManagers.length > 0 ? startIndex + 1 : 0;
-      endRecordSpan.textContent = endIndex;
-      totalRecordsSpan.textContent = filteredManagers.length;
-      
-      // Enable/disable prev/next buttons
-      prevPageBtn.classList.toggle('disabled', currentPage === 1);
-      nextPageBtn.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
-      
-      // Generate page number buttons
-      generatePageButtons(totalPages);
-    }
-    
-    // Generate pagination buttons
-    function generatePageButtons(totalPages) {
-      // Clear existing page buttons (except prev and next)
-      const pageButtons = paginationContainer.querySelectorAll('.page-number');
-      pageButtons.forEach(button => button.remove());
-      
-      // Hide pagination if no data or only one page
-      if (totalPages <= 1) {
-        paginationContainer.style.display = 'none';
-        return;
-      } else {
-        paginationContainer.style.display = 'flex';
-      }
-      
-      // Determine which page buttons to show
-      let startPage = Math.max(1, currentPage - 2);
-      let endPage = Math.min(totalPages, startPage + 4);
-      
-      if (endPage - startPage < 4 && totalPages > 5) {
-        startPage = Math.max(1, endPage - 4);
-      }
-      
-      // Add page number buttons
-      for (let i = startPage; i <= endPage; i++) {
-        const pageBtn = document.createElement('button');
-        pageBtn.className = `page-btn page-number ${i === currentPage ? 'active' : ''}`;
-        pageBtn.textContent = i;
-        pageBtn.addEventListener('click', () => {
-          if (i !== currentPage) {
-            currentPage = i;
-            updatePagination();
-            renderManagers();
-          }
-        });
-        
-        // Insert before the next button
-        paginationContainer.insertBefore(pageBtn, nextPageBtn);
-      }
-    }
-    
-    // Render managers table with pagination
+    // Render managers table with screen-size based display
     function renderManagers() {
-      // Clear the table first
-      managersTableBody.innerHTML = '';
-      
-      const startIndex = (currentPage - 1) * recordsPerPage;
-      const pageManagers = filteredManagers.slice(startIndex, startIndex + recordsPerPage);
-      
-      if (pageManagers.length === 0) {
-        const emptyRow = document.createElement('tr');
-        emptyRow.innerHTML = '<td colspan="6" class="text-center">No community managers found</td>';
-        managersTableBody.appendChild(emptyRow);
-        return;
+      const header = document.querySelector('.header'); // adjust selector as needed
+      const filterSection = document.querySelector('.filter-section'); // adjust selector as needed
+
+      const headerHeight = header ? header.offsetHeight : 0;
+      const filterHeight = filterSection ? filterSection.offsetHeight : 0;
+      const rowHeight = 56; // Approximate average table row height (px). Adjust as needed.
+
+      const totalAvailableHeight = window.innerHeight - headerHeight - filterHeight - 100; // buffer for paddings/margins
+      const initialRowsToShow = Math.floor(totalAvailableHeight / rowHeight);
+
+      const showAll = managersTableBody.getAttribute('data-show-all') === 'true';
+      const displayedManagers = showAll ? filteredManagers : filteredManagers.slice(0, initialRowsToShow-1);
+
+      let html = '';
+      if (displayedManagers.length === 0) {
+        html = '<tr><td colspan="6" class="text-center">No community managers found</td></tr>';
+      } else {
+        displayedManagers.forEach(manager => {
+          const formattedDate = manager.createdAt ? new Date(manager.createdAt).toLocaleDateString() : 'N/A';
+          html += `
+            <tr data-id="${manager._id}">
+              <td>${manager.name || 'N/A'}</td>
+              <td>${manager.email || 'N/A'}</td>
+              <td>${manager.contact || 'N/A'}</td>
+              <td>${manager.assignedCommunity ? manager.assignedCommunity.name : 'Unassigned'}</td>
+              <td>${formattedDate}</td>
+              <td>
+                <div class="table-actions">
+                  <button class="btn btn-sm btn-icon btn-view" data-id="${manager._id}" title="View manager">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-icon btn-edit" data-id="${manager._id}" title="Edit manager">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-icon btn-delete" data-id="${manager._id}" title="Delete manager">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
       }
-      
-      pageManagers.forEach(manager => {
-        const row = document.createElement('tr');
-        row.dataset.id = manager._id;
-        
-        row.innerHTML = `
-          <td>${manager.name || 'N/A'}</td>
-          <td>${manager.email || 'N/A'}</td>
-          <td>${manager.contact || 'N/A'}</td>
-          <td>${manager.assignedCommunity ? manager.assignedCommunity.name : 'Unassigned'}</td>
-          <td>${manager.createdAt ? new Date(manager.createdAt).toLocaleDateString() : 'N/A'}</td>
-          <td>
-            <div class="table-actions">
-              <button class="btn btn-sm btn-icon btn-view" data-id="${manager._id}" title="View manager">
-                <i class="fas fa-eye"></i>
-              </button>
-              <button class="btn btn-sm btn-icon btn-edit" data-id="${manager._id}" title="Edit manager">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="btn btn-sm btn-icon btn-delete" data-id="${manager._id}" title="Delete manager">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </td>
-        `;
-        
-        managersTableBody.appendChild(row);
-      });
-      
-      // Attach event listeners to action buttons after rendering
+
+      managersTableBody.innerHTML = html;
       attachActionButtonListeners();
+
+      // Handle toggle display button
+      const toggleBtn = document.getElementById('toggleDisplayBtn');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          const currentlyShowingAll = managersTableBody.getAttribute('data-show-all') === 'true';
+          managersTableBody.setAttribute('data-show-all', !currentlyShowingAll);
+          renderManagers();
+        });
+      }
     }
     
     // Attach event listeners to table action buttons
@@ -322,7 +271,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Open modal for adding new manager
     function addManager() {
       document.getElementById('modalTitle').textContent = 'Add New Manager';
-     
       
       // Reset form
       managerForm.reset();
@@ -354,7 +302,6 @@ document.addEventListener('DOMContentLoaded', function() {
           document.getElementById('managerName').value = manager.name || '';
           document.getElementById('managerEmail').value = manager.email || '';
           document.getElementById('managerContact').value = manager.contact || '';
-          
           
           // Make community selection not required
           document.getElementById('assignedCommunity').removeAttribute('required');
@@ -524,24 +471,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    // Pagination buttons
-    prevPageBtn.addEventListener('click', function() {
-      if (currentPage > 1 && !this.classList.contains('disabled')) {
-        currentPage--;
-        updatePagination();
-        renderManagers();
-      }
-    });
-    
-    nextPageBtn.addEventListener('click', function() {
-      const totalPages = Math.ceil(filteredManagers.length / recordsPerPage);
-      if (currentPage < totalPages && !this.classList.contains('disabled')) {
-        currentPage++;
-        updatePagination();
-        renderManagers();
-      }
-    });
-    
     // Close modal buttons
     document.querySelectorAll('.modal-close, .btn-secondary[data-dismiss="modal"]').forEach(btn => {
       btn.addEventListener('click', function() {
@@ -560,6 +489,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Setup modal outside click
     setupModalOutsideClick();
+    
+    // Window resize event listener - only refresh if not showing all managers
+    window.addEventListener('resize', () => {
+      // Only refresh if we're not showing all managers
+      if (managersTableBody.getAttribute('data-show-all') !== 'true') {
+        renderManagers();
+      }
+    });
     
     // Initialize
     fetchManagers();

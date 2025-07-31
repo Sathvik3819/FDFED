@@ -5,10 +5,536 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Urban Ease - Community Managers</title>
-    <link rel="stylesheet" href="/css/admin/community-managers.css">
-    <link rel="stylesheet" href="/css/sidebar.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-</head>
+    
+    <style>
+        /* Importing Google Fonts - Poppins */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #F1FAFF 0%, #CBE4FF 100%);
+            color: #2c3e50;
+        }
+
+        /* Container Layout */
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            width: 270px;
+            margin: 16px;
+            border-radius: 16px;
+            background: #151A2D;
+            height: calc(100vh - 32px);
+            transition: all 0.4s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            width: 85px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 286px;
+            padding: 24px;
+            transition: margin-left 0.4s ease;
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-left: 101px;
+        }
+
+        /* Header Section */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 12px 32px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(21, 26, 45, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: #151A2D;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            background: #2c3441;
+            transform: translateY(-2px);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #151A2D;
+            margin: 0;
+        }
+
+        .header-actions .btn {
+            background: linear-gradient(135deg, #151A2D 0%, #2c3441 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(21, 26, 45, 0.2);
+        }
+
+        .header-actions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(21, 26, 45, 0.3);
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            
+            
+            display: grid;
+            grid-template-columns: 1fr 1fr ;
+            gap: 20px;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(21, 26, 45, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            border: 2px solid rgba(21, 26, 45, 0.1);
+            border-radius: 12px;
+            font-size: 14px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #151A2D;
+            box-shadow: 0 0 0 3px rgba(21, 26, 45, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(21, 26, 45, 0.1);
+            border-radius: 12px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #151A2D;
+            box-shadow: 0 0 0 3px rgba(21, 26, 45, 0.1);
+        }
+
+        /* Table Container */
+        .table-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(21, 26, 45, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .table thead {
+            background: linear-gradient(135deg, #151A2D 0%, #2c3441 100%);
+        }
+
+        .table thead th {
+            padding: 12px 16px;
+            color: white;
+            background-color: #151A2D;
+            font-weight: 600;
+            text-align: left;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table tbody tr {
+            border-bottom: 1px solid rgba(21, 26, 45, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(21, 26, 45, 0.04);
+        }
+
+        .table tbody td {
+            padding: 12px 16px;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+
+        /* Status Badges */
+        .table-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-active {
+            background: rgba(34, 197, 94, 0.1);
+            color: #16a34a;
+        }
+
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        /* Action Buttons */
+        .table-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-view {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .btn-view:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-edit {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .btn-edit:hover {
+            background: #f59e0b;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+       
+
+
+        /* Modal Styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(21, 26, 45, 0.8);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-backdrop.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(21, 26, 45, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-backdrop.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 24px 32px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #151A2D;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(21, 26, 45, 0.1);
+            color: #151A2D;
+        }
+
+        .modal-body {
+            padding: 24px 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #151A2D;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(21, 26, 45, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #151A2D;
+            box-shadow: 0 0 0 3px rgba(21, 26, 45, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-footer {
+            padding: 0 32px 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #151A2D 0%, #2c3441 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(21, 26, 45, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-danger {
+            color: #dc2626;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.menu-active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+
+            .filters-section {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .header {
+                padding: 16px 20px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .table thead th,
+            .table tbody td {
+                padding: 12px 8px;
+                font-size: 12px;
+            }
+
+           
+
+            .modal {
+                margin: 16px;
+                width: calc(100% - 32px);
+            }
+
+            .modal-header,
+            .modal-body,
+            .modal-footer {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .table-actions {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .btn-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+        }
+    </style>
+  </head>
 <body>
 <div class="container">
   <!-- Sidebar -->
@@ -23,16 +549,7 @@
         </span>
         <h1>Community Managers</h1>
       </div>
-      <div class="header-actions">
-        <button class="btn btn-primary" id="addManagerBtn">
-          <i class="fas fa-plus"></i>
-          <span>Add Manager</span>
-        </button>
-      </div>
-    </div>
-    
-    <!-- Filters section -->
-    <div class="filters-section">
+      <div class="filters-section">
       <div class="filter-item search-box">
         <input type="text" class="search-input" id="searchInput" placeholder="Search managers...">
         <i class="fas fa-search search-icon"></i>
@@ -55,6 +572,16 @@
         </select>
       </div>
     </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" id="addManagerBtn">
+          <i class="fas fa-plus"></i>
+          <span>Add Manager</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Filters section -->
+    
 
     <!-- Managers table -->
     <div class="table-container">
@@ -103,21 +630,7 @@
         </table>
       </div>
       
-      <!-- Pagination -->
-      <div class="pagination">
-        <div class="page-info">
-          Showing <span id="startRecord">1</span> to <span id="endRecord"><%= Math.min(managers.length, 8) %></span> of <span id="totalRecords"><%= managers.length %></span> entries
-        </div>
-        <div class="page-buttons" id="pagination">
-          <button class="page-btn disabled" id="prevPage">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          <!-- Page buttons will be generated by JavaScript -->
-          <button class="page-btn" id="nextPage">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-      </div>
+   
     </div>
   </div>
 </div>

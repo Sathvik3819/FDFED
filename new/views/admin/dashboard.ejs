@@ -4,106 +4,628 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Community Management Dashboard</title>
-  <link rel="stylesheet" href="/css/sidebar.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
-  <!-- Using Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar.show {
+      transform: translateX(0);
+    }
+
+    .logo {
+      padding: 2rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logo img {
+      height: 40px;
+      width: auto;
+    }
+
+    .logo h2 {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+
+    .sidebar nav ul {
+      list-style: none;
+      padding: 1rem 0;
+    }
+
+    .sidebar nav ul li {
+      margin: 0.5rem 0;
+    }
+
+    .sidebar nav ul li a {
+      display: flex;
+      align-items: center;
+      padding: 1rem 2rem;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar nav ul li a:hover,
+    .sidebar nav ul li a.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-left-color: #4CAF50;
+    }
+
+    .sidebar nav ul li a i {
+      margin-right: 0.75rem;
+      font-size: 1.1rem;
+      width: 20px;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 280px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px 0 0 0;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      background: white;
+      padding: 1.5rem 2rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      color: #333;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    .header-welcome {
+      color: #666;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: #333;
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin-right: 1rem;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #4CAF50, #45a049);
+    }
+
+    .stat-card.balance::before {
+      background: linear-gradient(90deg, #2196F3, #1976D2);
+    }
+
+    .stat-card.profit::before {
+      background: linear-gradient(90deg, #FF9800, #F57C00);
+    }
+
+    .stat-card.purchases::before {
+      background: linear-gradient(90deg, #9C27B0, #7B1FA2);
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .stat-title {
+      font-size: 0.9rem;
+      color: #666;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+    }
+
+    .stat-icon.balance {
+      background: linear-gradient(135deg, #2196F3, #1976D2);
+    }
+
+    .stat-icon.profit {
+      background: linear-gradient(135deg, #FF9800, #F57C00);
+    }
+
+    .stat-icon.purchases {
+      background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-description {
+      font-size: 0.85rem;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stat-growth {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      color: #4CAF50;
+      font-weight: 600;
+    }
+
+    .stat-growth.negative {
+      color: #f44336;
+    }
+
+    /* Table Section */
+    .table-section {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    .btn-icon {
+      padding: 0.5rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-view {
+      background: #2196F3;
+    }
+
+    .btn-edit {
+      background: #FF9800;
+    }
+
+    .btn-delete {
+      background: #f44336;
+    }
+
+    /* Table */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .table th {
+      background: #f8f9fa;
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    .table td {
+      padding: 1rem;
+      border-bottom: 1px solid #e9ecef;
+      color: #666;
+    }
+
+    .table tbody tr:hover {
+      background: #f8f9fa;
+    }
+
+    .table-status {
+      padding: 0.375rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-active {
+      background: #e8f5e8;
+      color: #4CAF50;
+    }
+
+    .status-inactive {
+      background: #ffebee;
+      color: #f44336;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      padding: 2rem 2rem 1rem;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: #999;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .modal-close:hover {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .modal-body {
+      padding: 2rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 2rem 2rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .form-control, .form-select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+      box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .main-content {
+        margin-left: 0;
+        border-radius: 0;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .table-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <!-- Sidebar -->
-   <%- include('../partials/sidebarAdmin') %>
+    <div class="sidebar" id="sidebar">
+      <div class="logo">
+        <img src="/imgs/logo.png" alt="Logo" class="building-icon">
+        <h2>JustDo</h2>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="/admin/dashboard" class="active"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
+          <li><a href="/admin/Communities"><i class="fas fa-building"></i>Communities</a></li>
+          <li><a href="/admin/community-managers"><i class="fas fa-user-tie"></i>Community Managers</a></li>
+          <li><a href="/admin/staff-management"><i class="fas fa-users"></i>Users</a></li>
+          <li><a href="/admin/applications"><i class="fas fa-file-alt"></i>Interest Applications</a></li>
+          <li><a href="/admin/payments"><i class="fas fa-credit-card"></i>Payments</a></li>
+          <li><a href="profile"><i class="fas fa-user-cog"></i>Profile Management</a></li>
+          <li><a href="/logout" id="logout-btn"><i class="fas fa-sign-out-alt"></i>Log out</a></li>
+        </ul>
+      </nav>
+    </div>
   
     <!-- Main content -->
     <div class="main-content">
       <div class="header">
-        <div class="d-flex align-items-center">
+        <div style="display: flex; align-items: center;">
           <span class="menu-toggle" id="menu-toggle">
             <i class="fas fa-bars"></i>
           </span>
-          <h1>Dashboard</h1>
+          <div>
+            <div class="header-welcome">Hi, Welcome back!</div>
+            <h1>JustDo Dashboard</h1>
+          </div>
         </div>
-        <div class="header-actions">
-          <button class="btn btn-primary">
-            <i class="fas fa-plus"></i>
-            <span>Add Community</span>
-          </button>
-        </div>
+        <button class="btn" id="addCommunityBtn">
+          <i class="fas fa-plus"></i>
+          Add Community
+        </button>
       </div>
   
       <!-- Stats overview -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-header">
-            <div class="stat-title">Total Communities</div>
-            <div class="stat-icon communities">
-              <i class="fas fa-building"></i>
+            <div class="stat-title">Balance</div>
+            <div class="stat-icon balance">
+              <i class="fas fa-wallet"></i>
             </div>
           </div>
-          <div class="stat-value">8</div>
+          <div class="stat-value">$40079.60 M</div>
           <div class="stat-description">
-            <span class="text-success">
-              <i class="fas fa-arrow-up"></i> 12%
-            </span>
-            since last month
+            <div class="stat-growth">
+              <i class="fas fa-arrow-up"></i> 0.28%
+            </div>
+            (30 days)
+          </div>
+        </div>
+  
+        <div class="stat-card profit">
+          <div class="stat-header">
+            <div class="stat-title">Today's Profit</div>
+            <div class="stat-icon profit">
+              <i class="fas fa-chart-line"></i>
+            </div>
+          </div>
+          <div class="stat-value">$175.00 M</div>
+          <div class="stat-description">
+            <div class="stat-growth">
+              <i class="fas fa-arrow-up"></i> 10.05%
+            </div>
+            (30 days)
+          </div>
+        </div>
+  
+        <div class="stat-card purchases">
+          <div class="stat-header">
+            <div class="stat-title">Purchases</div>
+            <div class="stat-icon purchases">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+          </div>
+          <div class="stat-value">4006</div>
+          <div class="stat-description">
+            <div class="stat-growth">
+              <i class="fas fa-arrow-up"></i> 22.00%
+            </div>
+            (30 days)
           </div>
         </div>
   
         <div class="stat-card">
           <div class="stat-header">
-            <div class="stat-title">Community Managers</div>
-            <div class="stat-icon managers">
-              <i class="fas fa-user-tie"></i>
+            <div class="stat-title">Downloads</div>
+            <div class="stat-icon">
+              <i class="fas fa-download"></i>
             </div>
           </div>
-          <div class="stat-value">12</div>
+          <div class="stat-value">4006</div>
           <div class="stat-description">
-            <span class="text-success">
-              <i class="fas fa-arrow-up"></i> 8%
-            </span>
-            since last month
-          </div>
-        </div>
-  
-        <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-title">Total Residents</div>
-            <div class="stat-icon residents">
-              <i class="fas fa-users"></i>
+            <div class="stat-growth">
+              <i class="fas fa-arrow-up"></i> 22.00%
             </div>
-          </div>
-          <div class="stat-value">457</div>
-          <div class="stat-description">
-            <span class="text-success">
-              <i class="fas fa-arrow-up"></i> 5%
-            </span>
-            since last month
-          </div>
-        </div>
-  
-        <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-title">Total Collections</div>
-            <div class="stat-icon finance">
-              <i class="fas fa-dollar-sign"></i>
-            </div>
-          </div>
-          <div class="stat-value">$86,400</div>
-          <div class="stat-description">
-            <span class="text-success">
-              <i class="fas fa-arrow-up"></i> 18%
-            </span>
-            since last month
+            (30 days)
           </div>
         </div>
       </div>
   
       <!-- Recent communities table -->
-      <div class="table-container">
+      <div class="table-section">
         <div class="section-header">
           <h2 class="section-title">Recent Communities</h2>
-          <a href="/sadmin/communities" class="btn btn-sm btn-primary">View All</a>
+          <a href="/sadmin/communities" class="btn btn-sm">View All</a>
         </div>
         <div class="table-responsive">
           <table class="table">
@@ -124,13 +646,13 @@
                 <td><span class="table-status status-active">Active</span></td>
                 <td>
                   <div class="table-actions">
-                    <button class="btn btn-sm btn-icon btn-view">
+                    <button class="btn btn-icon btn-view">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon btn-edit">
+                    <button class="btn btn-icon btn-edit">
                       <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon btn-delete">
+                    <button class="btn btn-icon btn-delete">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -143,13 +665,13 @@
                 <td><span class="table-status status-active">Active</span></td>
                 <td>
                   <div class="table-actions">
-                    <button class="btn btn-sm btn-icon btn-view">
+                    <button class="btn btn-icon btn-view">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon btn-edit">
+                    <button class="btn btn-icon btn-edit">
                       <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon btn-delete">
+                    <button class="btn btn-icon btn-delete">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -162,13 +684,13 @@
                 <td><span class="table-status status-active">Active</span></td>
                 <td>
                   <div class="table-actions">
-                    <button class="btn btn-sm btn-icon btn-view">
+                    <button class="btn btn-icon btn-view">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon btn-edit">
+                    <button class="btn btn-icon btn-edit">
                       <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon btn-delete">
+                    <button class="btn btn-icon btn-delete">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -181,13 +703,13 @@
                 <td><span class="table-status status-inactive">Inactive</span></td>
                 <td>
                   <div class="table-actions">
-                    <button class="btn btn-sm btn-icon btn-view">
+                    <button class="btn btn-icon btn-view">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon btn-edit">
+                    <button class="btn btn-icon btn-edit">
                       <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon btn-delete">
+                    <button class="btn btn-icon btn-delete">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -200,13 +722,13 @@
                 <td><span class="table-status status-active">Active</span></td>
                 <td>
                   <div class="table-actions">
-                    <button class="btn btn-sm btn-icon btn-view">
+                    <button class="btn btn-icon btn-view">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon btn-edit">
+                    <button class="btn btn-icon btn-edit">
                       <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon btn-delete">
+                    <button class="btn btn-icon btn-delete">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -251,7 +773,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" id="saveCommunity">Save</button>
+        <button type="button" class="btn" id="saveCommunity">Save</button>
       </div>
     </div>
   </div>
@@ -277,7 +799,7 @@
     const closeButtons = document.querySelectorAll('[data-dismiss="modal"]');
     
     // Open modal when Add Community button is clicked
-    document.querySelector('.btn-primary').addEventListener('click', function() {
+    document.getElementById('addCommunityBtn').addEventListener('click', function() {
       modalBackdrop.classList.add('show');
     });
     
@@ -317,13 +839,13 @@
           <td><span class="table-status status-${status.toLowerCase()}">${status}</span></td>
           <td>
             <div class="table-actions">
-              <button class="btn btn-sm btn-icon btn-view">
+              <button class="btn btn-icon btn-view">
                 <i class="fas fa-eye"></i>
               </button>
-              <button class="btn btn-sm btn-icon btn-edit">
+              <button class="btn btn-icon btn-edit">
                 <i class="fas fa-edit"></i>
               </button>
-              <button class="btn btn-sm btn-icon btn-delete">
+              <button class="btn btn-icon btn-delete">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -358,6 +880,18 @@
         // Redirect to login page
         // window.location.href = '/login';
       }
+    });
+
+    // Add hover effects to stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-8px)';
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+      });
     });
   </script>
 </body>

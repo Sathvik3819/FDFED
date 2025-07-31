@@ -1,19 +1,366 @@
-<div class="sidebar">
+<style>
+  /* Importing Google Fonts - Poppins */
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+  }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(#F1FAFF, #CBE4FF);
+  }
+
+  .sidebar {
+    position: fixed;
+    width: 270px;
+    margin: 16px;
+    border-radius: 16px;
+    background: #151A2D;
+    height: calc(100vh - 32px);
+    transition: all 0.4s ease;
+  }
+
+  .sidebar.collapsed {
+    width: 85px;
+  }
+
+  .sidebar .sidebar-header {
+    display: flex;
+    position: relative;
+    padding: 25px 20px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sidebar-header .header-logo img {
+    height: 30px;
+   padding-left:10px;
+    display: block;
+    object-fit: contain;
     
-    <div class="logo">
-        <img src="/imgs/logo.png" alt="Logo" class="building-icon">
+  }
+
+  .sidebar-header .toggler {
+    height: 35px;
+    width: 35px;
+    color: #151A2D;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    background: #fff;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: 0.4s ease;
+  }
+
+  .sidebar-header .sidebar-toggler {
+    position: absolute;
+    right: 20px;
+  }
+
+  .sidebar-header .menu-toggler {
+    display: none;
+  }
+
+  .sidebar.collapsed .sidebar-header .toggler {
+    transform: translate(-4px, 65px);
+  }
+
+  .sidebar-header .toggler:hover {
+    background: #dde4fb;
+  }
+
+  .sidebar-header .toggler span {
+    font-size: 1.75rem;
+    transition: 0.4s ease;
+  }
+
+  .sidebar.collapsed .sidebar-header .toggler span {
+    transform: rotate(180deg);
+  }
+
+  .sidebar-nav .nav-list {
+    list-style: none;
+    display: flex;
+    gap: 4px;
+    padding: 0 15px;
+    flex-direction: column;
+    transform: translateY(15px);
+    transition: 0.4s ease;
+  }
+
+  .sidebar.collapsed .sidebar-nav .primary-nav {
+    transform: translateY(65px);
+  }
+
+  .sidebar-nav .nav-link {
+    color: #fff;
+    display: flex;
+    gap: 12px;
+    white-space: nowrap;
+    border-radius: 8px;
+    padding: 12px 15px;
+    align-items: center;
+    text-decoration: none;
+    transition: 0.4s ease;
+  }
+
+  .sidebar.collapsed .sidebar-nav .nav-link {
+    border-radius: 12px;
+  }
+
+  .sidebar .sidebar-nav .nav-link .nav-label {
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar.collapsed .sidebar-nav .nav-link .nav-label {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .sidebar-nav .nav-link:hover {
+    color: #151A2D;
+    background: #fff;
+  }
+
+  .sidebar-nav .nav-item {
+    position: relative;
+  }
+
+  .sidebar-nav .nav-tooltip {
+    position: absolute;
+    top: -10px;
+    opacity: 0;
+    color: #151A2D;
+    display: none;
+    pointer-events: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+    background: #fff;
+    left: calc(100% + 25px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    transition: 0s;
+  }
+
+  .sidebar.collapsed .sidebar-nav .nav-tooltip {
+    display: block;
+  }
+
+  .sidebar-nav .nav-item:hover .nav-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(50%);
+    transition: all 0.4s ease;
+  }
+
+  .sidebar-nav .secondary-nav {
+    position: absolute;
+    bottom: 30px;
+    width: 100%;
+  }
+
+  /* Responsive media query code for small screens */
+  @media (max-width: 1024px) {
+    .sidebar {
+      height: 56px;
+      margin: 13px;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      width: calc(100% - 26px);
+      max-height: calc(100vh - 26px);
+    }
+
+    .sidebar.menu-active {
+      overflow-y: auto;
+    }
+
+    .sidebar .sidebar-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-radius: 16px;
+      background: #151A2D;
+      padding: 8px 10px;
+    }
+
+    .sidebar-header .header-logo img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .sidebar-header .sidebar-toggler,
+    .sidebar-nav .nav-item:hover .nav-tooltip {
+      display: none;
+    }
+
+    .sidebar-header .menu-toggler {
+      display: flex;
+      height: 30px;
+      width: 30px;
+    }
+
+    .sidebar-header .menu-toggler span {
+      font-size: 1.3rem;
+    }
+
+    .sidebar .sidebar-nav .nav-list {
+      padding: 0 10px;
+    }
+
+    .sidebar-nav .nav-link {
+      gap: 10px;
+      padding: 10px;
+      font-size: 0.94rem;
+    }
+
+    .sidebar-nav .nav-link .nav-icon {
+      font-size: 1.37rem;
+    }
+
+    .sidebar-nav .secondary-nav {
+      position: relative;
+      bottom: 0;
+      margin: 40px 0 30px;
+    }
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
+
+<aside class="sidebar">
+  <header class="sidebar-header">
+    <div class="header-logo">
+      <img src="/imgs/logo_N_white.png" alt="Logo" class="building-icon">
     </div>
-    <nav >
-        <ul>
-            <li><a href="/admin/dashboard">Dashboard</a></li>
-            <li><a href="/admin/Communities">Communities</a></li>
-            <li><a href="/admin/community-managers">Community Managers</a></li>
-            <li><a href="/admin/staff-management">Users</a></li>
-            <li><a href="/admin/applications">Interest Applications</a></li>
-            
-            <li><a href="/admin/payments">Payments</a></li>
-            <li><a href="profile">Profile Management</a></li>
-            <li><a href="/logout">Log out</a></li>
-        </ul>
-    </nav>
-</div>
+    <button class="toggler sidebar-toggler">
+      <span class="material-symbols-rounded">chevron_left</span>
+    </button>
+    <button class="toggler menu-toggler">
+      <span class="material-symbols-rounded">menu</span>
+    </button>
+  </header>
+
+  <nav class="sidebar-nav">
+    <ul class="nav-list primary-nav">
+      <li class="nav-item">
+        <a href="/admin/dashboard" class="nav-link">
+          <span class="nav-icon material-symbols-rounded">dashboard</span>
+          <span class="nav-label">Overview</span>
+        </a>
+        <span class="nav-tooltip">Overview</span>
+      </li>
+      <li class="nav-item">
+        <a href="/admin/Communities" class="nav-link">
+          <span class="nav-icon material-symbols-rounded">communities</span>
+          <span class="nav-label">All Communities</span>
+        </a>
+        <span class="nav-tooltip">All Communities</span>
+      </li>
+      <li class="nav-item">
+        <a href="/admin/community-managers" class="nav-link">
+          <span class="nav-icon material-symbols-rounded">supervisor_account</span>
+          <span class="nav-label">Managers</span>
+        </a>
+        <span class="nav-tooltip">Managers</span>
+      </li>
+      <li class="nav-item">
+        <a href="/admin/staff-management" class="nav-link">
+          <span class="nav-icon material-symbols-rounded">group</span>
+          <span class="nav-label">Staff</span>
+        </a>
+        <span class="nav-tooltip">Staff</span>
+      </li>
+      <li class="nav-item">
+        <a href="/admin/applications" class="nav-link">
+          <span class="nav-icon material-symbols-rounded">assignment</span>
+          <span class="nav-label">Applications</span>
+        </a>
+        <span class="nav-tooltip">Applications</span>
+      </li>
+      <li class="nav-item">
+        <a href="/admin/Payments" class="nav-link">
+          <span class="nav-icon material-symbols-rounded">payments</span>
+          <span class="nav-label">Billing</span>
+        </a>
+        <span class="nav-tooltip">Billing</span>
+      </li>
+    </ul>
+
+    <ul class="nav-list secondary-nav">
+      <li class="nav-item">
+        <a href="/profile" class="nav-link">
+          <span class="nav-icon material-symbols-rounded">account_circle</span>
+          <span class="nav-label">My Profile</span>
+        </a>
+        <span class="nav-tooltip">My Profile</span>
+      </li>
+      <li class="nav-item">
+        <a href="/logout" class="nav-link">
+          <span class="nav-icon material-symbols-rounded">logout</span>
+          <span class="nav-label">Sign Out</span>
+        </a>
+        <span class="nav-tooltip">Sign Out</span>
+      </li>
+    </ul>
+  </nav>
+</aside>
+
+<script>
+  const sidebar = document.querySelector(".sidebar");
+  const sidebarToggler = document.querySelector(".sidebar-toggler");
+  const menuToggler = document.querySelector(".menu-toggler");
+  const logoImg = document.querySelector(".header-logo img");
+
+  const collapsedLogo = "/imgs/logo_white.png";        // Small logo
+  const expandedLogo = "/imgs/logo_N_white.png";       // Full logo
+
+  const collapsedHeight = "30px";
+  const expandedHeight = "30px";
+
+  const collapsedSidebarHeight = "56px";
+  const fullSidebarHeight = "calc(100vh - 32px)";
+
+  sidebarToggler.addEventListener("click", () => {
+    sidebar.classList.toggle("collapsed");
+
+    if (sidebar.classList.contains("collapsed")) {
+  logoImg.src = collapsedLogo;
+  logoImg.style.height = collapsedHeight;
+ 
+} else {
+  logoImg.src = expandedLogo;
+  logoImg.style.height = expandedHeight;
+ 
+}
+logoImg.style.paddingLeft = "10px";
+
+  });
+
+  const toggleMenu = (isMenuActive) => {
+    sidebar.style.height = isMenuActive ? `${sidebar.scrollHeight}px` : collapsedSidebarHeight;
+    menuToggler.querySelector("span").innerText = isMenuActive ? "close" : "menu";
+  };
+
+  menuToggler.addEventListener("click", () => {
+    toggleMenu(sidebar.classList.toggle("menu-active"));
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth >= 1024) {
+      sidebar.style.height = fullSidebarHeight;
+      logoImg.src = expandedLogo;
+      logoImg.style.height = expandedHeight;
+    } else {
+      sidebar.classList.remove("collapsed");
+      sidebar.style.height = "auto";
+      toggleMenu(sidebar.classList.contains("menu-active"));
+      logoImg.src = expandedLogo;
+      logoImg.style.height = collapsedHeight; // adjust for small screen
+    }
+  });
+</script>
