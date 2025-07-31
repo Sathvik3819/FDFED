@@ -423,13 +423,13 @@ nav ul li a {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
+  display: none;
   transition: opacity .3s ease-in-out;
   border-radius: var(--border-radius);
 }
 
 .advertisement img.ad-slide.active {
-  opacity: 1;
+  display: block;
   z-index: 2;
 }
 

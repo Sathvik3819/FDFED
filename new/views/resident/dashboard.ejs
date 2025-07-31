@@ -29,18 +29,23 @@
         display: flex;
         flex-direction: column;
         gap: 15px;
+        max-height: 500px;
+        overflow-y: auto;
+        overflow-x: hidden;
+       
       }
 
       .notification-box h5 {
-        background: aliceblue !important;
+        background: rgb(234, 245, 254) !important;
         color: rgb(0, 86, 162) !important;
-        padding: 12px 15px !important;
+        padding: 15px 12px !important;
         border-radius: var(--border-radius);
         margin: -15px -15px 15px -15px !important;
         font-weight: 600;
         display: flex;
         align-items: center;
         gap: 10px;
+        
       }
 
       .notification-container {
@@ -48,18 +53,17 @@
         flex-direction: column;
         gap: 15px;
         flex-grow: 1;
-        overflow-y: auto;
-        padding-right: 5px;
+        
       }
 
       .notification-card {
         background: white;
         border-radius: 12px;
+        height: 80px;
         padding: 10px;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
         border-left: 5px solid var(--danger);
-        position: relative;
         overflow: hidden;
       }
 
@@ -361,7 +365,8 @@
       <!-- AD SECTION -->
       <div class="adCon d-flex justify-content-center align-items-center">
         <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.filter(ad => ad.status==="active").length > 0) { %> <% ads.filter(ad => ad.status==="active").forEach(ad => { %>
+          <% if (locals.ads && ads.filter(ad => ad.status==="active").length >
+          0) { %> <% ads.filter(ad => ad.status==="active").forEach(ad => { %>
           <img
             src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
             class="ad-slide"
@@ -390,7 +395,6 @@
       <!-- CONTENT SECTION -->
       <div class="contentCon">
         <h1 class="section-title">Community Dashboard</h1>
-
 
         <!-- Recent Activity -->
         <div class="activity-grid">
@@ -426,7 +430,7 @@
                   style="max-height: 60px"
                 >
                   <% if (e.belongs==="Issue") { %>
-                  <i class="bi bi-tools fs-3" style="color: #fd0d0d" ></i>
+                  <i class="bi bi-tools fs-3" style="color: #fd0d0d"></i>
                   <% } else if (e.belongs==="CS") { %>
                   <i
                     class="bi bi-calendar-check-fill fs-3"

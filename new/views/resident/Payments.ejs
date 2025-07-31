@@ -123,17 +123,17 @@
         font-weight: 500;
       }
 
-      .payment-status.Pending {
+      .payment-status.status-Pending {
         background-color: #fff3cd;
         color: #856404;
       }
 
-      .payment-status.Completed {
+      .payment-status.status-Completed {
         background-color: #d4edda;
         color: #155724;
       }
 
-      .payment-status.Overdue {
+      .payment-status.status-Overdue {
         background-color: #f8d7da;
         color: #721c24;
       }
@@ -224,8 +224,7 @@
       .popup-content {
         background: white;
         padding: 30px;
-
-        max-width: 90%;
+        width: 70%;
         max-height: 90vh;
         overflow-y: auto;
         border-radius: var(--border-radius);
@@ -772,9 +771,9 @@
 
         <!-- Stats Cards -->
         <div class="stats-grid mb-4">
-          <div class="stat-card" style="border-left: 6px solid var(--success)">
-            <p class="card-label">Total Payments (this month)</p>
-            <h2 class="card-value text-success">$5</h2>
+          <div class="stat-card" style="border-left: 6px solid var(--danger)">
+            <p class="card-label">Overdue payments</p>
+            <h2 class="card-value text-danger">$5</h2>
           </div>
           <div class="stat-card" style="border-left: 6px solid var(--warning)">
             <p class="card-label">Pending Payments</p>
@@ -795,7 +794,7 @@
           <% if (locals.payments && payments.length>0 ) { %> <% payments.forEach(p => { %>
           <div class="payment-card">
             <div class="payment-card-header">
-              <h3 class="payment-title"><%= p.ID %></h3>
+              <h3 class="payment-title"><%= p.ID ? p.ID : p.title %></h3>
               <span class="payment-status status-<%= p.status %>"
                 ><%= p.status %></span
               >
@@ -862,7 +861,7 @@
         <form id="paymentForm" action="/resident/payment/post" method="POST">
           <input type="text" name="paymentId" id="paymentId" value="" hidden />
           <div class="form-group">
-            <label for="bill">Select Bill:</label>
+            <label for="bill">Bill:</label>
             <input
               type="text"
               id="bill"
@@ -925,10 +924,11 @@
           </div>
 
           <div
-            class="bg-light border-start border-4 ps-3 py-2 mb-3"
+            class="bg-light border-start border-4 ps-3 py-2 mb-3 form-group"
             style="border-color: var(--primary)"
           >
-            <strong>Payment deadline:</strong> 6/18/2025
+            <label for="Pdeadline"><strong>Payment deadline:</strong></label>
+            <input type="text" id="Pdeadline" name="deadline" value="3/8/2025" readonly />
           </div>
 
           <p class="text-success mb-1">

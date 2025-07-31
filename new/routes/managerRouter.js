@@ -53,7 +53,7 @@ managerRouter.get("/commonSpace", async (req, res) => {
     .select('commonSpaces')
     .lean();
 
-  res.render("communityManager/CSB", { path: "cbs", csb, community: community });
+  res.render("communityManager/CSB", { path: "cbs", csb, community: community,ads });
 });
 
 function mergeBusySlots(slots) {
@@ -150,7 +150,7 @@ managerRouter.get("/commonSpace/checkAvailability/:id", async (req, res) => {
 managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
   const id = req.params.id;
   try {
-    const b = await CommonSpaces.findById(id);
+    const b = await CommonSpaces.findById(id).populate('bookedBy').populate('community');
 
     if (!b) {
       return res.status(404).json({ message: "Booking not found" });
@@ -165,11 +165,30 @@ managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
 
     const uniqueId = generateCustomID(b._id.toString(), "PY", null);
 
+    const amount = b.community.commonSpaces.filter((c)=>c.name===b.name);
+
+    // const noOfH = b.from
+
+    //no of hours between b.from and b.to
+    const fromTime = new Date(`2000/01/01 ${b.from}`);
+    const toTime = new Date(`2000/01/01 ${b.to}`);
+    const diffMs = toTime - fromTime;
+    const noOfHours = diffMs / (1000 * 60 * 60);
+
+    // convert string "9000" to number
+    const rent = parseInt(amount[0].rent);
+    const totalAmount = rent * noOfHours;
+
+    if (isNaN(totalAmount)) {
+      console.error("Calculated totalAmount is NaN. Check rent and noOfHours.");
+      return res.status(500).json({ message: "Error calculating payment amount." });
+    }
+
     const payment = await Payment.create({
       title: b._id,
       sender: b.bookedBy._id,
       receiver: req.user.community,
-      amount: 1000,
+      amount: totalAmount,
       paymentDeadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
       paymentDate: null,
       paymentMethod: "None",
@@ -181,6 +200,12 @@ managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
     });
 
     b.payment = payment._id;
+
+    b.bookedBy.notifications.push({
+      belongs:"CS",
+      n:`You have successfully booked the ${b.name} from ${b.from} to ${b.to}.`
+    })
+
     await b.save();
 
     req.flash("alert-msg", `${b._id} approved successfully`);
@@ -196,7 +221,7 @@ managerRouter.post("/commonSpace/reject/:id", async (req, res) => {
   const id = req.params.id;
   const { reason } = req.body;
   try {
-    const b = await CommonSpaces.findById(id);
+    const b = await CommonSpaces.findById(id).populate('bookedBy');
 
     if (!b) {
       return res.status(404).json({ message: "Booking not found" });
@@ -206,6 +231,12 @@ managerRouter.post("/commonSpace/reject/:id", async (req, res) => {
     b.paymentStatus = null;
     b.status = "Rejected";
     b.feedback = reason;
+
+    b.bookedBy.notifications.push({
+      belongs:"CS",
+      n:`Your common space booking ${b.ID ? b.ID : b.title} has been cancelled`,
+      createdAt:new Date()
+    })
 
     await b.save();
 
@@ -220,7 +251,9 @@ managerRouter.post("/commonSpace/reject/:id", async (req, res) => {
 managerRouter.post('/api/community/spaces', async (req, res) => {
   try {
     // Validate required fields
-    const { type, name } = req.body;
+    const { type, name,bookingRent } = req.body;
+    console.log("req.body : ",req.body);
+    
     if (!type || !name) {
       return res.status(400).json({
         success: false,
@@ -263,6 +296,7 @@ managerRouter.post('/api/community/spaces', async (req, res) => {
       maxBookingDurationHours: req.body.maxBookingDurationHours ?
         Math.max(1, parseInt(req.body.maxBookingDurationHours)) : null,
       bookingRules: req.body.bookingRules ? req.body.bookingRules.trim() : '',
+      rent:bookingRent,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -362,6 +396,10 @@ managerRouter.put('/api/community/spaces/:id', async (req, res) => {
     }
     if (req.body.bookingRules !== undefined) {
       updateData.bookingRules = req.body.bookingRules ? req.body.bookingRules.trim() : '';
+    }
+
+    if(req.body.bookingRent){
+      updateData.rent = req.body.bookingRent ? req.body.bookingRent : '' 
     }
 
     // Update the space

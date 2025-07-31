@@ -89,7 +89,8 @@ const CommunitySchema = new mongoose.Schema({
     },
     bookable: { type: Boolean, default: true },
     maxBookingDurationHours: { type: Number },
-    bookingRules: { type: String }
+    bookingRules: { type: String },
+    rent:Number
   }],
   // Reference to community manager
   communityManager: {

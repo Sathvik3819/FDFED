@@ -21,6 +21,9 @@ const paymentSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    penalty:{
+      p:{type:Number,min:0},changedOn:{type:Date}
+    },
     paymentDeadline: {
       type: Date,
     },

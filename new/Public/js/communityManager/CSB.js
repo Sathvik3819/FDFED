@@ -408,6 +408,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const bookable = document.getElementById('bookable');
       const maxHours = document.getElementById('maxHours');
       const bookingRules = document.getElementById('bookingRules');
+      const bookingRent = document.getElementById('bookingRent');
 
       if (!spaceType || !spaceName) {
         alert('Required form fields not found');
@@ -420,7 +421,8 @@ document.addEventListener("DOMContentLoaded", function () {
         bookable: bookable ? bookable.value === 'true' : true,
         maxBookingDurationHours: maxHours && maxHours.value ? 
           parseInt(maxHours.value) : null,
-        bookingRules: bookingRules ? bookingRules.value.trim() : ''
+        bookingRules: bookingRules ? bookingRules.value.trim() : '',
+        bookingRent : parseInt(bookingRent.value)
       };
 
       // Validate required fields

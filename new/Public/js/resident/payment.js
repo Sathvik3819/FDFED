@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("bill").value = res.payment.belongTo;
       document.getElementById("amount").value = res.payment.amount;
       document.getElementById("paymentId").value = res.payment._id;
+      document.getElementById("Pdeadline").value = new Date(res.payment.paymentDeadline).toLocaleDateString("en-GB");
     });
   });
 

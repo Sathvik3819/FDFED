@@ -5,16 +5,16 @@ const advertisementSchema = new mongoose.Schema(
   {
     ID: String,
     title: { type: String, required: true },
-    startDate: { type: String, required: true },
-    endDate: { type: String, required: true },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
     imagePath: { type: String, required: true },
     link: { type: String },
     status: {
-      type: String,
+      type: String, 
       default: "Pending",
     },
     community: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId, 
       ref: "Community",
     },
   },

@@ -16,6 +16,92 @@ import communities from "../models/communities.js";
 import { OTP } from "../controllers/OTP.js";
 
 import multer from "multer";
+import cron from "node-cron";
+
+function getPaymentRemainders(pending, notifications) {
+  const now = new Date();
+  const reminders = [];
+
+  for (const payment of pending) {
+    const deadline = new Date(payment.paymentDeadline);
+    const diffMs = deadline.getTime() - now.getTime();
+
+    const I = payment.ID || payment.title;
+    const amount = payment.amount;
+
+    const isFuture = diffMs >= 0;
+    const diffDays = isFuture
+      ? Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+      : Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    const hoursLeft = diffMs / (1000 * 60 * 60);
+
+
+    if (diffDays === 1 || (diffDays === 0 && hoursLeft > 0)) {
+      
+      reminders.push({
+        n: `Your payment for ${I} of amount ₹${amount} is due tomorrow.`,
+        createdAt: new Date(),
+        belongs: "Payment",
+      });
+    } else if (diffDays < 0) {
+ 
+
+      reminders.push({
+        n: `Your payment for ${I} of amount ₹${amount} was due ${Math.abs(diffDays)} day(s) ago.`,
+        createdAt: new Date(),
+        belongs: "Payment",
+      });
+    }
+  }
+
+  const newReminders = reminders.filter((newR) => {
+  const newWords = newR.n.split(" ").slice(0, 5).join(" ");
+  return !notifications.some((existingR) => {
+    const existingWords = existingR.n.split(" ").slice(0, 5).join(" ");
+    return existingWords === newWords;
+  });
+});
+
+
+  console.log(reminders);
+  
+
+  // Push new reminders into notifications
+  notifications.push(...newReminders);
+
+  return reminders;
+}
+
+
+async function setPenalties(overdues){
+  console.log("setting penalties");
+  
+  for(const o of overdues){
+    const deadline = new Date(o.paymentDeadline);
+    const diffMs = deadline.getTime() - new Date().getTime();
+
+    const I = o.ID || o.title;
+    const amount = o.amount;
+    const penalty = amount*0.1;
+
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    const hoursLeft = diffMs / (1000 * 60 * 60);
+
+    const is = (new Date(o.penalty.changedOn)  - new Date())
+    const is24 = Math.floor(is / (1000 * 60 * 60 * 24));
+    
+    if(!o.penalty || is24 ){
+      o.penalty.p = penalty;
+      o.penalty.changedOn = new Date();
+      o.amount = Math.floor(amount + penalty);
+    }
+
+    return;
+  }
+}
+
 
 function generateCustomID(userEmail, facility, countOrRandom = null) {
   const emailPrefix = userEmail.toUpperCase().slice(-4);
@@ -40,13 +126,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-
 function getTimeAgo(date) {
   const now = new Date(Date.now());
   const diffMs = now - new Date(date);
   const diffSeconds = Math.floor(diffMs / 1000);
 
-  console.log(now, date, diffMs, diffSeconds);
 
   if (diffSeconds < 60)
     return `${diffSeconds} second${diffSeconds !== 1 ? "s" : ""} ago`;
@@ -65,9 +149,10 @@ function getTimeAgo(date) {
 
 residentRouter.get("/commonSpace", async (req, res) => {
   try {
-    const bookings = await CommonSpaces.find({ bookedBy: req.user.id }).sort({ createdAt: -1 });
+    const bookings = await CommonSpaces.find({ bookedBy: req.user.id }).sort({
+      createdAt: -1,
+    });
     console.log("Booking Data:", bookings);
-
 
     const resi = await Resident.findById(req.user.id);
 
@@ -77,30 +162,23 @@ residentRouter.get("/commonSpace", async (req, res) => {
     await resi.save();
 
     const ads = await Ad.find({ community: req.user.community });
-    const community = await Community.findById(req.user.community)
+    const community = await Community.findById(req.user.community);
     const availableSpaces = community ? community.commonSpaces : [];
-    console.log(bookings)
-    console.log(resi)
-    console.log(availableSpaces)
+    console.log(bookings);
+    console.log(resi);
+    console.log(availableSpaces);
     res.render("resident/commonSpace", {
       path: "cbs",
       bookings: bookings,
       ads,
       resi,
-      availableSpaces: availableSpaces
+      availableSpaces: availableSpaces,
     });
-
-
-
-
-
   } catch (error) {
     console.error("Error fetching common space data:", error);
     req.flash("message", "Error loading common space data.");
     res.redirect("/resident/dashboardx");
   }
-
-
 });
 
 residentRouter.post("/commonSpace/:id", async (req, res) => {
@@ -129,7 +207,13 @@ residentRouter.post("/commonSpace", async (req, res) => {
   try {
     const uid = req.user.id;
     const { facility, purpose, date, from, to } = req.body;
-    console.log("Received booking data:", { facility, purpose, date, from, to });
+    console.log("Received booking data:", {
+      facility,
+      purpose,
+      date,
+      from,
+      to,
+    });
 
     // Validation
     if (!facility || !date || !from || !to) {
@@ -155,12 +239,10 @@ residentRouter.post("/commonSpace", async (req, res) => {
     }
 
     // Check if end time is after start time
-    const [fromHour, fromMin] = from.split(':').map(Number);
-    const [toHour, toMin] = to.split(':').map(Number);
+    const [fromHour, fromMin] = from.split(":").map(Number);
+    const [toHour, toMin] = to.split(":").map(Number);
     const fromMinutes = fromHour * 60 + fromMin;
     const toMinutes = toHour * 60 + toMin;
-
-
 
     // Create the booking
     const space = await CommonSpaces.create({
@@ -191,7 +273,6 @@ residentRouter.post("/commonSpace", async (req, res) => {
 
     req.flash("message", "Booking request submitted successfully!");
     return res.redirect("/resident/commonSpace");
-
   } catch (error) {
     console.error("Error creating booking:", error);
     req.flash("message", "Something went wrong. Please try again.");
@@ -207,11 +288,13 @@ residentRouter.get("/commonSpace/cancelled/:id", async (req, res) => {
     const booking = await CommonSpaces.findOne({
       _id: bookingId,
       bookedBy: req.user.id,
-      status: "Pending" // Only allow cancellation of pending bookings
+      status: "Pending", // Only allow cancellation of pending bookings
     });
 
     if (!booking) {
-      return res.status(404).json({ error: "Booking not found or cannot be cancelled" });
+      return res
+        .status(404)
+        .json({ error: "Booking not found or cannot be cancelled" });
     }
 
     // Update status to cancelled instead of deleting
@@ -219,50 +302,50 @@ residentRouter.get("/commonSpace/cancelled/:id", async (req, res) => {
       status: "Cancelled",
       cancelledBy: req.user.id,
       cancelledAt: new Date(),
-      cancellationReason: "Cancelled by resident"
+      cancellationReason: "Cancelled by resident",
     });
 
     // Remove from user's booked spaces
     await Resident.findByIdAndUpdate(req.user.id, {
-      $pull: { bookedCommonSpaces: bookingId }
+      $pull: { bookedCommonSpaces: bookingId },
     });
 
     console.log("Booking cancelled:", bookingId, "by user:", req.user.id);
     return res.json({ result: "Booking cancelled successfully" });
-
   } catch (error) {
     console.error("Error cancelling booking:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
-residentRouter.get('/api/facilities', async (req, res) => {
+residentRouter.get("/api/facilities", async (req, res) => {
   try {
     // Fetch facilities from your database
     // Replace this with your actual database query
-  const community = await Community.findById(req.user.community).select("commonSpaces");
-const facilities = community.commonSpaces || [];
+    const community = await Community.findById(req.user.community).select(
+      "commonSpaces"
+    );
+    const facilities = community.commonSpaces || [];
 
     // Format the data for frontend consumption
-    const facilitiesData = facilities.map(facility => ({
+    const facilitiesData = facilities.map((facility) => ({
       name: facility.name,
       maxBookingDurationHours: facility.maxBookingDurationHours || 10, // default to 4 hours
       id: facility._id,
       // Add any other properties you need
       description: facility.description,
       capacity: facility.capacity,
-      amenities: facility.amenities
+      amenities: facility.amenities,
     }));
-    
+
     res.json({
       success: true,
-      facilities: facilitiesData
+      facilities: facilitiesData,
     });
-    
   } catch (error) {
-    console.error('Error fetching facilities:', error);
+    console.error("Error fetching facilities:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch facilities data'
+      error: "Failed to fetch facilities data",
     });
   }
 });
@@ -309,50 +392,51 @@ residentRouter.get("/dashboard", async (req, res) => {
       date: new Date(payment.paymentDate),
     }))
   );
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
 
-  const endOfMonth = new Date(startOfMonth);
-  endOfMonth.setMonth(endOfMonth.getMonth() + 1);
   const pendingPayments = await Payment.find({
     sender: req.user.id,
-    status: "pending", // or use `isPaid: false` if that fits your schema
-    paymentDeadline: { $gte: startOfMonth, $lt: endOfMonth },
+    status: {$in:["Pending","Overdue"]},
   });
-  const pendingCommonSpacesBookings = await CommonSpaces.find({
-    bookedBy: req.user.id,
-    status: "pending", // or use `isPaid: false` if that fits your schema
 
-  });
+  pendingPayments.forEach(async (p)=>{
+    if(new Date(p.paymentDeadline) < new Date()){
+      p.status = "Overdue"
+    }
+    await p.save();
+  })
+
+  const overdues = pendingPayments.filter((p)=>p.status==="Overdue")
+  setPenalties(overdues);
+  
+
   recents.sort((a, b) => b.updatedAt - a.updatedAt);
 
-  resi.notifications.forEach(n => {
-    n.timeAgo = getTimeAgo(n.createdAt)
+  const not = getPaymentRemainders(pendingPayments, resi.notifications);
+  
+  resi.notifications.forEach((n) => {
+    n.timeAgo = getTimeAgo(n.createdAt);
   });
 
-  resi.notifications.sort((a, b) => b.createdAt - a.createdAt)
 
+  resi.notifications.sort((a, b) => b.createdAt - a.createdAt);
+  
   const now = new Date();
   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-
-  resi.notifications = resi.notifications.filter(n => {
+  resi.notifications = resi.notifications.filter((n) => { 
     const notificationDate = new Date(n.createdAt);
     return notificationDate >= twentyFourHoursAgo;
   });
+  
+  await resi.save();
 
-
-  await resi.save()
-
-  // Render with recent data
   res.render("resident/dashboard", {
     path: "d",
     recents,
     ads,
     resi,
     pendingPayments,
-    pendingCommonSpacesBookings,
+    
   });
 });
 
@@ -403,16 +487,24 @@ residentRouter.post("/issueRaising/feedback", async (req, res) => {
     issue.status = "Payment Pending";
     await issue.save();
 
+    let amount = null;
+
+    if(issue.title==="Electricity"){
+      amount = process.env.ELECTRICITY
+    }else if(issue.title==="Maintenance"){
+      amount = process.env.MAINTENANCE
+    }else if(issue.title==="Cleaning"){
+      amount = process.env.CLEANING
+    }else if(issue.title==="Water Supply"){
+      amount = process.env.WATERSUPPLY
+    }
+
     const payment = await Payment.create({
       title: issue.issueID,
       sender: req.user.id,
       receiver: issue.workerAssigned.community,
-      amount: 100,
-      paymentDeadline: new Date().toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }),
+      amount: amount,
+      paymentDeadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
       paymentDate: null,
       paymentMethod: "None",
       status: "Pending",
@@ -431,7 +523,7 @@ residentRouter.post("/issueRaising/feedback", async (req, res) => {
   } catch (error) {
     console.error("Error submitting feedback:", error);
     req.flash("message", "Something went wrong.");
-    return res.redirect("/issueRaising");
+    return res.redirect("/resident/issueRaising");
   }
 });
 
@@ -534,8 +626,19 @@ residentRouter.get("/payments", async (req, res) => {
     console.log(ads);
 
     const payments = await Payment.find({ sender: userId })
-      .populate("receiver", "name")
-      .sort({ paymentDeadline: -1 });
+      .populate("receiver", "name");
+
+    // sort the payments  so that object with status overdue at first next with status pending and next with status completed , and in there are multiple objects with same status they should be in ascending order of paymentdeadline
+    payments.sort((a, b) => {
+      const statusOrder = { "Overdue": 1, "Pending": 2, "Completed": 3 };
+      if (statusOrder[a.status] !== statusOrder[b.status]) {
+        return statusOrder[a.status] - statusOrder[b.status];
+      }
+      
+      return new Date(a.paymentDeadline) - new Date(b.paymentDeadline);
+    });
+    
+    
 
     console.log(payments);
 
@@ -608,12 +711,7 @@ residentRouter.post("/payment/post", async (req, res) => {
     payment.paymentMethod = paymentMethod;
     payment.amount = amount;
 
-    payment.paymentDate = new Date().toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      timeZone: "Asia/Kolkata",
-    });
+    payment.paymentDate = new Date();
 
     await payment.save();
 
@@ -669,19 +767,26 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
       return res.status(400).json({ message: "Request body is missing" });
     }
 
-    const {
-      visitorName,
-      contactNumber,
-      dateOfVisit,
-      timeOfVisit,
-      purpose
-    } = req.body;
+    const { visitorName, contactNumber, dateOfVisit, timeOfVisit, purpose } =
+      req.body;
 
     // Validate required fields
-    if (!visitorName || !contactNumber || !dateOfVisit || !timeOfVisit || !purpose) {
+    if (
+      !visitorName ||
+      !contactNumber ||
+      !dateOfVisit ||
+      !timeOfVisit ||
+      !purpose
+    ) {
       return res.status(400).json({
         message: "Missing required fields",
-        required: ["visitorName", "contactNumber", "dateOfVisit", "timeOfVisit", "purpose"]
+        required: [
+          "visitorName",
+          "contactNumber",
+          "dateOfVisit",
+          "timeOfVisit",
+          "purpose",
+        ],
       });
     }
 
@@ -723,15 +828,14 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
         dateOfVisit: date,
         timeOfVisit,
         purpose,
-        status: 'approved'
-      }
+        status: "approved",
+      },
     });
-
   } catch (err) {
     console.error("Error in pre-approving visitor:", err);
     return res.status(500).json({
       message: "Internal server error",
-      error: err.message
+      error: err.message,
     });
   }
 });

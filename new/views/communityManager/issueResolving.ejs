@@ -507,6 +507,16 @@
         display: inline-block;
       }
 
+      .status-PaymentPending {
+        background-color: #fff4e6;
+        color: 	#d9480f;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-block;
+      }
+
       .status-in-progress {
         background-color: #cfe2ff;
         color: var(--primary);
@@ -752,8 +762,7 @@
                   <div class="issue-card-content">
                     <h4 class="issue-card-title"><%= i.title %></h4>
                     <p class="issue-card-reporter">
-                      Reported by: <%= i.resident %> <%=
-                      i.resident %>
+                      Reported by: <%= i.resident.residentFirstname %> <%= i.resident.residentLastname %> 
                     </p>
                   </div>
                   <div class="issue-card-actions">
@@ -850,11 +859,11 @@
           <div class="card-title">Assigned Issues History</div>
           <div class="issue-list-cards" id="history-cards-container">
             <% if (locals.issues) { %> <% issues.forEach((i) => { %> <% if
-            (i.status === "Resolved" || i.status === "Assigned") { %>
+            (i.status === "Resolved" || i.status === "Assigned" || i.status === "Payment Pending" ) { %>
             <div class="issue-card">
               <div class="issue-card-header">
                 <span class="issue-card-id">Issue ID: <%= i.issueID %></span>
-                <span class="status-<%= i.status %>"><%= i.status %></span>
+                <span class="status-<%= i.status.replace(/\s+/g, '') %>"><%= i.status %></span>
               </div>
               <div class="issue-card-content">
                 <h4 class="issue-card-title"><%= i.title %></h4>

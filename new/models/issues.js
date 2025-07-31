@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 // Define the Issue Schema
-const { Schema } = mongoose; // Extract the Schema from mongoose to avoid errors
+const { Schema } = mongoose; 
 
 const issueSchema = new Schema({
   issueID: {
@@ -23,12 +23,12 @@ const issueSchema = new Schema({
   },
   resident: {
     type: Schema.Types.ObjectId,
-    ref: "Resident", // Reference to the Resident who raised the issue
+    ref: "Resident",
     required: true,
   },
   workerAssigned: {
     type: Schema.Types.ObjectId,
-    ref: "Worker", // Reference to the Worker assigned to the issue
+    ref: "Worker",
     default: null,
   },
   resolvedAt: {
@@ -48,7 +48,6 @@ const issueSchema = new Schema({
     type: String,
     default: "Pending",
   },
-
   feedback: String,
   rating: Number,
 },{timestamps:true});

@@ -297,19 +297,20 @@ app.get("/logout", (req, res) => {
 app.listen(PORT, async () => {
   const ads = await Ad.find({});
   ads.forEach(async (ad) => {
-    const d = new Date(Date.now()).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    const d = new Date(Date.now())
+    const endDate = new Date(ad.endDate)
 
     if (d === ad.startDate) {
       ad.status = "active";
-    } else if (d > ad.endDate) {
+    } else if (d > ad.endDate) { 
       ad.status = "expired";
+    }else{
+      ad.status = "active";
     }
     await ad.save();
   });
+
+  
 
   console.log(`Server running at http://localhost:${PORT}`);
 });
