@@ -33,6 +33,9 @@ AdminRouter.post('/applications/:id/reject', rejectApplication);
 AdminRouter.get(["/", "/dashboard"], (req, res) => {
   res.render("admin/dashboard");
 });
+AdminRouter.get(["/profile"], (req, res) => {
+  res.render("admin/profile");
+});
 AdminRouter.get(["/payments"], (req, res) => {
   res.render("admin/payments");
 });
