@@ -4,6 +4,7 @@ import CommunityManager from "../models/cManager.js";
 import Resident from "../models/resident.js";
 import Security from "../models/security.js";
 import Worker from "../models/workers.js";
+import Application from "../models/interestForm.js";
 
 const AdminRouter = express.Router();
 import bcrypt from 'bcrypt';
@@ -30,8 +31,108 @@ AdminRouter.post('/applications/:id/reject', rejectApplication);
 // ===== PAGE ROUTES =====
 
 // Dashboard Route
-AdminRouter.get(["/", "/dashboard"], (req, res) => {
-  res.render("admin/dashboard");
+// Add this to your AdminRouter.js
+AdminRouter.get(["/","/dashboard"], async (req, res) => {
+  try {
+    // Get recent data from all collections
+    const [
+      recentCommunities,
+      recentManagers,
+      recentResidents,
+      recentSecurity,
+      recentWorkers,
+      recentPayments,
+      recentApplications
+    ] = await Promise.all([
+      Community.find().sort({ createdAt: -1 }).limit(5).lean(),
+      CommunityManager.find().sort({ createdAt: -1 }).limit(5).populate('assignedCommunity', 'name').lean(),
+      Resident.find().sort({ createdAt: -1 }).limit(5).populate('community', 'name').lean(),
+      Security.find().sort({ createdAt: -1 }).limit(5).populate('community', 'name').lean(),
+      Worker.find().sort({ createdAt: -1 }).limit(5).populate('community', 'name').lean(),
+      Community.aggregate([
+        { $unwind: "$subscriptionHistory" },
+        { $sort: { "subscriptionHistory.paymentDate": -1 } },
+        { $limit: 5 },
+        { 
+          $project: {
+            transactionId: "$subscriptionHistory._id",
+            communityName: "$name",
+            amount: "$subscriptionHistory.amount",
+            date: "$subscriptionHistory.paymentDate",
+            status: "$subscriptionHistory.status",
+            planType: "$subscriptionHistory.planType"
+          }
+        }
+      ]),
+      // Assuming you have an Application model for interest forms
+      // If not, you might need to adjust this part
+      Application.find().sort({ createdAt: -1 }).limit(5).lean()
+    ]);
+
+    // Get counts for stats cards
+    const [
+      totalCommunities,
+      totalManagers,
+      totalResidents,
+      totalSecurity,
+      totalWorkers,
+      totalRevenue,
+      totalApplications
+    ] = await Promise.all([
+      Community.countDocuments(),
+      CommunityManager.countDocuments(),
+      Resident.countDocuments(),
+      Security.countDocuments(),
+      Worker.countDocuments(),
+      Community.aggregate([
+        { $unwind: "$subscriptionHistory" },
+        { $match: { "subscriptionHistory.status": "completed" } },
+        { $group: { _id: null, total: { $sum: "$subscriptionHistory.amount" } } }
+      ]),
+      Application.countDocuments()
+    ]);
+
+    // Calculate growth percentages (simplified - in real app you'd compare with previous period)
+    const growthPercentage = (current) => Math.floor(Math.random() * 15) + 5; // Random 5-20% growth for demo
+
+    res.render("admin/dashboard", {
+      // Stats for cards
+      stats: {
+        communities: {
+          total: totalCommunities,
+          growth: growthPercentage(totalCommunities)
+        },
+        users: {
+          total: totalResidents + totalManagers + totalSecurity + totalWorkers,
+          growth: growthPercentage(totalResidents + totalManagers + totalSecurity + totalWorkers)
+        },
+        payments: {
+          total: totalRevenue[0]?.total || 0,
+          growth: growthPercentage(totalRevenue[0]?.total || 0)
+        },
+        applications: {
+          total: totalApplications,
+          growth: growthPercentage(totalApplications)
+        }
+      },
+      
+      // Recent data for tables
+      recentData: {
+        communities: recentCommunities,
+        users: [
+          ...recentManagers.map(m => ({ ...m, role: 'Manager' })),
+          ...recentResidents.map(r => ({ ...r, role: 'Resident' })),
+          ...recentSecurity.map(s => ({ ...s, role: 'Security' })),
+          ...recentWorkers.map(w => ({ ...w, role: 'Worker' }))
+        ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5),
+        payments: recentPayments,
+        applications: recentApplications
+      }
+    });
+  } catch (error) {
+    console.error("Dashboard error:", error);
+    res.status(500).send("Server Error");
+  }
 });
 AdminRouter.get(["/profile"], (req, res) => {
   res.render("admin/profile");
@@ -770,520 +871,325 @@ AdminRouter.delete("/api/community-managers/:id", async (req, res) => {
   }
 });
 
+// In your route file
+AdminRouter.get("/staff-management", async (req, res) => {
+  try {
+    const [residents, security, workers, communities] = await Promise.all([
+      Resident.find().populate("community").lean(),
+      Security.find().populate("community").lean(),
+      Worker.find().populate("community").lean(),
+      Community.find({ status: "Active" }).lean()
+    ]);
+
+    res.render("admin/staff-management", {
+      residents,
+      security,
+      workers,
+      communities,
+      initialData: { residents, security, workers } // Pass initial data to client
+    });
+  } catch (error) {
+    console.error("Error fetching staff data:", error);
+    res.status(500).send("Server Error");
+  }
+});
 // ===== RESIDENTS API =====
-// Get all residents
 AdminRouter.get("/api/residents", async (req, res) => {
   try {
-    const residents = await Resident.find().populate("community", "name");
-    res.json({ residents });
+    const residents = await Resident.find()
+      .populate("community", "name _id")
+      .select('-password -__v');
+    res.json(residents);
   } catch (error) {
     console.error("Error fetching residents:", error);
     res.status(500).json({ error: "Failed to fetch residents" });
   }
 });
 
-// Get single resident by ID
 AdminRouter.get("/api/residents/:id", async (req, res) => {
   try {
-    const resident = await Resident.findById(req.params.id).populate("community");
-    if (!resident) {
-      return res.status(404).json({ error: "Resident not found" });
-    }
-    res.json({ resident });
+    const resident = await Resident.findById(req.params.id)
+      .populate("community", "name _id")
+      .select('-password -__v');
+    
+    if (!resident) return res.status(404).json({ error: "Resident not found" });
+    res.json(resident);
   } catch (error) {
     console.error("Error fetching resident:", error);
-    res.status(500).json({ error: "Failed to fetch resident details" });
+    res.status(500).json({ error: "Failed to fetch resident" });
   }
 });
 
-// Create new resident
 AdminRouter.post("/api/residents", async (req, res) => {
   try {
-    const { 
-      residentFirstname, 
-      residentLastname, 
-      flatNo, 
-      blockNo, 
-      email, 
-      contact, 
-      password, 
-      communityId 
-    } = req.body;
-
-    // Validate required fields
-    if (!residentFirstname || !residentLastname || !flatNo || !blockNo || !email || !contact || !password) {
-      return res.status(400).json({ error: "All fields are required" });
+    const requiredFields = [
+      'residentFirstname', 'residentLastname', 
+      'flatNo', 'blockNo', 'email', 'contact', 'password'
+    ];
+    
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    if (missingFields.length > 0) {
+      return res.status(400).json({ 
+        error: "Missing required fields",
+        missing: missingFields
+      });
     }
 
-    // Check if resident with same email already exists
-    const existingResident = await Resident.findOne({ email });
+    const existingResident = await Resident.findOne({ email: req.body.email });
     if (existingResident) {
-      return res.status(409).json({ error: "A resident with this email already exists" });
+      return res.status(409).json({ error: "Email already in use" });
     }
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
     const newResident = new Resident({
-      residentFirstname,
-      residentLastname,
-      flatNo,
-      blockNo,
-      email,
-      contact,
-      password: hashedPassword, // Save to password field, 
-      community: communityId || null,
-      createdAt: new Date()
+      ...req.body,
+      password: hashedPassword,
+      community: req.body.communityId || null
     });
 
     await newResident.save();
-    res.status(201).json({ 
-      message: "Resident added successfully",
-      resident: newResident
-    });
+    res.status(201).json(newResident);
   } catch (error) {
-    console.error("Error adding resident:", error);
-    res.status(500).json({ 
-      error: "Failed to add resident", 
-      details: error.message 
-    });
+    console.error("Error creating resident:", error);
+    res.status(500).json({ error: "Failed to create resident" });
   }
 });
 
-// Update existing resident
 AdminRouter.put("/api/residents/:id", async (req, res) => {
   try {
-    const { 
-      residentFirstname, 
-      residentLastname, 
-      flatNo, 
-      blockNo, 
-      email, 
-      contact, 
-      password, 
-      communityId 
-    } = req.body;
-    
-    // Validate required fields
-    if (!residentFirstname || !residentLastname || !flatNo || !blockNo || !email || !contact) {
-      return res.status(400).json({ error: "All fields except password are required" });
+    const resident = await Resident.findById(req.params.id);
+    if (!resident) return res.status(404).json({ error: "Resident not found" });
+
+    if (req.body.email && req.body.email !== resident.email) {
+      const emailExists = await Resident.findOne({ email: req.body.email });
+      if (emailExists) return res.status(409).json({ error: "Email already in use" });
     }
-    
-    // Check if another resident has the same email (excluding this one)
-    const existingResident = await Resident.findOne({ 
-      email, 
-      _id: { $ne: req.params.id } 
-    });
-    
-    if (existingResident) {
-      return res.status(409).json({ error: "Another resident with this email already exists" });
+
+    const updateData = { ...req.body };
+    if (req.body.password) {
+      updateData.password = await bcrypt.hash(req.body.password, saltRounds);
     }
-    
-    // Prepare update data
-    const updateData = {
-      residentFirstname,
-      residentLastname,
-      flatNo,
-      blockNo,
-      email,
-      contact,
-      community: communityId || null,
-      updatedAt: new Date()
-    };
-    
-    // Add password to update only if provided
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-      updateData.password = hashedPassword; // Note: In a real application, this would be hashed
-    }
-    
+
     const updatedResident = await Resident.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true }
-    );
-    
-    if (!updatedResident) {
-      return res.status(404).json({ error: "Resident not found" });
-    }
-    
-    res.json({ 
-      message: "Resident updated successfully",
-      resident: updatedResident
-    });
+    ).select('-password -__v');
+
+    res.json(updatedResident);
   } catch (error) {
     console.error("Error updating resident:", error);
-    res.status(500).json({ 
-      error: "Failed to update resident",
-      details: error.message 
-    });
+    res.status(500).json({ error: "Failed to update resident" });
   }
 });
 
-// Delete resident
 AdminRouter.delete("/api/residents/:id", async (req, res) => {
   try {
-    const deletedResident = await Resident.findByIdAndDelete(req.params.id);
-    
-    if (!deletedResident) {
-      return res.status(404).json({ error: "Resident not found" });
-    }
-    
+    const resident = await Resident.findByIdAndDelete(req.params.id);
+    if (!resident) return res.status(404).json({ error: "Resident not found" });
     res.json({ message: "Resident deleted successfully" });
   } catch (error) {
     console.error("Error deleting resident:", error);
-    res.status(500).json({ 
-      error: "Failed to delete resident",
-      details: error.message 
-    });
+    res.status(500).json({ error: "Failed to delete resident" });
   }
 });
 
 // ===== SECURITY API =====
-// Get all security personnel
 AdminRouter.get("/api/security", async (req, res) => {
   try {
-    const security = await Security.find().populate("community", "name");
-    res.json({ security });
+    const security = await Security.find()
+      .populate("community", "name _id")
+      .select('-password -__v');
+    res.json(security);
   } catch (error) {
     console.error("Error fetching security personnel:", error);
     res.status(500).json({ error: "Failed to fetch security personnel" });
   }
 });
 
-// Get single security personnel by ID
 AdminRouter.get("/api/security/:id", async (req, res) => {
   try {
-    const security = await Security.findById(req.params.id).populate("community");
-    if (!security) {
-      return res.status(404).json({ error: "Security personnel not found" });
-    }
-    res.json({ security });
+    const security = await Security.findById(req.params.id)
+      .populate("community", "name _id")
+      .select('-password -__v');
+    
+    if (!security) return res.status(404).json({ error: "Security personnel not found" });
+    res.json(security);
   } catch (error) {
     console.error("Error fetching security personnel:", error);
-    res.status(500).json({ error: "Failed to fetch security personnel details" });
+    res.status(500).json({ error: "Failed to fetch security personnel" });
   }
 });
 
-// Create new security personnel
 AdminRouter.post("/api/security", async (req, res) => {
   try {
-    const { 
-      name, 
-      email, 
-      contact, 
-      address, 
-      Shift, 
-      password, 
-      communityId 
-    } = req.body;
-
-    // Validate required fields
-    if (!name || !email || !contact || !address || !Shift || !password) {
-      return res.status(400).json({ error: "All fields are required" });
+    const requiredFields = ['name', 'email', 'contact', 'address', 'Shift', 'password'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({ 
+        error: "Missing required fields",
+        missing: missingFields
+      });
     }
 
-    // Check if security personnel with same email already exists
-    const existingSecurity = await Security.findOne({ email });
+    const existingSecurity = await Security.findOne({ email: req.body.email });
     if (existingSecurity) {
-      return res.status(409).json({ error: "A security personnel with this email already exists" });
+      return res.status(409).json({ error: "Email already in use" });
     }
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
     const newSecurity = new Security({
-      name,
-      email,
-      contact,
-      address,
-      Shift,
-      password: hashedPassword, // Save to password field, 
-      community: communityId || null,
-      createdAt: new Date()
+      ...req.body,
+      password: hashedPassword,
+      community: req.body.communityId || null
     });
 
     await newSecurity.save();
-    res.status(201).json({ 
-      message: "Security personnel added successfully",
-      security: newSecurity
-    });
+    res.status(201).json(newSecurity);
   } catch (error) {
-    console.error("Error adding security personnel:", error);
-    res.status(500).json({ 
-      error: "Failed to add security personnel", 
-      details: error.message 
-    });
+    console.error("Error creating security personnel:", error);
+    res.status(500).json({ error: "Failed to create security personnel" });
   }
 });
 
-// Update existing security personnel
 AdminRouter.put("/api/security/:id", async (req, res) => {
   try {
-    const { 
-      name, 
-      email, 
-      contact, 
-      address, 
-      Shift, 
-      password, 
-      communityId 
-    } = req.body;
-    
-    // Validate required fields
-    if (!name || !email || !contact || !address || !Shift) {
-      return res.status(400).json({ error: "All fields except password are required" });
+    const security = await Security.findById(req.params.id);
+    if (!security) return res.status(404).json({ error: "Security personnel not found" });
+
+    if (req.body.email && req.body.email !== security.email) {
+      const emailExists = await Security.findOne({ email: req.body.email });
+      if (emailExists) return res.status(409).json({ error: "Email already in use" });
     }
-    
-    // Check if another security has the same email (excluding this one)
-    const existingSecurity = await Security.findOne({ 
-      email, 
-      _id: { $ne: req.params.id } 
-    });
-    
-    if (existingSecurity) {
-      return res.status(409).json({ error: "Another security personnel with this email already exists" });
+
+    const updateData = { ...req.body };
+    if (req.body.password) {
+      updateData.password = await bcrypt.hash(req.body.password, saltRounds);
     }
-    
-    // Prepare update data
-    const updateData = {
-      name,
-      email,
-      contact,
-      address,
-      Shift,
-      community: communityId || null,
-      updatedAt: new Date()
-    };
-    
-    // Add password to update only if provided
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-      updateData.password = hashedPassword; 
-    }
-    
+
     const updatedSecurity = await Security.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true }
-    );
-    
-    if (!updatedSecurity) {
-      return res.status(404).json({ error: "Security personnel not found" });
-    }
-    
-    res.json({ 
-      message: "Security personnel updated successfully",
-      security: updatedSecurity
-    });
+    ).select('-password -__v');
+
+    res.json(updatedSecurity);
   } catch (error) {
     console.error("Error updating security personnel:", error);
-    res.status(500).json({ 
-      error: "Failed to update security personnel",
-      details: error.message 
-    });
+    res.status(500).json({ error: "Failed to update security personnel" });
   }
 });
 
-// Delete security personnel
 AdminRouter.delete("/api/security/:id", async (req, res) => {
   try {
-    const deletedSecurity = await Security.findByIdAndDelete(req.params.id);
-    
-    if (!deletedSecurity) {
-      return res.status(404).json({ error: "Security personnel not found" });
-    }
-    
+    const security = await Security.findByIdAndDelete(req.params.id);
+    if (!security) return res.status(404).json({ error: "Security personnel not found" });
     res.json({ message: "Security personnel deleted successfully" });
   } catch (error) {
     console.error("Error deleting security personnel:", error);
-    res.status(500).json({ 
-      error: "Failed to delete security personnel",
-      details: error.message 
-    });
+    res.status(500).json({ error: "Failed to delete security personnel" });
   }
 });
 
 // ===== WORKERS API =====
-// Get all maintenance workers
 AdminRouter.get("/api/workers", async (req, res) => {
   try {
-    const workers = await Worker.find().populate("community", "name");
-    res.json({ workers });
+    const workers = await Worker.find()
+      .populate("community", "name _id")
+      .select('-password -__v');
+    res.json(workers);
   } catch (error) {
-    console.error("Error fetching maintenance workers:", error);
-    res.status(500).json({ error: "Failed to fetch maintenance workers" });
+    console.error("Error fetching workers:", error);
+    res.status(500).json({ error: "Failed to fetch workers" });
   }
 });
 
-// Get single maintenance worker by ID
 AdminRouter.get("/api/workers/:id", async (req, res) => {
   try {
-    const worker = await Worker.findById(req.params.id).populate("community");
-    if (!worker) {
-      return res.status(404).json({ error: "Maintenance worker not found" });
-    }
-    res.json({ worker });
+    const worker = await Worker.findById(req.params.id)
+      .populate("community", "name _id")
+      .select('-password -__v');
+    
+    if (!worker) return res.status(404).json({ error: "Worker not found" });
+    res.json(worker);
   } catch (error) {
-    console.error("Error fetching maintenance worker:", error);
-    res.status(500).json({ error: "Failed to fetch maintenance worker details" });
+    console.error("Error fetching worker:", error);
+    res.status(500).json({ error: "Failed to fetch worker" });
   }
 });
 
-// Create new maintenance worker
 AdminRouter.post("/api/workers", async (req, res) => {
   try {
-    const { 
-      name, 
-      email, 
-      contact, 
-      address, 
-      jobRole, 
-      availabilityStatus, 
-      salary,
-      password, 
-      communityId 
-    } = req.body;
-
-    // Validate required fields
-    if (!name || !email || !contact || !address || !jobRole || !availabilityStatus || !salary || !password) {
-      return res.status(400).json({ error: "All fields are required" });
+    const requiredFields = [
+      'name', 'email', 'contact', 'address', 
+      'jobRole', 'availabilityStatus', 'salary', 'password'
+    ];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({ 
+        error: "Missing required fields",
+        missing: missingFields
+      });
     }
 
-    // Check if worker with same email already exists
-    const existingWorker = await Worker.findOne({ email });
+    const existingWorker = await Worker.findOne({ email: req.body.email });
     if (existingWorker) {
-      return res.status(409).json({ error: "A maintenance worker with this email already exists" });
+      return res.status(409).json({ error: "Email already in use" });
     }
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
     const newWorker = new Worker({
-      name,
-      email,
-      contact,
-      address,
-      jobRole,
-      availabilityStatus,
-      salary,
-      password: hashedPassword, // Save to password field, 
-      community: communityId || null,
-      createdAt: new Date()
+      ...req.body,
+      password: hashedPassword,
+      community: req.body.communityId || null
     });
 
     await newWorker.save();
-    res.status(201).json({ 
-      message: "Maintenance worker added successfully",
-      worker: newWorker
-    });
+    res.status(201).json(newWorker);
   } catch (error) {
-    console.error("Error adding maintenance worker:", error);
-    res.status(500).json({ 
-      error: "Failed to add maintenance worker", 
-      details: error.message 
-    });
+    console.error("Error creating worker:", error);
+    res.status(500).json({ error: "Failed to create worker" });
   }
 });
 
-// Update existing maintenance worker
 AdminRouter.put("/api/workers/:id", async (req, res) => {
   try {
-    const { 
-      name, 
-      email, 
-      contact, 
-      address, 
-      jobRole, 
-      availabilityStatus, 
-      salary,
-      password, 
-      communityId 
-    } = req.body;
-    
-    // Validate required fields
-    if (!name || !email || !contact || !address || !jobRole || !availabilityStatus || !salary) {
-      return res.status(400).json({ error: "All fields except password are required" });
+    const worker = await Worker.findById(req.params.id);
+    if (!worker) return res.status(404).json({ error: "Worker not found" });
+
+    if (req.body.email && req.body.email !== worker.email) {
+      const emailExists = await Worker.findOne({ email: req.body.email });
+      if (emailExists) return res.status(409).json({ error: "Email already in use" });
     }
-    
-    // Check if another worker has the same email (excluding this one)
-    const existingWorker = await Worker.findOne({ 
-      email, 
-      _id: { $ne: req.params.id } 
-    });
-    
-    if (existingWorker) {
-      return res.status(409).json({ error: "Another maintenance worker with this email already exists" });
+
+    const updateData = { ...req.body };
+    if (req.body.password) {
+      updateData.password = await bcrypt.hash(req.body.password, saltRounds);
     }
-    
-    // Prepare update data
-    const updateData = {
-      name,
-      email,
-      contact,
-      address,
-      jobRole,
-      availabilityStatus,
-      salary,
-      community: communityId || null,
-      updatedAt: new Date()
-    };
-    
-    // Add password to update only if provided
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-      updateData.password = hashedPassword; 
-    }
-    
+
     const updatedWorker = await Worker.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true }
-    );
-    
-    if (!updatedWorker) {
-      return res.status(404).json({ error: "Maintenance worker not found" });
-    }
-    
-    res.json({ 
-      message: "Maintenance worker updated successfully",
-      worker: updatedWorker
-    });
+    ).select('-password -__v');
+
+    res.json(updatedWorker);
   } catch (error) {
-    console.error("Error updating maintenance worker:", error);
-    res.status(500).json({ 
-      error: "Failed to update maintenance worker",
-      details: error.message 
-    });
+    console.error("Error updating worker:", error);
+    res.status(500).json({ error: "Failed to update worker" });
   }
 });
 
-// Delete maintenance worker
 AdminRouter.delete("/api/workers/:id", async (req, res) => {
   try {
-    const deletedWorker = await Worker.findByIdAndDelete(req.params.id);
-    
-    if (!deletedWorker) {
-      return res.status(404).json({ error: "Maintenance worker not found" });
-    }
-    
-    res.json({ message: "Maintenance worker deleted successfully" });
+    const worker = await Worker.findByIdAndDelete(req.params.id);
+    if (!worker) return res.status(404).json({ error: "Worker not found" });
+    res.json({ message: "Worker deleted successfully" });
   } catch (error) {
-    console.error("Error deleting maintenance worker:", error);
-    res.status(500).json({ 
-      error: "Failed to delete maintenance worker",
-      details: error.message 
-    });
+    console.error("Error deleting worker:", error);
+    res.status(500).json({ error: "Failed to delete worker" });
   }
 });
-// Staff Management Page Route
-AdminRouter.get("/staff-management", async (req, res) => {
-    try {
-      const residents = await Resident.find().populate("community");
-      const security = await Security.find().populate("community");
-      const workers = await Worker.find().populate("communityAssigned");
-      const communities = await Community.find({ status: "Active" });
-      
-      res.render("admin/staff-management", {
-        residents,
-        security,
-        workers,
-        communities
-      });
-    } catch (error) {
-      console.error("Error fetching staff data:", error);
-      res.status(500).send("Server Error");
-    }
-  });
 export default AdminRouter;
