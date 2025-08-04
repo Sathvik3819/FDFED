@@ -221,13 +221,25 @@ app.get("/login", (req, res) => {
 app.get("/AdminLogin", (req, res) => {
   res.render("adminLogin", { message: req.flash("message") });
 });
+app.get("/AdminLogin", (req, res) => {
+  res.render("admin-login", { 
+    message: req.flash("message") 
+  });
+});
+
 app.post("/AdminLogin", async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log("Admin login attempt:", req.body);
 
     const result = await AuthenticateA(email, password, req, res);
-    return result ? res.redirect("/admin") : res.redirect("/AdminLogin");
+    
+    if (result) {
+      return res.redirect("/admin");
+    } else {
+      req.flash("message", "Invalid email or password");
+      return res.redirect("/AdminLogin");
+    }
   } catch (error) {
     console.error("Admin login error:", error);
     req.flash("message", "Server error during login");
