@@ -55,13 +55,13 @@ export const submitInterestForm = async (req, res) => {
     });
 
     // Create verification token and send email
-    const verificationToken = newInterest.createVerificationToken();
+   
     await newInterest.save({ validateBeforeSave: false });
 
-    await sendVerificationEmail(newInterest.email, verificationToken);
+   
     await notifyAdminOfNewApplication(newInterest);
 
-    req.flash('success', 'Application submitted! Please check your email for verification.');
+    req.flash('success', 'Application submitted!');
     res.redirect('/interest')
 
   } catch (error) {
@@ -243,30 +243,7 @@ export const rejectApplication = async (req, res) => {
 
 
 
-// Helper Functions
 
-const sendVerificationEmail = async (email, token) => {
-  const verificationURL = `${process.env.BASE_URL}/verify-email/${token}`;
-  
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM ,
-      to: email,
-      subject: 'Verify Your Email Address',
-      text: `Please verify your email by clicking this link: ${verificationURL}`,
-      html: `
-        <h2>Email Verification</h2>
-        <p>Please click the link below to verify your email:</p>
-        <a href="${verificationURL}">Verify Email</a>
-        <p>This link will expire in 24 hours.</p>
-      `
-    });
-    console.log('Verification email sent to:', email);
-  } catch (error) {
-    console.error('Error sending verification email:', error);
-    throw error;
-  }
-};
 
 const notifyAdminOfNewApplication = async (application) => {
   try {
@@ -295,25 +272,241 @@ const sendStatusEmail = async (email, status, adminName, reason = '', password =
     ? 'Your Application Has Been Approved' 
     : `Application ${status.charAt(0).toUpperCase() + status.slice(1)}`;
   
-  const message = status === 'approved'
-    ? `Congratulations! Your application has been approved by ${adminName}.`
-    : `Your application has been ${status} by ${adminName}. ${reason ? `Reason: ${reason}` : ''}`;
+ 
+  // Enhanced HTML template with modern styling
+  const htmlTemplate = `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application Status Update</title>
+  <style type="text/css">
+    /* Reset styles */
+    body, table, td, p, a, li, blockquote {
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    table, td {
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+    img {
+      -ms-interpolation-mode: bicubic;
+    }
+    
+    /* Main styles */
+    .email-container {
+      max-width: 600px;
+      margin: 0 auto;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, Arial, sans-serif;
+    }
+    
+    .status-approved { background-color: #4CAF50; }
+    .status-rejected { background-color: #f44336; }
+    .status-pending { background-color: #ff9800; }
+    
+    .icon-approved:before { content: "✓"; }
+    .icon-rejected:before { content: "✗"; }
+    .icon-pending:before { content: "!"; }
+    
+    @media screen and (max-width: 600px) {
+      .email-container {
+        width: 100% !important;
+        margin: 0 !important;
+      }
+      .mobile-padding {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+      }
+      .mobile-text {
+        font-size: 14px !important;
+      }
+      .button {
+        width: 100% !important;
+        display: block !important;
+        padding: 15px !important;
+      }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 20px 0; background-color: #f5f5f5;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+    <tr>
+      <td align="center">
+        
+        <!-- Email Container -->
+        <table class="email-container" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
+          
+          <!-- Header -->
+          <tr>
+            <td class="${status === 'approved' ? 'status-approved' : status === 'rejected' ? 'status-rejected' : 'status-pending'}" style="padding: 40px 30px; text-align: center; background: linear-gradient(135deg, ${status === 'approved' ? '#4CAF50, #45a049' : status === 'rejected' ? '#f44336, #d32f2f' : '#ff9800, #f57c00'});">
+              
+              <!-- Status Icon -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto 20px;">
+                <tr>
+                  <td style="width: 70px; height: 70px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center; vertical-align: middle;">
+                    <span style="color: white; font-size: 28px; font-weight: bold; line-height: 70px;">
+                      ${status === 'approved' ? '✓' : status === 'rejected' ? '✗' : '!'}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Header Title -->
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                Application ${status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : status.charAt(0).toUpperCase() + status.slice(1)}
+              </h1>
+              
+            </td>
+          </tr>
+
+          <!-- Main Content -->
+          <tr>
+            <td class="mobile-padding" style="padding: 40px 30px;">
+              
+              <!-- Message -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td>
+                    <p style="font-size: 16px; line-height: 1.6; color: #333333; margin: 0 0 25px 0;">
+                      ${ 'Thank you for your application. Please see the details below regarding your application status.'}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              ${reason ? `
+              <!-- Additional Information -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 25px 0;">
+                <tr>
+                  <td style="background-color: #f8f9fa; border-left: 4px solid #6c757d; padding: 20px; border-radius: 0 6px 6px 0;">
+                    <p style="margin: 0; color: #495057; font-size: 14px; line-height: 1.5;">
+                      <strong style="color: #212529;">Additional Information:</strong><br><br>
+                      ${reason}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              ` : ''}
+
+              ${status === 'approved' && password ? `
+              <!-- Login Credentials -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 30px 0;">
+                <tr>
+                  <td style="background-color: #e3f2fd; border: 2px solid #bbdefb; border-radius: 8px; padding: 25px;">
+                    
+                    <h3 style="color: #1976d2; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">
+                      🔑 Your Login Credentials
+                    </h3>
+                    
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding: 8px 0;">
+                          <strong style="color: #333; font-size: 15px;">Email:</strong>
+                          <span style="color: #555; font-size: 15px; margin-left: 10px;">${email}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0;">
+                          <strong style="color: #333; font-size: 15px;">Temporary Password:</strong><br>
+                          <code style="background-color: #f5f5f5; padding: 8px 12px; border-radius: 4px; font-family: 'Courier New', Consolas, monospace; font-size: 14px; color: #c7254e; border: 1px solid #e1e1e8; margin-top: 5px; display: inline-block;">${password}</code>
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <!-- Security Warning -->
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 20px;">
+                      <tr>
+                        <td style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 15px;">
+                          
+                        </td>
+                      </tr>
+                    </table>
+                    
+                  </td>
+                </tr>
+              </table>
+              ` : ''}
+
+              ${status === 'approved' ? `
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 35px 0;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="border-radius: 6px; background: linear-gradient(135deg, #4CAF50, #45a049); box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);">
+                          <a href="${process.env.BASE_URL || 'http://localhost:3000'}/login" 
+                             style="display: inline-block; color: white; text-decoration: none; padding: 16px 32px; font-weight: 600; font-size: 16px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Login to Your Account
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              ` : status === 'rejected' ? `
+              <!-- Support Information for Rejected -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 30px 0;">
+                <tr>
+                  <td style="background-color: #fff5f5; border: 1px solid #fed7d7; border-radius: 6px; padding: 20px; text-align: center;">
+                    <p style="margin: 0; color: #742a2a; font-size: 14px;">
+                      If you have questions about this decision or would like to reapply, please contact our support team.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              ` : ''}
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 30px; border-top: 1px solid #e9ecef; text-align: center;">
+              
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 15px 0; color: #6c757d; font-size: 14px; line-height: 1.5;">
+                      This is an automated message regarding your application status.
+                    </p>
+                    <p style="margin: 0; color: #adb5bd; font-size: 12px;">
+                      If you have any questions, please contact our support team at 
+                      <a href="mailto:support@company.com" style="color: #007bff; text-decoration: none;">support@company.com</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              
+            </td>
+          </tr>
+
+        </table>
+        
+        <!-- Spacer -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+          <tr>
+            <td height="30"></td>
+          </tr>
+        </table>
+        
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
 
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || "likhit.2804@gmail.com",
+      from: process.env.EMAIL_FROM,
       to: email,
       subject,
-      text: message + (password ? `\n\nYour temporary password: ${password}` : ''),
-      html: `
-        <h2>Application Status Update</h2>
-        <p>${message}</p>
-        ${status === 'approved' ? `
-          ${password ? `<p><strong>Temporary Password:</strong> ${password}</p>` : ''}
-          <p>You can now <a href="${process.env.BASE_URL || 'http://localhost:3000'}/login">login to your account</a>.</p>
-          <p>Please change your password after logging in.</p>
-        ` : ''}
-      `
+      text: (password ? `\n\nYour temporary password: ${password}` : ''),
+      html: htmlTemplate
     });
     console.log('Status email sent to:', email);
   } catch (error) {
