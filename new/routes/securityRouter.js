@@ -242,7 +242,7 @@ securityRouter.get("/profile", async (req, res) => {
 securityRouter.post("/profile", upload.single("image"), async (req, res) => {
   const { name, email, contact, address } = req.body;
 
-  const r = await Worker.findById(req.user.id);
+  const r = await Security.findById(req.user.id);
 
   let image = null;
 
@@ -261,12 +261,12 @@ securityRouter.post("/profile", upload.single("image"), async (req, res) => {
 
   await r.save();
 
-  res.redirect("/worker/profile");
+  res.redirect("/security/profile");
 });
 
 securityRouter.post("/change-password", async (req, res) => {
   const { currentPassword, newPassword } = req.body;
-  const security = await Worker.findById(req.user.id);
+  const security = await Security.findById(req.user.id);
 
   if (!security) {
     return res.json({ success: false, message: "Security not found." });
