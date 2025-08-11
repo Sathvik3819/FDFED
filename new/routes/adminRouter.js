@@ -21,10 +21,10 @@ import {
 
 
 // Application management routes
-AdminRouter.get('/applications', getAllApplications);
-AdminRouter.get('/applications/:id', getApplication);
-AdminRouter.post('/applications/:id/approve', approveApplication);
-AdminRouter.post('/applications/:id/reject', rejectApplication);
+AdminRouter.get('/interests', getAllApplications);
+AdminRouter.get('/interests/:id', getApplication);
+AdminRouter.post('/interests/:id/approve', approveApplication);
+AdminRouter.post('/interests/:id/reject', rejectApplication);
 
 
 

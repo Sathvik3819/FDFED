@@ -556,65 +556,99 @@
             </div>
 
             <!-- Applications list -->
-            <% if (applications.length === 0) { %>
-                <div class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <h3>No applications found</h3>
-                    <p>There are currently no community manager applications to review.</p>
-                </div>
-            <% } else { %>
-                <div class="applications-container">
-                    <% applications.forEach(application => { %>
-                        <div class="application-card" data-status="<%= application.status.toLowerCase() %>">
-                            <div class="application-header">
-                                <div>
-                                    <h3 class="application-title">
-                                        <%= application.firstName %> <%= application.lastName %>
-                                    </h3>
-                                    <div class="application-meta">
-                                        <span><i class="fas fa-envelope"></i> <%= application.email %></span>
-                                        <span><i class="fas fa-phone"></i> <%= application.phone %></span>
-                                    </div>
-                                </div>
-                                <span class="status-badge status-<%= application.status.toLowerCase() %>">
-                                    <%= application.status %>
-                                </span>
-                            </div>
-
-                            <% if (application.status === 'rejected' && application.rejectionReason) { %>
-                                <div class="application-meta">
-                                    <i class="fas fa-comment-alt"></i>
-                                    <span><strong>Reason:</strong> <%= application.rejectionReason %></span>
-                                </div>
-                            <% } %>
-
-                            <div class="application-footer">
-                                <div class="application-date">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    Applied on <%= application.createdAt.toLocaleDateString('en-US', { 
-                                        year: 'numeric', 
-                                        month: 'long', 
-                                        day: 'numeric' 
-                                    }) %>
-                                </div>
-
-                                <div class="application-actions">
-                                    <% if (application.status === 'pending') { %>
-                                        <form method="POST" action="/admin/applications/<%= application._id %>/approve" class="inline">
-                                            <button type="submit" class="btn btn-approve">
-                                                <i class="fas fa-check"></i> Approve
-                                            </button>
-                                        </form>
-                                        <button onclick="openRejectModal('<%= application._id %>')" class="btn btn-reject">
-                                            <i class="fas fa-times"></i> Reject
-                                        </button>
-                                    <% } %>
-                                </div>
-                            </div>
+           <% if (interests.length === 0) { %>
+    <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h3>No applications found</h3>
+        <p>There are currently no community interest applications to review.</p>
+    </div>
+<% } else { %>
+    <div class="applications-container">
+        <% interests.forEach(interest => { %>
+            <div class="application-card" data-status="<%= interest.status.toLowerCase() %>">
+                <div class="application-header">
+                    <div>
+                        <h3 class="application-title">
+                            <%= interest.firstName %> <%= interest.lastName %>
+                        </h3>
+                        <div class="application-meta">
+                            <span><i class="fas fa-envelope"></i> <%= interest.email %></span>
+                            <span><i class="fas fa-phone"></i> <%= interest.phone %></span>
                         </div>
-                    <% }); %>
+                        <!-- Add community information -->
+                        <div class="application-meta" style="margin-top: 8px;">
+                            <span><i class="fas fa-users"></i> <%= interest.communityName %></span>
+                            <span><i class="fas fa-map-marker-alt"></i> <%= interest.location %></span>
+                        </div>
+                    </div>
+                    <span class="status-badge status-<%= interest.status.toLowerCase() %>">
+                        <%= interest.status %>
+                    </span>
                 </div>
-            <% } %>
+
+                <!-- Add community description -->
+                <div style="margin: 12px 0; padding: 12px; background: rgba(21, 26, 45, 0.02); border-radius: 8px;">
+                    <p style="margin: 0; color: #4b5563; font-size: 0.9rem;">
+                        <%= interest.description.length > 150 ? interest.description.substring(0, 150) + '...' : interest.description %>
+                    </p>
+                </div>
+
+               <!-- Show images if any -->
+<% if (interest.photos && interest.photos.length > 0) { %>
+    <div style="margin: 12px 0;">
+        <div style="display: flex; gap: 8px; align-items: center; color: #6b7280; font-size: 0.875rem;">
+            <i class="fas fa-images"></i>
+            <span><%= interest.photos.length %> image<%= interest.photos.length > 1 ? 's' : '' %> attached</span>
+        </div>
+
+        <!-- Render each image -->
+        <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+            <% interest.photos.forEach(function(photo) { %>
+                <img 
+                    src="/<%= photo.replace(/\\/g, '/') %>" 
+                    alt="Uploaded photo" 
+                    style="max-width: 150px; max-height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;"
+                >
+            <% }) %>
+        </div>
+    </div>
+<% } %>
+
+
+                <% if (interest.status === 'rejected' && interest.rejectionReason) { %>
+                    <div class="application-meta">
+                        <i class="fas fa-comment-alt"></i>
+                        <span><strong>Reason:</strong> <%= interest.rejectionReason %></span>
+                    </div>
+                <% } %>
+
+                <div class="application-footer">
+                    <div class="application-date">
+                        <i class="fas fa-calendar-alt"></i>
+                        Applied on <%= interest.createdAt.toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                        }) %>
+                    </div>
+
+                    <div class="application-actions">
+                        <% if (interest.status === 'pending') { %>
+                            <form method="POST" action="/admin/interests/<%= interest._id %>/approve" class="inline">
+                                <button type="submit" class="btn btn-approve">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                            </form>
+                            <button onclick="openRejectModal('<%= interest._id %>')" class="btn btn-reject">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+<% } %>
         </div>
     </div>
 

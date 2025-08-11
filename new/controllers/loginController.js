@@ -39,27 +39,7 @@ async function authenticateUser(model, email, password, req, res) {
         });
     }
     
-    // Special handling for Community Manager without assigned community
-    if (userType === 'CommunityManager' && (!user.assignedCommunity || user.assignedCommunity === null || user.assignedCommunity === '')) {
-        // Set a basic token without community info for redirect
-        const tokenPayload = { id: user._id, userType, email };
-        const token = jwt.sign(
-            tokenPayload, 
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
-        
-        res.cookie('token', token, {
-            httpOnly: true,  
-            secure: process.env.NODE_ENV === 'PRODUCTION', 
-            maxAge: 7 * 24 * 60 * 60 * 1000 
-        });
-
-        return { 
-            success: 1, 
-            redirect: 'manager/new-community' 
-        };
-    }
+   
     
     // Create a token payload based on user type
     let tokenPayload = { id: user._id, userType, email };

@@ -1,12 +1,56 @@
 import Interest from '../models/interestForm.js';
 import CommunityManager from '../models/cManager.js';
 import admin from '../models/admin.js';
+import Community from '../models/communities.js';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import validator from 'validator';
 import dotenv from 'dotenv';
 dotenv.config();
+// multerConfig.js - Create this file for reusable multer configuration
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+
+// Ensure uploads directory exists
+const uploadsDir = 'uploads';
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    // Generate unique filename
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+// File filter for images only
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+// Create multer instance
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB per file
+    files: 5 // Maximum 5 files
+  },
+  fileFilter: fileFilter
+});
+
+export default upload;
 // Email transporter setup - Simplified version
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -27,71 +71,201 @@ export const showInterestForm = (req, res) => {
   });
 };
 
-// Submit interest form (Public)
+
 export const submitInterestForm = async (req, res) => {
   try {
-    const { firstName, lastName, email, phone } = req.body;
-
-    // Validate all required inputs
-    if (!firstName || !lastName || !email || !phone) {
-      req.flash('message', 'All fields are required');
-      req.flash('formData', req.body);
-      return res.redirect('/interest');
-    }
-
-    if (!validator.isEmail(email)) {
-      req.flash('message', 'Please provide a valid email address');
-      req.flash('formData', req.body);
-      return res.redirect('/interest');
-    }
-
-    // Create new application
-    const newInterest = await Interest.create({
+    // Extract form data
+    const {
       firstName,
       lastName,
       email,
       phone,
-      status: 'pending'
+      communityName,
+      location,
+      description
+    } = req.body;
+
+    // Required fields validation
+    if (!firstName || !lastName || !email || !phone || !communityName || !location || !description) {
+      // Clean up uploaded files if validation fails
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        });
+      }
+      
+      return res.status(400).json({
+        success: false,
+        message: 'All required fields must be filled.',
+        receivedFields: {
+          firstName: !!firstName,
+          lastName: !!lastName,
+          email: !!email,
+          phone: !!phone,
+          communityName: !!communityName,
+          location: !!location,
+          description: !!description
+        }
+      });
+    }
+
+    // Email validation
+    if (!validator.isEmail(email)) {
+      // Clean up uploaded files if validation fails
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        });
+      }
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address.'
+      });
+    }
+
+    // Phone validation (basic)
+    if (!validator.isMobilePhone(phone, 'any', { strictMode: false })) {
+      // Clean up uploaded files if validation fails
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        });
+      }
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid phone number.'
+      });
+    }
+
+    // Process uploaded photos
+    let photoPaths = [];
+    if (req.files && req.files.length > 0) {
+      console.log('Files received:', req.files.length);
+      
+      // The multer middleware already handles file type and size validation
+      // Store relative paths for database
+      photoPaths = req.files.map(file => {
+        console.log('File saved at:', file.path);
+        return file.path;
+      });
+    }
+
+    // Create new interest application
+    const newApplication = new Interest({
+      firstName: validator.escape(firstName.trim()),
+      lastName: validator.escape(lastName.trim()),
+      email: email.toLowerCase().trim(),
+      phone: validator.escape(phone.trim()),
+      communityName: validator.escape(communityName.trim()),
+      location: validator.escape(location.trim()),
+      description: validator.escape(description.trim()),
+      photos: photoPaths,
+      status: 'pending',
+      submittedAt: new Date()
     });
 
-    // Create verification token and send email
-   
-    await newInterest.save({ validateBeforeSave: false });
+    // Save to database
+    const savedApplication = await newApplication.save();
+    console.log('New application saved:', savedApplication._id);
+    console.log('Photos saved:', photoPaths);
 
-   
-    await notifyAdminOfNewApplication(newInterest);
+    // Send notification email to admin (non-blocking)
+    // Uncomment if you have this function implemented
+    // notifyAdminOfNewApplication(savedApplication).catch(error => {
+    //   console.error('Failed to send admin notification:', error);
+    // });
 
-    req.flash('success', 'Application submitted!');
-    res.redirect('/interest')
+    // Success response
+    res.status(201).json({
+      success: true,
+      message: 'Your application has been submitted successfully! We will review it and get back to you soon.',
+      data: {
+        applicationId: savedApplication._id,
+        submittedAt: savedApplication.submittedAt,
+        status: savedApplication.status,
+        photosCount: photoPaths.length
+      }
+    });
 
   } catch (error) {
-    console.error('Application error:', error);
-    
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(val => val.message);
-      req.flash('message', messages.join(', '));
-    } else {
-      req.flash('message', 'Error submitting application. Please try again.');
+    console.error('Error in submitInterestForm:', error);
+
+    // Clean up any uploaded files if there was an error
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      });
     }
-    
-    req.flash('formData', req.body);
-    res.redirect('/interest');
+
+    // Handle specific error types
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: validationErrors
+      });
+    }
+
+    if (error.code === 11000) {
+      // Duplicate key error
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        success: false,
+        message: `An application with this ${field} already exists.`
+      });
+    }
+
+    // Multer error handling
+    if (error instanceof multer.MulterError) {
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          message: 'File size too large. Each image must be smaller than 5MB.'
+        });
+      }
+      if (error.code === 'LIMIT_FILE_COUNT') {
+        return res.status(400).json({
+          success: false,
+          message: 'Too many files. Maximum 5 photos allowed.'
+        });
+      }
+    }
+
+    // Generic server error
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while processing your application. Please try again later.',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
+
+
 
 // Admin: Get all applications
 export const getAllApplications = async (req, res) => {
   try {
-    const applications = await Interest.find().sort('createdAt');
+    const interests = await Interest.find().sort('createdAt');
     
     res.render('admin/interests', {
-      title: 'All Applications',
-      applications,
+      title: 'Community Interest Applications',
+      interests, // Changed from applications to interests
       success: req.flash('success'),
       error: req.flash('error')
     });
   } catch (error) {
-    console.error('Get applications error:', error);
+    console.error('Get interests error:', error);
     req.flash('error', 'Error fetching applications');
     res.redirect('/admin/dashboard');
   }
@@ -100,88 +274,119 @@ export const getAllApplications = async (req, res) => {
 // Admin: Get single application
 export const getApplication = async (req, res) => {
   try {
-    const application = await Interest.findById(req.params.id)
+    const interest = await Interest.findById(req.params.id)
       .populate('approvedBy', 'name email')
       .populate('rejectedBy', 'name email');
     
-    if (!application) {
+    if (!interest) {
       req.flash('error', 'Application not found');
-      return res.redirect('/admin/applications');
+      return res.redirect('/admin/interests'); // Updated route
     }
 
-    res.render('admin/applicationDetail', {
-      title: 'Application Details',
-      application
+    res.render('admin/interestDetail', { // Updated view name
+      title: 'Interest Application Details',
+      interest // Changed from application to interest
     });
   } catch (error) {
-    console.error('Get application error:', error);
+    console.error('Get interest error:', error);
     req.flash('error', 'Error fetching application');
-    res.redirect('/admin/applications');
+    res.redirect('/admin/interests'); // Updated route
   }
 };
 
 export const approveApplication = async (req, res) => {
+  console.log("=== Approve Application Request ===");
+  console.log("Params:", req.params);
+  console.log("Body:", req.body);
+  console.log("User:", req.user);
+
   try {
-    // Generate credentials
+    // 1. Generate credentials
     const randomPassword = crypto.randomBytes(8).toString('hex');
     const hashedPassword = await bcrypt.hash(randomPassword, 12);
+    console.log("[Step 1] Generated credentials:", { randomPassword, hashedPassword: "(hidden)" });
 
-    // 1. Get the application
-    const application = await Interest.findById(req.params.id);
-    if (!application) {
+    // 2. Get the interest application
+    const interest = await Interest.findById(req.params.id);
+    console.log("[Step 2] Fetched interest:", interest ? interest._id : "Not Found");
+
+    if (!interest) {
+      console.warn("[Step 2] No interest found for ID:", req.params.id);
       req.flash('error', 'Application not found');
-      return res.redirect('/admin/applications');
+      return res.redirect('/admin/interests');
     }
-     console.log("haha1")
-    // 2. Check for existing manager
-    const existingManager = await CommunityManager.findOne({ email: application.email });
+
+    // 3. Check for existing manager
+    const existingManager = await CommunityManager.findOne({ email: interest.email });
+    console.log("[Step 3] Existing manager check:", existingManager ? "Exists" : "Not Found");
+
     if (existingManager) {
       req.flash('error', 'Manager already exists with this email');
-      return res.redirect('/admin/applications');
+      return res.redirect('/admin/interests');
     }
-   
 
-    // 3. Prepare manager data according to your schema
+    // 4. Prepare manager data
     const managerData = {
-      name: `${application.firstName} ${application.lastName}`,
-      email: application.email,
+      name: `${interest.firstName} ${interest.lastName}`,
+      email: interest.email,
       password: hashedPassword,
-      contact: application.phone||"0000000000", // Using phone from application as contact
-      assignedCommunity: req.body.community 
-        ? mongoose.Types.ObjectId(req.body.community) 
-        : undefined // Don't set if not provided
+      contact: interest.phone || "0000000000",
+      assignedCommunity: req.body.community
+        ? mongoose.Types.ObjectId(req.body.community)
+        : undefined
     };
+    console.log("[Step 4] Manager data prepared:", managerData);
 
-    // 4. Create manager
+    // 5. Create manager
     const newManager = await CommunityManager.create(managerData);
-    console.log('New manager created:', newManager);
+    console.log("[Step 5] New manager created:", newManager._id);
 
-    // 5. Update application status
-    await Interest.findByIdAndUpdate(
+    // 6. Create community
+    const newCommunity = new Community({
+      name: interest.communityName?.trim() || '',
+      location: interest.location?.trim() || '',
+      email: interest.communityEmail?.trim() || '',
+      description: interest.description?.trim() || '',
+      totalMembers: parseInt(interest.totalMembers) || 0,
+      communityManager: newManager._id
+    });
+    console.log("[Step 6] New community prepared:", newCommunity);
+
+    // Link community to manager
+    newManager.assignedCommunity = newCommunity._id;
+    await newManager.save();
+    await newCommunity.save();
+    console.log("[Step 6] Community saved and linked to manager");
+
+    // 7. Update interest status
+    const updatedInterest = await Interest.findByIdAndUpdate(
       req.params.id,
       {
-        status: 'active',
-        password: hashedPassword,
+        status: 'approved',
         approvedBy: req.user.id,
         approvedAt: Date.now()
-      }
+      },
+      { new: true }
     );
+    console.log("[Step 7] Interest status updated:", updatedInterest.status);
 
-    // 6. Send email
+    // 8. Send email
+    console.log("[Step 8] Sending approval email to:", interest.email);
     await sendStatusEmail(
-      application.email, 
-      'approved', 
+      interest.email,
+      'approved',
       req.user.name,
       '',
       randomPassword
     );
+    console.log("[Step 8] Email sent successfully");
 
-    req.flash('success', 'Manager account created successfully');
-    res.redirect('/admin/applications');
+    req.flash('success', 'Manager account and community created successfully');
+    res.redirect('/admin/interests');
 
   } catch (error) {
-    console.error('Approval error:', error);
-    
+    console.error("[ERROR] Approval process failed:", error);
+
     let errorMessage = 'Error creating manager account';
     if (error.name === 'ValidationError') {
       errorMessage = Object.values(error.errors).map(e => e.message).join(', ');
@@ -190,20 +395,22 @@ export const approveApplication = async (req, res) => {
     } else if (error.name === 'CastError') {
       errorMessage = 'Invalid community ID format';
     }
-    
+
     req.flash('error', errorMessage);
-    res.redirect('/admin/applications');
+    res.redirect('/admin/interests');
   }
 };
+
+
 
 export const rejectApplication = async (req, res) => {
   try {
     if (!req.body.reason || req.body.reason.trim().length < 10) {
       req.flash('error', 'Rejection reason must be at least 10 characters');
-      return res.redirect(`admin/applications/${req.params.id}`);
+      return res.redirect(`/admin/interests/${req.params.id}`); // Updated route
     }
 
-    const application = await Interest.findByIdAndUpdate(
+    const interest = await Interest.findByIdAndUpdate(
       req.params.id,
       {
         status: 'rejected',
@@ -214,27 +421,27 @@ export const rejectApplication = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    if (!application) {
+    if (!interest) {
       req.flash('error', 'Application not found');
-      return res.redirect('/admin/applications');
+      return res.redirect('/admin/interests'); // Updated route
     }
 
     await sendStatusEmail(
-      application.email, 
+      interest.email, 
       'rejected', 
       req.user.name, 
       validator.escape(req.body.reason.trim())
     );
 
     req.flash('success', 'Application rejected successfully');
-    res.redirect('/admin/applications');
+    res.redirect('/admin/interests'); // Updated route
 
   } catch (error) {
     console.error('Rejection error:', error);
     req.flash('error', error.name === 'ValidationError' 
       ? 'Invalid rejection data' 
       : 'Error rejecting application');
-    res.redirect(`/admin/applications/${req.params.id}`);
+    res.redirect(`/admin/interests/${req.params.id}`); // Updated route
   }
 };
 // Admin: Suspend application

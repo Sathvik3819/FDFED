@@ -515,55 +515,93 @@
       </div>
 
       <!-- Subscription Payment Modal -->
-      <div id="subscriptionPaymentModal" class="modal">
-        <div class="modal-content" style="max-width: 600px">
-          <span class="close close-subscription">&times;</span>
-          <h2>Subscription Payment</h2>
+<div id="subscriptionPaymentModal" class="modal">
+  <div class="modal-content" style="max-width: 600px; padding: 25px; border-radius: 12px; background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+    
+    <span class="close close-subscription" style="float: right; font-size: 1.5rem; cursor: pointer;">&times;</span>
+    <h2 style="margin-bottom: 15px; font-size: 1.8rem; color: #333; text-align: center;">
+      Subscription Payment
+    </h2>
 
-          <form id="subscriptionPaymentForm">
-            <div id="planDetails">
-              <!-- Plan details will be populated dynamically -->
-            </div>
-
-            <div class="form-group">
-              <label for="paymentMethod">Payment Method</label>
-              <select id="paymentMethod" required>
-                <option value="">Select payment method</option>
-                <option value="credit_card">Credit Card</option>
-                <option value="debit_card">Debit Card</option>
-                <option value="net_banking">Net Banking</option>
-                <option value="upi">UPI</option>
-                <option value="wallet">Digital Wallet</option>
-              </select>
-            </div>
-
-            <div class="payment-summary">
-              <h4>Payment Summary</h4>
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  margin: 10px 0;
-                "
-              >
-                <span>Total Amount:</span>
-                <strong id="totalAmount"></strong>
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" class="btn primary">Process Payment</button>
-              <button
-                type="button"
-                class="btn secondary"
-                id="cancelSubscriptionPayment"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
+    <!-- Conditional status message -->
+    <% if (x) { %>
+      <div style="background: #fff3f3; color: #a33; padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+        Complete the payment to proceed — your current subscription payment is pending.
       </div>
+    <% } else if (y) { %>
+      <div style="background: #fff3f3; color: #a33; padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+        Your subscription has expired. Please renew to continue accessing all features.
+      </div>
+    <% } %>
+
+    <form id="subscriptionPaymentForm">
+
+  <!-- Plan Details -->
+  <div id="planDetails" 
+       style="background: linear-gradient(135deg, #e0f7fa, #ffffff); 
+              padding: 15px; 
+              border-radius: 10px; 
+              margin-bottom: 20px; 
+              box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+
+    <h3 style="margin: 0 0 5px; color: #00796b;">
+      <%= plan.charAt(0).toUpperCase() + plan.slice(1) %> Plan
+    </h3>
+    <p style="color: #555; font-size: 0.95rem; margin-bottom: 5px;">
+      Enjoy exclusive benefits and features tailored for your community.
+    </p>
+    <strong style="color: #333; font-size: 1.1rem;">
+      Price: ₹<%= planPrices[plan] %>
+    </strong>
+  </div>
+
+  <!-- Payment Method -->
+  <div class="form-group" style="margin-bottom: 20px;">
+    <label for="paymentMethod" 
+           style="display: block; font-weight: bold; margin-bottom: 8px;">
+      Payment Method
+    </label>
+    <select id="paymentMethod" required 
+            style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+      <option value="">Select payment method</option>
+      <option value="credit_card">💳 Credit Card</option>
+      <option value="debit_card">🏦 Debit Card</option>
+      <option value="net_banking">💻 Net Banking</option>
+      <option value="upi">📱 UPI</option>
+      <option value="wallet">💼 Digital Wallet</option>
+    </select>
+  </div>
+
+  <!-- Payment Summary -->
+  <div class="payment-summary" 
+       style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h4 style="margin-bottom: 10px; color: #333;">Payment Summary</h4>
+    <div style="display: flex; justify-content: space-between; font-size: 1.1rem;">
+      <span>Total Amount:</span>
+      <strong id="totalAmount">₹<%= planPrices[plan] %></strong>
+    </div>
+  </div>
+
+  <!-- Form Actions -->
+  <div class="form-actions" 
+       style="display: flex; justify-content: space-between; gap: 10px;">
+    <button type="submit" 
+            style="flex: 1; background: #007bff; color: #fff; padding: 12px; 
+                   border-radius: 8px; font-size: 1rem; border: none; cursor: pointer;">
+      Process Payment
+    </button>
+    <button type="button" id="cancelSubscriptionPayment" 
+            style="flex: 1; background: #ccc; color: #333; padding: 12px; 
+                   border-radius: 8px; font-size: 1rem; border: none; cursor: pointer;">
+      Cancel
+    </button>
+  </div>
+
+</form>
+
+  </div>
+</div>
+
     </div>
 
     <script src="../../js/communityManager/payments.js"></script>

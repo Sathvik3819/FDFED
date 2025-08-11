@@ -3,82 +3,98 @@ import bcrypt from 'bcryptjs';
 import validator from 'validator';
 import crypto from 'crypto';
 import admin from '../models/admin.js';
+
+
 const InterestSchema = new mongoose.Schema({
-  // Personal Information
   firstName: {
     type: String,
     required: [true, 'First name is required'],
-    trim: true,
-    maxlength: [50, 'First name cannot exceed 50 characters']
+    trim: true
   },
   lastName: {
     type: String,
     required: [true, 'Last name is required'],
-    trim: true,
-    maxlength: [50, 'Last name cannot exceed 50 characters']
+    trim: true
   },
   email: {
     type: String,
-    required: [true, 'Email is required'],
-    unique: true,
+    required: [true, 'Email address is required'],
     lowercase: true,
-    validate: [validator.isEmail, 'Please provide a valid email']
+    trim: true
   },
   phone: {
     type: String,
     required: [true, 'Phone number is required'],
-    validate: {
-      validator: function(v) {
-        return /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,3}[-\s.]?[0-9]{3,6}$/.test(v);
-      },
-      message: props => `${props.value} is not a valid phone number!`
-    }
+    trim: true
   },
-
-  // Password fields
-  password: {
+  communityName: {
     type: String,
-    select: false
+    required: [true, 'Community name is required'],
+    trim: true
   },
-  passwordChangedAt: Date,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-  temporaryPassword: {
+  location: {
     type: String,
-    select: false
+    required: [true, 'Community location is required'],
+    trim: true
   },
-
-  
-
-  // Metadata
-  createdAt: {
-    type: Date,
-    default: Date.now
+  description: {
+    type: String,
+    required: [true, 'Community description is required'],
+    trim: true
+  },
+  photos: [{
+    type: String // Store filenames of uploaded images
+  }],
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
   },
   approvedBy: {
     type: mongoose.Schema.ObjectId,
     ref: 'admin'
   },
-  approvedAt: Date,
   rejectedBy: {
     type: mongoose.Schema.ObjectId,
     ref: 'admin'
   },
-  rejectedAt: Date,
-  rejectionReason: String,
-  
-  status: {
-    type: String,
-    enum: ['pending', 'active', 'suspended', 'rejected', 'deactivated'],
-    default: 'pending'
+  approvedAt: {
+    type: Date
+  },
+  rejectedAt: {
+    type: Date
+  },
+  rejectionReason: {
+    type: String
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
-}, {
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
 });
 
+// Update the updatedAt field before saving
+InterestSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+// Query middleware to populate admin fields
+InterestSchema.pre(/^find/, function(next) {
+  this.populate({
+    path: 'approvedBy rejectedBy',
+    select: 'name email'
+  });
+  next();
+});
+
+
 // Password encryption middleware
-InterestSchema.pre('save', async function(next) {
+InterestSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   this.password = await bcrypt.hash(this.password, 12);
@@ -87,7 +103,7 @@ InterestSchema.pre('save', async function(next) {
 });
 
 // Generate verification token
-InterestSchema.methods.createVerificationToken = function() {
+InterestSchema.methods.createVerificationToken = function () {
   const verificationToken = crypto.randomBytes(32).toString('hex');
 
   this.verificationToken = crypto
@@ -101,7 +117,7 @@ InterestSchema.methods.createVerificationToken = function() {
 };
 
 // Generate password reset token
-InterestSchema.methods.createPasswordResetToken = function() {
+InterestSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
 
   this.passwordResetToken = crypto
@@ -115,7 +131,7 @@ InterestSchema.methods.createPasswordResetToken = function() {
 };
 
 // Generate temporary password
-InterestSchema.methods.generateTemporaryPassword = function() {
+InterestSchema.methods.generateTemporaryPassword = function () {
   const tempPassword = crypto.randomBytes(4).toString('hex');
   this.temporaryPassword = tempPassword;
   this.passwordChangedAt = Date.now();
@@ -123,12 +139,12 @@ InterestSchema.methods.generateTemporaryPassword = function() {
 };
 
 // Check password
-InterestSchema.methods.correctPassword = async function(candidatePassword, userPassword) {
+InterestSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
 // Check if password was changed after token was issued
-InterestSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+InterestSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
     return JWTTimestamp < changedTimestamp;
@@ -137,7 +153,7 @@ InterestSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
 };
 
 // Query middleware to populate approvedBy admin
-InterestSchema.pre(/^find/, function(next) {
+InterestSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'approvedBy rejectedBy',
     select: 'name email'

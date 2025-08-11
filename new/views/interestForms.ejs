@@ -1,172 +1,484 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urban Ease - Community Manager Interest Form</title>
-    <link rel="stylesheet" href="../CSS/registerPage.css">
+    <title>Community & Manager Registration</title>
+
     <style>
-        .login-link {
-            right: 0px;
-            font-size: 14px;
-            color: black;
-            text-decoration: none;
-            font-weight: bold;
+        /* Common Font Face */
+        @font-face {
+            font-family: 'MyFont';
+            /* Note: Ensure this font file (Poppins-Medium.ttf) is correctly hosted and accessible. */
+            src: url('../imgs/Poppins/Poppins-Medium.ttf') format('woff2');
+            font-weight: normal;
+            font-style: normal;
         }
-      
-        .login-link:hover {
-            text-decoration: underline;
+
+        /* Universal Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'MyFont', 'Inter', sans-serif;
         }
-        
-        .community-section {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #f8f9fa;
+
+        /* Body Styling - Centers the container and uses the specified background color */
+        body {
+            background-color: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto; /* Allow scrolling if content overflows on smaller screens */
+        }
+
+        /* Alert styling - Kept as provided */
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            z-index: 9999;
+            padding: 15px 20px;
+            background-color: #fa958f;
+            color: #b10000;
+            font-weight: bolder;
             border-radius: 8px;
-            border: 1px solid #e0e0e0;
+            font-size: 18px;
+            text-align: center;
         }
-        
+
+        /* Main Container - Adjusted to be wider and use provided border-radius/shadow */
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column; /* Allows header and form-content to stack */
+            max-width: 1200px; /* Max width for wider view on laptops */
+            width: 95%; /* Responsive width */
+            height: auto;
+            padding: 40px; /* Internal padding for the container */
+        }
+
+        /* Header - Applies specified heading colors */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            font-size: 2.2em;
+            color: #333; /* Color from your provided CSS */
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 1em;
+            color: #666; /* Color from your provided CSS */
+        }
+
+        /* Form Content Layout - Two columns on wider screens */
+        .form-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            flex: 1; /* Allows it to grow and fill space */
+        }
+
+        /* Form Panels - Styled as cards */
+        .form-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            height: fit-content; /* Adjust height to content */
+        }
+
+        /* Form Section Titles - Styled as provided */
+        .form-section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c4b7c; /* Primary color, can be adjusted if #333 is preferred for titles */
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        /* Form Rows and Groups */
         .form-row {
             display: flex;
             gap: 15px;
             margin-bottom: 15px;
         }
-        
+
         .form-group {
             flex: 1;
         }
-        
+
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
-            color: #2c3e50;
+            color: #262525; /* Text color from your provided CSS */
+            font-size: 0.85em;
         }
-        
-        input, select, textarea {
+
+        /* Input Fields - Styles and focus effects from your provided CSS */
+        input,
+        textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 8px;
+            font-size: 16px;
             box-sizing: border-box;
-            font-size: 14px;
+            background: #fff;
+            transition: border-color 0.3s;
         }
-        
-        .continue-btn {
-            background-color: #4CAF50;
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3b44f0; /* Focus color from your provided CSS */
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Photo Upload Styling */
+        .photo-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .photo-upload-area:hover {
+            border-color: #6a93cb; /* Hover color from your provided CSS */
+        }
+
+        .photo-upload-area img {
+            width: 40px;
+            height: 40px;
+            opacity: 0.6;
+            margin-bottom: 10px;
+        }
+
+        .photo-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .photo-preview {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            background-color: #e9e9e9;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .photo-preview img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.5);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 14px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            width: 100%;
+        }
+
+        /* Footer and Links */
+        .form-footer {
+            text-align: center;
             margin-top: 20px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #ec3636; /* Submit button color from your provided CSS */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
             transition: background-color 0.3s;
         }
-        
-        .continue-btn:hover {
-            background-color: #45a049;
+
+        .submit-btn:hover {
+            background-color: #f33918; /* Submit button hover color from your provided CSS */
         }
-        
-        .verification-note {
-            font-size: 13px;
-            color: #7f8c8d;
-            margin-top: 5px;
+
+        .login-link {
+            text-align: center;
+            margin-top: 15px;
         }
-        
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            color: #a94442;
-            background-color: #f2dede;
-            border-color: #ebccd1;
+
+        .login-link a {
+            font-size: 0.9em;
+            color: #2c4b7c; /* Consistent link color */
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .form-content {
+                grid-template-columns: 1fr; /* Stack panels vertically on smaller screens */
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .container {
+                padding: 20px; /* Adjust container padding on smaller screens */
+            }
         }
     </style>
 </head>
 
 <body>
-    <% if (message && message.length > 0) { %>
-        <div class="alert">
-            <%= message %>
-        </div>
-    <% } %>
-    
     <div class="container">
-        <div class="left-panel">
-            <div class="logo">
-                <img src="../imgs/Logo.png" alt="URBAN EASE" height="30px" width="130px">
+        <form id="combinedForm" method="POST" enctype="multipart/form-data">
+            <div class="header">
+                <h2>Community & Manager Registration</h2>
+                <p class="subtitle">Tell us about yourself and the community you manage</p>
             </div>
-            <p class="tagline">Community is built on care and trust. We're here to help you manage your community effectively.</p>
-        </div>
 
-        <div class="div1"></div>
-
-        <div class="right-panel">
-            <h2>Community Manager Interest Form</h2>
-            <p class="subtitle">Express your interest in becoming a Community Manager</p>
-
-            <form id="interestForm" method="POST" action="/interest/submit">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="firstName">First Name *</label>
-                        <input type="text" id="firstName" name="firstName" required>
+            <div class="form-content">
+                <!-- Panel 1: Personal Information -->
+                <div class="form-panel">
+                    <h3 class="form-section-title">Personal Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name *</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name *</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="lastName">Last Name *</label>
-                        <input type="text" id="lastName" name="lastName" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="email">Email Address *</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">Phone Number *</label>
-                        <input type="tel" id="phone" name="phone" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
                     </div>
                 </div>
 
-                <p class="verification-note">
-                    Note: Our team will review your application and contact you within 2 business days.
-                </p>
-
-                <button type="submit" class="continue-btn">Submit Interest Form</button>
-            </form>
-              
-            <div style="text-align: center; margin-top: 15px;">
-                <a href="/login" class="login-link">
-                    Already have an account? Login here
-                </a>
+                <!-- Panel 2: Community Details and Photos -->
+                <div class="form-panel">
+                    <h3 class="form-section-title">Community Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="communityName">Community Name *</label>
+                            <input type="text" id="communityName" name="communityName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location *</label>
+                            <input type="text" id="location" name="location" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Community Description *</label>
+                        <textarea id="description" name="description" placeholder="A brief description of your community..." required></textarea>
+                    </div>
+                    
+                    <!-- Photo Upload Section -->
+                    <div class="form-group">
+                        <label>Community Photos (Optional)</label>
+                        <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+                            <div>📷</div>
+                            <p>Click to upload photos</p>
+                            <p style="font-size: 0.8em; color: #666;">Upload up to 5 photos of your community</p>
+                        </div>
+                        <input type="file" id="photoInput" name="photos" multiple accept="image/*" style="display: none;">
+                        <div id="photoPreviewGrid" class="photo-preview-grid" style="display: none;"></div>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <!-- Footer -->
+            <div class="form-footer">
+                <button type="submit" class="submit-btn">Submit Application</button>
+                <div class="login-link">
+                    <a href="/login">Already have an account? Login here</a>
+                </div>
+            </div>
+        </form>
     </div>
 
     <script>
-        // Basic client-side validation
-        document.getElementById('interestForm').addEventListener('submit', function(e) {
-            const phone = document.getElementById('phone').value;
-            const email = document.getElementById('email').value;
-            
-            // Simple phone validation
-            if (!/^[\d\s\+\-\(\)]{10,15}$/.test(phone)) {
-                alert('Please enter a valid phone number');
-                e.preventDefault();
-                return;
+        let selectedPhotos = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Photo upload handling
+            const photoInput = document.getElementById('photoInput');
+            const photoPreviewGrid = document.getElementById('photoPreviewGrid');
+
+            photoInput.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                
+                // Limit to 5 photos
+                if (selectedPhotos.length + files.length > 5) {
+                    alert('You can upload a maximum of 5 photos.');
+                    return;
+                }
+
+                files.forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        selectedPhotos.push(file);
+                        displayPhoto(file);
+                    }
+                });
+
+                updatePhotoPreviewVisibility();
+            });
+
+            function displayPhoto(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const photoDiv = document.createElement('div');
+                    photoDiv.className = 'photo-preview';
+                    photoDiv.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button type="button" class="photo-remove-btn" onclick="removePhoto('${file.name}')">&times;</button>
+                    `;
+                    photoPreviewGrid.appendChild(photoDiv);
+                };
+                reader.readAsDataURL(file);
             }
-            
-            // Simple email validation
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                alert('Please enter a valid email address');
-                e.preventDefault();
-                return;
+
+            function updatePhotoPreviewVisibility() {
+                photoPreviewGrid.style.display = selectedPhotos.length > 0 ? 'grid' : 'none';
             }
+
+            // Make removePhoto function global
+            window.removePhoto = function(fileName) {
+                selectedPhotos = selectedPhotos.filter(photo => photo.name !== fileName);
+                
+                // Remove the preview element
+                const previews = photoPreviewGrid.querySelectorAll('.photo-preview');
+                previews.forEach(preview => {
+                    const img = preview.querySelector('img');
+                    if (img && img.alt === 'Preview') {
+                        preview.remove();
+                    }
+                });
+                
+                updatePhotoPreviewVisibility();
+            };
+
+            // Form submission logic
+            document.getElementById('combinedForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Get form values
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const communityName = document.getElementById('communityName').value.trim();
+                const location = document.getElementById('location').value.trim();
+                const description = document.getElementById('description').value.trim();
+
+                // Validation
+                if (!firstName || !lastName || !email || !phone || !communityName || !location || !description) {
+                    alert('Please fill in all required fields.');
+                    return;
+                }
+
+                // Email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    alert('Please enter a valid email address.');
+                    return;
+                }
+
+                // Prepare FormData
+                const formData = new FormData();
+                formData.append('firstName', firstName);
+                formData.append('lastName', lastName);
+                formData.append('email', email);
+                formData.append('phone', phone);
+                formData.append('communityName', communityName);
+                formData.append('location', location);
+                formData.append('description', description);
+
+                // Append photos
+                selectedPhotos.forEach(photo => {
+                    formData.append('photos', photo);
+                });
+
+                // Submit form
+                fetch('/interest/submit', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { 
+                            throw new Error(err.message || 'Server error'); 
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Success:', data);
+                    alert('Application submitted successfully! An admin will review your request.');
+                    // Reset form
+                    document.getElementById('combinedForm').reset();
+                    selectedPhotos = [];
+                    photoPreviewGrid.innerHTML = '';
+                    updatePhotoPreviewVisibility();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error submitting application: ' + error.message);
+                });
+            });
         });
     </script>
 </body>
+
 </html>

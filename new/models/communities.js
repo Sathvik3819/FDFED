@@ -3,7 +3,6 @@ const CommunitySchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true, trim: true },
   location: { type: String, required: true },
   description: { type: String },
-  email: { type: String, required: true, unique: true },
   status: { type: String, enum: ["Active", "Inactive"], default: "Active" },
   totalMembers: { type: Number, default: 0 },
   // Profile/Photos section
