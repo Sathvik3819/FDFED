@@ -1678,25 +1678,18 @@ managerRouter.post("/ad", upload.single("image"), async (req, res) => {
 
   const ad = await Ad.create({
     title,
-    startDate: new Date(sdate).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }),
-    endDate: new Date(edate).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }),
+    startDate: new Date(sdate), // directly save as Date object
+    endDate: new Date(edate),
+    
     link,
     imagePath: file,
     community: req.user.community,
   });
 
   console.log("new ad : ", ad);
-
   res.redirect("ad");
 });
+
 
 managerRouter.get("/profile", async (req, res) => {
   const ads = await Ad.find({ community: req.user.community });

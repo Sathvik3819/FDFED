@@ -10,10 +10,15 @@
 => render all the payments in manager 
 
 
-=> dummy password sent to user when new user created
+=> dummy password sent to user when new user created -> DONE
 => preapproved visitor need to be included in visitor management logs
 => keep the reciept as pop up not as a seperate page
 => notifications
 => payment remainders and overdues
 
 
+
+=> ability to change subscription mode in manager profile
+=>monthly pass for swimming,gym(seperate csb)
+=> able to get better view of photos in application page (ADMIN)
+=> reject in applications (admin)

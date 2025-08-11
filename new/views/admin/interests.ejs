@@ -719,7 +719,7 @@
         
         function openRejectModal(applicationId) {
             currentApplicationId = applicationId;
-            document.getElementById('rejectForm').action = `/admin/applications/${applicationId}/reject`;
+            document.getElementById('rejectForm').action = `/admin/interests/${applicationId}/reject`;
             document.getElementById('rejectModal').classList.add('show');
         }
         
