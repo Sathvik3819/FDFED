@@ -22,3 +22,4 @@
 =>monthly pass for swimming,gym(seperate csb)
 => able to get better view of photos in application page (ADMIN)
 => reject in applications (admin)
+=> ad pipeline
