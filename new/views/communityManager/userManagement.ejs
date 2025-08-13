@@ -566,8 +566,8 @@
               </div>
               <div class="card-body">
                 <p><strong>Email:</strong> <%= r.email %></p>
-                <p><strong>Block:</strong> <%= r.blockNo %></p>
-                <p><strong>Flat:</strong> <%= r.flatNo %></p>
+                
+                <p><strong>Unit Code:</strong> <%= r.uCode %></p>
                 <p><strong>Contact:</strong> <%= r.contact %></p>
               </div>
               <div class="card-actions">
@@ -729,26 +729,17 @@
           </div>
 
           <div class="form-group">
-            <label for="residentBlock">Block:</label>
+            <label for="residentBlock">Unit code:</label>
             <input
               type="text"
-              id="residentBlock"
-              name="blockNo"
-              placeholder="Block name"
+              id="uCode"
+              name="uCode"
+              placeholder="Example: B-101"
               required
             />
           </div>
 
-          <div class="form-group">
-            <label for="houseNumber">House Number:</label>
-            <input
-              type="text"
-              id="houseNumber"
-              name="flatNo"
-              placeholder="House number"
-              required
-            />
-          </div>
+          
 
           <div class="form-group">
             <label for="residentContact">Contact:</label>
@@ -965,8 +956,8 @@
             document.getElementById("residentLastname").value =
               data.residentLastname || "";
             document.getElementById("residentEmail").value = data.email || "";
-            document.getElementById("residentBlock").value = data.blockNo || "";
-            document.getElementById("houseNumber").value = data.flatNo || "";
+            
+            document.getElementById("uCode").value = data.uCode || "";
             document.getElementById("residentContact").value =
               data.contact || "";
           } else {

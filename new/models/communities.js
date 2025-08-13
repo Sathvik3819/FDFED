@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 const CommunitySchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true, trim: true },
+  name: { type: String, required: true, trim: true },
   location: { type: String, required: true },
   description: { type: String },
   status: { type: String, enum: ["Active", "Inactive"], default: "Active" },

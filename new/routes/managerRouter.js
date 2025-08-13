@@ -1280,8 +1280,7 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
       residentFirstname,
       residentLastname,
       email,
-      blockNo,
-      flatNo,
+     uCode,
       contact,
     } = req.body;
 
@@ -1293,8 +1292,8 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
       r.residentFirstname = residentFirstname;
       r.residentLastname = residentLastname;
       r.email = email;
-      r.blockNo = blockNo;
-      r.flatNo = flatNo;
+      
+      r.uCode = uCode;
       r.contact = contact;
 
       await r.save();
@@ -1304,8 +1303,7 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
         residentLastname,
         email,
         contact,
-        flatNo,
-        blockNo,
+        uCode,
         community: req.user.community,
       });
 

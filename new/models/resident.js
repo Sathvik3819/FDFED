@@ -10,8 +10,13 @@ const residentSchema = new mongoose.Schema(
     
     residentFirstname: { type: String, required: true },
     residentLastname: { type: String, required: true },
-    flatNo: { type: String, required: true },
-    blockNo: { type: String, required: true },
+    uCode: {
+    type: String,
+    required: true,
+    trim: true,
+    uppercase: true,
+    match: /^[A-Za-z0-9]{1,4}-[A-Za-z0-9]{1,4}$/ // format: BLOCK-HOUSENUMBER
+  },
     email: { type: String, required: true, unique: true },
     password : String,
     image:String,
@@ -27,6 +32,18 @@ const residentSchema = new mongoose.Schema(
 );
 
 
+const MAX_RESIDENTS_PER_UNIT = 3;
+
+residentSchema.pre("save", async function (next) {
+  const existingCount = await this.constructor.countDocuments({
+    unitCode: this.unitCode
+  });
+
+  if (existingCount >= MAX_RESIDENTS_PER_UNIT) {
+    return next(new Error(`Limit of ${MAX_RESIDENTS_PER_UNIT} residents reached for ${this.unitCode}`));
+  }
+  next();
+});
 
 const Resident = mongoose.model("Resident", residentSchema);
 
