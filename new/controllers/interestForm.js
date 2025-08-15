@@ -299,79 +299,76 @@ export const approveApplication = async (req, res) => {
   console.log("Params:", req.params);
   console.log("Body:", req.body);
   console.log("User:", req.user);
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
   try {
     // 1. Generate credentials
     const randomPassword = crypto.randomBytes(8).toString('hex');
     const hashedPassword = await bcrypt.hash(randomPassword, 12);
-    console.log("[Step 1] Generated credentials:", { randomPassword, hashedPassword: "(hidden)" });
+    console.log("[Step 1] Generated credentials");
 
     // 2. Get the interest application
-    const interest = await Interest.findById(req.params.id);
-    console.log("[Step 2] Fetched interest:", interest ? interest._id : "Not Found");
-
+    const interest = await Interest.findById(req.params.id).session(session);
     if (!interest) {
-      console.warn("[Step 2] No interest found for ID:", req.params.id);
-      req.flash('error', 'Application not found');
-      return res.redirect('/admin/interests');
+      throw new Error('Application not found');
     }
+    console.log("[Step 2] Fetched interest:", interest._id);
 
     // 3. Check for existing manager
-    const existingManager = await CommunityManager.findOne({ email: interest.email });
-    console.log("[Step 3] Existing manager check:", existingManager ? "Exists" : "Not Found");
-
+    const existingManager = await CommunityManager.findOne({ email: interest.email }).session(session);
     if (existingManager) {
-      req.flash('error', 'Manager already exists with this email');
-      return res.redirect('/admin/interests');
+      throw new Error('Manager already exists with this email');
     }
 
-    // 4. Prepare manager data
-    const managerData = {
-      name: `${interest.firstName} ${interest.lastName}`,
-      email: interest.email,
-      password: hashedPassword,
-      contact: interest.phone || "0000000000",
-      assignedCommunity: req.body.community
-        ? mongoose.Types.ObjectId(req.body.community)
-        : undefined
-    };
-    console.log("[Step 4] Manager data prepared:", managerData);
+    // 4. Create manager
+    const newManager = await CommunityManager.create(
+      [{
+        name: `${interest.firstName} ${interest.lastName}`,
+        email: interest.email,
+        password: hashedPassword,
+        contact: interest.phone || "0000000000",
+      }],
+      { session }
+    );
+    console.log("[Step 4] New manager created:", newManager[0]._id);
 
-    // 5. Create manager
-    const newManager = await CommunityManager.create(managerData);
-    console.log("[Step 5] New manager created:", newManager._id);
-
-    // 6. Create community
-    const newCommunity = new Community({
-      name: interest.communityName?.trim() || '',
-      location: interest.location?.trim() || '',
-      email: interest.communityEmail?.trim() || '',
-      description: interest.description?.trim() || '',
-      totalMembers: parseInt(interest.totalMembers) || 0,
-      communityManager: newManager._id
-    });
-    console.log("[Step 6] New community prepared:", newCommunity);
+    // 5. Create community
+    const newCommunity = await Community.create(
+      [{
+        name: interest.communityName?.trim() || '',
+        location: interest.location?.trim() || '',
+        email: interest.communityEmail?.trim() || '',
+        description: interest.description?.trim() || '',
+        totalMembers: parseInt(interest.totalMembers) || 0,
+        communityManager: newManager[0]._id
+      }],
+      { session }
+    );
+    console.log("[Step 5] New community created:", newCommunity[0]._id);
 
     // Link community to manager
-    newManager.assignedCommunity = newCommunity._id;
-    await newManager.save();
-    await newCommunity.save();
-    console.log("[Step 6] Community saved and linked to manager");
+    newManager[0].assignedCommunity = newCommunity[0]._id;
+    await newManager[0].save({ session });
 
-    // 7. Update interest status
-    const updatedInterest = await Interest.findByIdAndUpdate(
+    // 6. Update interest status
+    await Interest.findByIdAndUpdate(
       req.params.id,
       {
         status: 'approved',
         approvedBy: req.user.id,
         approvedAt: Date.now()
       },
-      { new: true }
+      { new: true, session }
     );
-    console.log("[Step 7] Interest status updated:", updatedInterest.status);
+    console.log("[Step 6] Interest status updated");
+
+    // 7. Commit transaction
+    await session.commitTransaction();
+    session.endSession();
 
     // 8. Send email
-    console.log("[Step 8] Sending approval email to:", interest.email);
+    console.log("[Step 7] Sending approval email to:", interest.email);
     await sendStatusEmail(
       interest.email,
       'approved',
@@ -379,7 +376,7 @@ export const approveApplication = async (req, res) => {
       '',
       randomPassword
     );
-    console.log("[Step 8] Email sent successfully");
+    console.log("[Step 7] Email sent successfully");
 
     req.flash('success', 'Manager account and community created successfully');
     res.redirect('/admin/interests');
@@ -387,15 +384,12 @@ export const approveApplication = async (req, res) => {
   } catch (error) {
     console.error("[ERROR] Approval process failed:", error);
 
-    let errorMessage = 'Error creating manager account';
-    if (error.name === 'ValidationError') {
-      errorMessage = Object.values(error.errors).map(e => e.message).join(', ');
-    } else if (error.code === 11000) {
-      errorMessage = 'A manager with this email already exists';
-    } else if (error.name === 'CastError') {
-      errorMessage = 'Invalid community ID format';
-    }
+    // Rollback
+    await session.abortTransaction();
+    session.endSession();
 
+    let errorMessage = 'Error creating manager account';
+    if (error.message) errorMessage = error.message;
     req.flash('error', errorMessage);
     res.redirect('/admin/interests');
   }

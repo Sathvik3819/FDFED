@@ -15,7 +15,35 @@ document.addEventListener("DOMContentLoaded", function () {
   const buttons = document.querySelectorAll(".available-btn");
   const approve = document.querySelectorAll(".approve-btn");
   const reject = document.querySelectorAll(".reject-btn");
+   const spaceType = document.getElementById("spaceType");
+    const spaceName = document.getElementById("spaceName");
 
+    function updateSpaceName() {
+      const selectedValue = spaceType.value;
+
+      if (selectedValue === "Other") {
+        // Enable for custom input
+        spaceName.value = "";
+        spaceName.removeAttribute("disabled");
+        spaceName.placeholder = "Enter custom space name";
+      } else if (selectedValue) {
+        // Auto-fill and lock
+        spaceName.value = selectedValue;
+        spaceName.setAttribute("disabled", "disabled");
+      } else {
+        // Reset if no selection
+        spaceName.value = "";
+        spaceName.removeAttribute("disabled");
+        spaceName.placeholder = "";
+      }
+    }
+
+    // Listen for dropdown change
+    spaceType.addEventListener("change", updateSpaceName);
+
+    // Run once on load (in case there's already a selected value)
+    updateSpaceName();
+  
   // Animate cards on page load
   cards.forEach((card, index) => {
     card.style.opacity = "0";

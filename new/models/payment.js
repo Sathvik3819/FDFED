@@ -41,7 +41,7 @@ const paymentSchema = new mongoose.Schema(
     remarks: {
       type: String,
     },
-    communityId: {
+    community: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Community",
     },

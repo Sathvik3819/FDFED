@@ -32,18 +32,23 @@ const residentSchema = new mongoose.Schema(
 );
 
 
-const MAX_RESIDENTS_PER_UNIT = 3;
+const MAX_RESIDENTS_PER_EMAIL = 3;
 
 residentSchema.pre("save", async function (next) {
-  const existingCount = await this.constructor.countDocuments({
-    unitCode: this.unitCode
-  });
+  try {
+    const existingCount = await this.constructor.countDocuments({
+      email: this.email // ✅ count residents with same email
+    });
 
-  if (existingCount >= MAX_RESIDENTS_PER_UNIT) {
-    return next(new Error(`Limit of ${MAX_RESIDENTS_PER_UNIT} residents reached for ${this.unitCode}`));
+    if (existingCount >= MAX_RESIDENTS_PER_EMAIL) {
+      return next(new Error(`Limit of ${MAX_RESIDENTS_PER_EMAIL} residents reached for ${this.email}`));
+    }
+    next();
+  } catch (err) {
+    next(err);
   }
-  next();
 });
+
 
 const Resident = mongoose.model("Resident", residentSchema);
 

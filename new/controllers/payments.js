@@ -13,10 +13,10 @@ class PaymentController {
             // Step 1: Get community manager ID from the logged-in user
             
     
-            const communityId=req.user.community;
+            const community=req.user.community;
     
             // Step 3: Find all payments for this community
-            const payments = await Payment.find({ communityId })
+            const payments = await Payment.find({ community })
                 .populate('receiver', 'name')
                 .populate('sender', 'name flatNumber')
                 .sort({ paymentDeadline: -1 }); // newest first
