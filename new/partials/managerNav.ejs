@@ -36,8 +36,8 @@
 });</script>
 
 <% if (alert && alert.length > 0) { %>
-  <div class="alert-msg">
-    <h5><%= alert[0] %></h5>
+  <div class="alert-msg alert-<%= alert[0].type %>">
+    <h5><%= alert[0].text %></h5>
   </div>
 <% } %>
 <script>

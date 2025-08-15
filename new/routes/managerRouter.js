@@ -1272,7 +1272,6 @@ managerRouter.get("/userManagement", async (req, res) => {
 
   res.render("communityManager/userManagement", { path: "um", ads, R, W, S });
 });
-
 managerRouter.post("/userManagement/resident", async (req, res) => {
   try {
     const {
@@ -1280,24 +1279,32 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
       residentFirstname,
       residentLastname,
       email,
-     uCode,
+      uCode,
       contact,
     } = req.body;
 
-    console.log(Rid);
+    console.log("Incoming Resident ID:", Rid);
+    console.log("Request body:", req.body);
 
     if (Rid) {
+      // Update existing resident
       const r = await Resident.findById(Rid);
+      if (!r) {
+        req.flash("alert-msg", { text: `Resident with ID ${Rid} not found`, type: "error" });
+        return res.redirect("/manager/userManagement");
+      }
 
       r.residentFirstname = residentFirstname;
       r.residentLastname = residentLastname;
       r.email = email;
-      
       r.uCode = uCode;
       r.contact = contact;
 
       await r.save();
+      req.flash("alert-msg", { text: "Resident updated successfully", type: "success" });
+
     } else {
+      // Create new resident
       const r = await Resident.create({
         residentFirstname,
         residentLastname,
@@ -1308,23 +1315,32 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
       });
 
       const password = await sendPassword(email);
-      console.log(password);
-
       const hashedPassword = await bcrypt.hash(password, 10);
-
       r.password = hashedPassword;
-
       await r.save();
 
-      console.log("new resident : ", r);
+      req.flash("alert-msg", { text: "New resident created successfully", type: "success" });
     }
 
-    req.flash("alert-msg", "New Resident created");
-
     res.redirect("/manager/userManagement");
+
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
+    console.error("Error in /userManagement/resident:", err);
+
+    let flashMsg;
+    if (err.name === "ValidationError") {
+      flashMsg = Object.values(err.errors)
+        .map(e => e.message)
+        .join(", ");
+    } else if (err.code === 11000) {
+      const field = Object.keys(err.keyValue)[0];
+      flashMsg = `Duplicate value for ${field}: ${err.keyValue[field]}`;
+    } else {
+      flashMsg = err.message || "Unexpected error occurred";
+    }
+
+    req.flash("alert-msg", { text: flashMsg, type: "error" });
+    res.redirect("/manager/userManagement");
   }
 });
 
@@ -1346,13 +1362,19 @@ managerRouter.delete("/userManagement/resident/:id", async (req, res) => {
   res.status(200).json({ ok: true });
 });
 
-
 managerRouter.post("/userManagement/security", async (req, res) => {
   try {
     const { Sid, name, email, contact, address, Shift } = req.body;
 
+    console.log("Incoming Security ID:", Sid);
+    console.log("Request body:", req.body);
+
     if (Sid) {
       const s = await Security.findById(Sid);
+      if (!s) {
+        req.flash("alert-msg", { text: `Security staff with ID ${Sid} not found`, type: "error" });
+        return res.redirect("/manager/userManagement");
+      }
 
       s.name = name;
       s.email = email;
@@ -1361,8 +1383,10 @@ managerRouter.post("/userManagement/security", async (req, res) => {
       s.Shift = Shift;
 
       await s.save();
+      req.flash("alert-msg", { text: "Security staff updated successfully", type: "success" });
+
     } else {
-      const r = await Security.create({
+      const s = await Security.create({
         name,
         email,
         contact,
@@ -1370,26 +1394,37 @@ managerRouter.post("/userManagement/security", async (req, res) => {
         Shift,
         community: req.user.community,
       });
+
       const password = await sendPassword(email);
-      console.log(password);
-
       const hashedPassword = await bcrypt.hash(password, 10);
+      s.password = hashedPassword;
+      await s.save();
 
-      r.password = hashedPassword;
-
-      await r.save();
-
-      console.log("new resident : ", r);
-      console.log("new security : ", r);
+      console.log("New security staff:", s);
+      req.flash("alert-msg", { text: "New security staff created successfully", type: "success" });
     }
-    req.flash("alert-msg", "New Security created");
 
     res.redirect("/manager/userManagement");
+
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
+    console.error("Error in /userManagement/security:", err);
+
+    let flashMsg;
+    if (err.name === "ValidationError") {
+      flashMsg = Object.values(err.errors).map(e => e.message).join(", ");
+    } else if (err.code === 11000) {
+      const field = Object.keys(err.keyValue)[0];
+      flashMsg = `Duplicate value for ${field}: ${err.keyValue[field]}`;
+    } else {
+      flashMsg = err.message || "Unexpected error occurred";
+    }
+
+    req.flash("alert-msg", { text: flashMsg, type: "error" });
+    res.redirect("/manager/userManagement");
   }
 });
+
+
 
 managerRouter.get("/userManagement/security/:id", async (req, res) => {
   const id = req.params.id;
@@ -1422,8 +1457,16 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
       availabilityStatus,
     } = req.body;
 
+    console.log("Incoming Worker ID:", Wid);
+    console.log("Request body:", req.body);
+
     if (Wid) {
+      // Update existing worker
       const w = await Worker.findById(Wid);
+      if (!w) {
+        req.flash("alert-msg", { text: `Worker with ID ${Wid} not found`, type: "error" });
+        return res.redirect("/manager/userManagement");
+      }
 
       w.name = name;
       w.email = email;
@@ -1434,8 +1477,11 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
       w.availabilityStatus = availabilityStatus;
 
       await w.save();
+      req.flash("alert-msg", { text: "Worker updated successfully", type: "success" });
+
     } else {
-      const r = await Worker.create({
+      // Create new worker
+      const w = await Worker.create({
         name,
         email,
         jobRole,
@@ -1444,27 +1490,39 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
         salary,
         availabilityStatus,
         community: req.user.community,
-      }); const password = await sendPassword(email);
-      console.log(password);
+      });
 
+      const password = await sendPassword(email);
       const hashedPassword = await bcrypt.hash(password, 10);
+      w.password = hashedPassword;
+      await w.save();
 
-      r.password = hashedPassword;
-
-      await r.save();
-
-      console.log("new resident : ", r);
-
-      console.log("new worker : ", r);
+      console.log("New worker:", w);
+      req.flash("alert-msg", { text: "New worker created successfully", type: "success" });
     }
-    req.flash("alert-msg", "New Worker created");
 
     res.redirect("/manager/userManagement");
+
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
+    console.error("Error in /userManagement/worker:", err);
+
+    let flashMsg;
+    if (err.name === "ValidationError") {
+      flashMsg = Object.values(err.errors)
+        .map(e => e.message)
+        .join(", ");
+    } else if (err.code === 11000) {
+      const field = Object.keys(err.keyValue)[0];
+      flashMsg = `Duplicate value for ${field}: ${err.keyValue[field]}`;
+    } else {
+      flashMsg = err.message || "Unexpected error occurred";
+    }
+
+    req.flash("alert-msg", { text: flashMsg, type: "error" });
+    res.redirect("/manager/userManagement");
   }
 });
+
 
 managerRouter.get("/userManagement/worker/:id", async (req, res) => {
   const id = req.params.id;
