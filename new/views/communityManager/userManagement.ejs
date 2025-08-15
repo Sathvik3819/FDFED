@@ -356,6 +356,7 @@
         align-items: center;
         justify-content: center;
         border-radius: 50%;
+        z-index: 10;
       }
 
       .close-btn:hover {
@@ -761,6 +762,7 @@
 
     <div id="securityFormPopup" class="popup">
       <div class="popup-content">
+        
         <span class="close-btn" onclick="closeForm('security')">&times;</span>
         <h3 class="form-title">Add Security</h3>
         <form
@@ -768,7 +770,7 @@
           action="/manager/userManagement/security"
           method="POST"
         >
-          <input type="text" id="Sid" name="Sid" value="" />
+          <input type="text" id="Sid" name="Sid" value="" hidden />
 
           <div class="form-group">
             <label for="securityName">Full Name:</label>
@@ -846,7 +848,7 @@
           action="/manager/userManagement/worker"
           method="POST"
         >
-          <input type="text" id="Wid" name="Wid" value="" />
+          <input type="text" id="Wid" name="Wid" value="" hidden />
 
           <div class="form-group">
             <label for="workerName">Full Name:</label>
@@ -1012,6 +1014,21 @@
           .querySelector(".form-title").textContent = formTitle;
         document.getElementById(formId).action = formAction;
       }
+      // Close popup when clicking the X button
+document.querySelectorAll(".close").forEach(button => {
+  button.addEventListener("click", () => {
+    button.closest(".popup").style.display = "none";
+  });
+});
+
+// Optional: click outside popup content to close
+document.querySelectorAll(".popup").forEach(popup => {
+  popup.addEventListener("click", e => {
+    if (e.target === popup) {
+      popup.style.display = "none";
+    }
+  });
+});
 
       // Close the form popup
       function closeForm(formType) {

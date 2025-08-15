@@ -38,7 +38,14 @@
   window.history.replaceState(null, '', '/');
     window.location.href = "/logout";
   });
-</script>
+</script><script>document.addEventListener("DOMContentLoaded", function () {
+  const menuToggle = document.querySelector(".menu-toggle");
+  const menuList = document.querySelector("nav ul");
+
+  menuToggle.addEventListener("click", function () {
+    menuList.classList.toggle("show");
+  });
+});</script>
 
 <!DOCTYPE html>
 <html lang="en">
