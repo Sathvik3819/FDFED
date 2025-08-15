@@ -23,3 +23,5 @@
 => able to get better view of photos in application page (ADMIN)
 => reject in applications (admin)
 => ad pipeline
+=> rules in csb in resident page
+=>payment for ccsb(booking after csb payment)

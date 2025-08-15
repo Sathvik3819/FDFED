@@ -1701,14 +1701,19 @@ managerRouter.get("/profile", async (req, res) => {
 
 managerRouter.post("/profile", upload.single("image"), async (req, res) => {
   const { name, email, contact } = req.body;
-  const image = req.file.path;
+  
+  const image="";
 
   const r = await CommunityManager.findById(req.user.id);
-
+if (req.file) {
+     image = req.file.path;
+  }
+  
   r.name = name;
   r.email = email;
   r.contact = contact;
   r.image = image;
+  
 
   await r.save();
   req.flash("alert-msg", "profile updated");

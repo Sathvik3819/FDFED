@@ -544,11 +544,6 @@ AdminRouter.post("/api/communities", async (req, res) => {
       return res.status(400).json({ error: "Name, location and status are required fields" });
     }
 
-    // Check if community with same name already exists
-    const existingCommunity = await Community.findOne({ name });
-    if (existingCommunity) {
-      return res.status(409).json({ error: "A community with this name already exists" });
-    }
 
     const newCommunity = new Community({
       name,

@@ -297,68 +297,78 @@
 
           <!-- Profile Section -->
           <div id="profileSection" class="form-section">
-            <form action="/manager/profile" method="POST"enctype="multipart/form-data" >
-              <div class="profile-image-container" style="object-fit: contain">
-                <img
-                  src="http://localhost:3000/<%= r.image.replace(/\\/g, '/') %>"
-                  alt=""
-                  height="200px"
-                  width="200px"
-                />
-                <div class="upload-btn" title="Upload Photo">
-                  <label for="image"><i class="bi bi-camera"> </i></label>
-                  <input
-                    type="file"
-                    name="image"
-                    id="image"
-                    name="image"
-                    hidden
-                  />
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-12">
-                  <div class="form-group">
-                    <label for="firstName">First Name</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="firstName"
-                      value="<%= r.name %>"
-                      name="name"
-                    />
-                  </div>
-                </div>
-              </div>
+           <form action="/manager/profile" method="POST" enctype="multipart/form-data">
+  <div class="profile-image-container" style="object-fit: contain">
+    <% if (r.image) { %>
+      <img
+        src="http://localhost:3000/<%= r.image.replace(/\\/g, '/') %>"
+        alt=""
+        height="200px"
+        width="200px"
+      />
+    <% } else { %>
+      <img
+        src="../uploads/1752475929798.png"
+        alt=""
+        height="200px"
+        width="200px"
+      />
+    <% } %>
+    <div class="upload-btn" title="Upload Photo">
+      <label for="image"><i class="bi bi-camera"> </i></label>
+      <input
+        type="file"
+        name="image"
+        id="image"
+        hidden
+      />
+    </div>
+  </div>
 
-              <div class="form-group">
-                <label for="email">Email Address</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  id="email"
-                  value="<%= r.email %>"
-                  name="email"
-                />
-              </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input
+          type="text"
+          class="form-control"
+          id="firstName"
+          value="<%= r.name %>"
+          name="name"
+        />
+      </div>
+    </div>
+  </div>
 
-              <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="phone"
-                  value="<%= r.contact %>"
-                  name="contact"
-                />
-              </div>
+  <div class="form-group">
+    <label for="email">Email Address</label>
+    <input
+      type="email"
+      class="form-control"
+      id="email"
+      value="<%= r.email %>"
+      name="email"
+    />
+  </div>
 
-              <div class="d-flex justify-content-end mt-4">
-                <button type="submit" class="btn-submit">
-                  <i class="bi bi-save me-2"></i>Save Changes
-                </button>
-              </div>
-            </form>
+  <div class="form-group">
+    <label for="phone">Phone Number</label>
+    <input
+      type="text"
+      class="form-control"
+      id="phone"
+      value="<%= r.contact %>"
+      name="contact"
+    />
+  </div>
+
+  <div class="d-flex justify-content-end mt-4">
+    <button type="submit" class="btn-submit">
+      <i class="bi bi-save me-2"></i>Save Changes
+    </button>
+  </div>
+</form>
+
           </div>
 
           <!-- Password Section -->
