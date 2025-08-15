@@ -1162,119 +1162,142 @@
     <!-- Booking Form Modal -->
     <!-- Updated Booking Form Modal -->
     <div id="bookingFormPopup" class="popup" style="display: none">
-      <div class="popup-content">
-        <div class="popup-header">
-          <h3>Book Common Space</h3>
-          <button
-            type="button"
-            class="close-btn"
-            onclick="closeForm('booking')"
-          >
-            <i class="bi bi-x"></i>
-          </button>
-        </div>
-        <form id="bookingForm" action="/resident/commonSpace" method="POST">
-          <div class="A">
-            <div>
-              <div class="form-group">
-                <label for="facility">Select Facility *</label>
-                <select
-                  id="facility"
-                  name="facility"
-                  required
-                  onchange="handleFacilityChange()"
-                >
-                  <option value="">Choose a facility...</option>
-                  <% if (locals.availableSpaces && availableSpaces.length > 0) {
-                  %> <% availableSpaces.forEach(space => { %>
+  <div class="popup-content">
+    <div class="popup-header">
+      <h3>Book Common Space</h3>
+      <button
+        type="button"
+        class="close-btn"
+        onclick="closeForm('booking')"
+      >
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+    <form id="bookingForm" action="/resident/commonSpace" method="POST">
+      <div class="A">
+        <div>
+          <div class="form-group">
+            <label for="facility">Select Facility *</label>
+            <select
+              id="facility"
+              name="facility"
+              required
+              onchange="handleFacilityChange(); document.getElementById('bookingRulesField').value = bookingRules();"
+            >
+              <option value="">Choose a facility...</option>
+              <% if (locals.availableSpaces && availableSpaces.length > 0) { %>
+                <% availableSpaces.forEach(space => { %>
                   <option value="<%= space.name %>"><%= space.name %></option>
-                  <% }) %> <% }  %>
-                </select>
+                <% }) %>
+              <% }  %>
+            </select>
+          </div>
+
+          <p
+            id="maxHoursDisplay"
+            style="margin-top: 5px; font-weight: bold"
+          ></p>
+
+          <!-- Booking Rules -->
+          <div class="form-group">
+            <label>Booking Rules</label>
+            <textarea
+              id="bookingRulesField"
+              name="rules"
+              rows="4"
+              readonly
+              placeholder="Select a facility to view booking rules..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="bookingDate">Select Date *</label>
+            <input
+              type="date"
+              id="bookingDate"
+              name="date"
+              required
+              onchange="handleDateChange()"
+              min="<%= new Date().toISOString().split('T')[0] %>"
+            />
+          </div>
+
+          <!-- Hidden inputs for time range -->
+          <input type="hidden" id="hiddenFromTime" name="from" />
+          <input type="hidden" id="hiddenToTime" name="to" />
+
+          <!-- Purpose field -->
+          <div class="form-group">
+            <label for="purpose">Purpose (Optional)</label>
+            <textarea
+              id="purpose"
+              name="purpose"
+              rows="3"
+              placeholder="Brief description of the purpose..."
+            ></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="closeForm('booking')"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle"></i> Submit Booking
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <!-- Enhanced Time slots section -->
+          <div class="form-group">
+            <label>Select Time Slots *</label>
+            <div class="time-slots-container" id="timeSlotsContainer">
+              <div class="time-slots-header">
+                <h4 class="time-slots-title">
+                  <i class="bi bi-clock"></i>
+                  Available Time Slots
+                </h4>
+                <div class="time-period-info">6:00 AM - 10:00 PM</div>
               </div>
-              <p
-                id="maxHoursDisplay"
-                style="margin-top: 5px; font-weight: bold"
-              ></p>
-              <div class="form-group">
-                <label for="bookingDate">Select Date *</label>
-                <input
-                  type="date"
-                  id="bookingDate"
-                  name="date"
-                  required
-                  onchange="handleDateChange()"
-                  min="<%= new Date().toISOString().split('T')[0] %>"
-                />
-              </div>
-              <!-- Hidden inputs for time range -->
-              <input type="hidden" id="hiddenFromTime" name="from" />
-              <input type="hidden" id="hiddenToTime" name="to" />
-              <!-- Purpose field -->
-              <div class="form-group">
-                <label for="purpose">Purpose (Optional)</label>
-                <textarea
-                  id="purpose"
-                  name="purpose"
-                  rows="3"
-                  placeholder="Brief description of the purpose..."
-                ></textarea>
-              </div>
-              <div class="form-actions">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  onclick="closeForm('booking')"
-                >
-                  Cancel
-                </button>
-                <button type="submit" class="btn btn-primary">
-                  <i class="bi bi-check-circle"></i> Submit Booking
-                </button>
-              </div>
-            </div>
-            <div>
-              <!-- Enhanced Time slots section -->
-              <div class="form-group">
-                <label>Select Time Slots *</label>
-                <div class="time-slots-container" id="timeSlotsContainer">
-                  <div class="time-slots-header">
-                    <h4 class="time-slots-title">
-                      <i class="bi bi-clock"></i>
-                      Available Time Slots
-                    </h4>
-                    <div class="time-period-info">6:00 AM - 10:00 PM</div>
+
+              <div class="time-slots-grid">
+                <% for (let hour = 6; hour <= 21; hour++) { %>
+                  <% const timeStr = String(hour).padStart(2, '0') + ':00';
+                     let displayTime;
+                     if (hour === 0) { displayTime = '12:00 AM'; }
+                     else if (hour < 12) { displayTime = hour + ':00 AM'; }
+                     else if (hour === 12) { displayTime = '12:00 PM'; }
+                     else { displayTime = (hour - 12) + ':00 PM'; } %>
+                  <div class="time-slot" data-time="<%= timeStr %>">
+                    <input
+                      type="checkbox"
+                      name="timeSlots"
+                      value="<%= timeStr %>"
+                      id="slot_<%= hour %>"
+                    />
+                    <label for="slot_<%= hour %>"><%= displayTime %></label>
                   </div>
-                  <div class="time-slots-grid">
-                    <% for (let hour = 6; hour <= 21; hour++) { %> <% const
-                    timeStr = String(hour).padStart(2, '0') + ':00'; let
-                    displayTime; if (hour === 0) { displayTime = '12:00 AM'; }
-                    else if (hour < 12) { displayTime = hour + ':00 AM'; } else
-                    if (hour === 12) { displayTime = '12:00 PM'; } else {
-                    displayTime = (hour - 12) + ':00 PM'; } %>
-                    <div class="time-slot" data-time="<%= timeStr %>">
-                      <input
-                        type="checkbox"
-                        name="timeSlots"
-                        value="<%= timeStr %>"
-                        id="slot_<%= hour %>"
-                      />
-                      <label for="slot_<%= hour %>"><%= displayTime %></label>
-                    </div>
-                    <% } %>
-                  </div>
-                  <div class="selected-time-display">
-                    <strong>Selected Time: </strong>
-                    <span id="selectedTimeText" class="no-selection"
-                      >No time slots selected</span
-                    >
-                  </div>
-                </div>
+                <% } %>
+              </div>
+
+              <div class="selected-time-display">
+                <strong>Selected Time: </strong>
+                <span id="selectedTimeText" class="no-selection">
+                  No time slots selected
+                </span>
               </div>
             </div>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </form>
+  </div>
+</div>
+
     <!-- Booking Details Popup -->
     <div id="bookingDetailsPopup" class="popup" style="display: none">
       <div class="popup-content">

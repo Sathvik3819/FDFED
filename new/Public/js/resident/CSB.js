@@ -13,7 +13,41 @@ function closeForm(type) {
     document.getElementById(type + "FormPopup").style.display = "none";
   }
 }
+function bookingRules() {
+  const facility = document.getElementById("facility").value;
+  
+  console.log('Selected facility:', facility); // Debug log
+  
+  if (!facility) {
+    return "Select a facility to view booking rules...";
+  }
+  
+  // Get facility-specific data from the fetched facilityData
+  const facilityInfo = facilityData[facility];
+  
+  console.log('Facility Info:', facilityInfo); // Debug log
+  console.log('Available keys in facilityInfo:', facilityInfo ? Object.keys(facilityInfo) : 'No facility info'); // Debug log
+  
+  if (facilityInfo) {
+    // Try multiple possible field names for booking rules
+    const rules = facilityInfo.bookingRules || 
+                 facilityInfo.rules || 
+                 facilityInfo.booking_rules || 
+                 facilityInfo.bookingRule;
+    
+    console.log('Found booking rules:', rules); // Debug log
+    
+    if (rules) {
+      return rules;
+    }
+  }
+  
+  // Fallback if no rules in database
+  console.log('No booking rules found for facility'); // Debug log
+  return "No specific rules available for this facility. Please contact management for details.";
+}
 // Fetch facility data from API
+// Update the fetchFacilityData function in your CSB.js
 async function fetchFacilityData() {
   try {
     const response = await fetch('/resident/api/facilities', {
@@ -26,26 +60,43 @@ async function fetchFacilityData() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    if (data.success && data.facilities) {
-      // Convert array to object for easy lookup
-      facilityData = {};
-      data.facilities.forEach(facility => {
-        facilityData[facility.name] = {
-          maxBookingDurationHours: facility.maxBookingDurationHours,
-          id: facility.id,
-          description: facility.description,
-          capacity: facility.capacity,
-          amenities: facility.amenities
-        };
-      });
-      return true;
+    
+    console.log('Raw API Response:', data); // Debug log
+    
+    // Handle different response formats
+    let facilities;
+    if (Array.isArray(data)) {
+      facilities = data;
+    } else if (data.success && data.facilities) {
+      facilities = data.facilities;
+    } else if (data.facilities) {
+      facilities = data.facilities;
     } else {
       throw new Error('Invalid response format');
     }
+    
+    if (facilities && Array.isArray(facilities)) {
+      // Convert array to object for easy lookup
+      facilityData = {};
+      facilities.forEach(facility => {
+        // Use the exact field names from your database
+        facilityData[facility.name] = {
+          maxBookingDurationHours: facility.maxBookingDurationHours,
+          bookingRules: facility.bookingRules, // This should match your DB field exactly
+          id: facility._id,
+          type: facility.type,
+          rent: facility.rent,
+          bookable: facility.bookable,
+         
+        };
+      });
+      console.log('Final Facility Data Object:', facilityData); // Debug log
+      return true;
+    } else {
+      throw new Error('No facilities found in response');
+    }
   } catch (error) {
     console.error('Error fetching facility data:', error);
-    // Fallback: Initialize with default values if API fails
-    initializeFallbackFacilityData();
     return false;
   }
 }
@@ -113,9 +164,7 @@ async function fetchSpecificFacilityData(facilityName) {
       facilityData[facilityName] = {
         maxBookingDurationHours: data.facility.maxBookingDurationHours,
         id: data.facility.id,
-        description: data.facility.description,
-        capacity: data.facility.capacity,
-        amenities: data.facility.amenities
+       
       };
       return facilityData[facilityName];
     }
