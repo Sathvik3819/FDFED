@@ -244,16 +244,18 @@ tr:hover {
 
 .close {
     position: absolute;
-    right: 1.5rem;
-    top: 1rem;
-    font-size: 1.5rem;
+    top: 10px;
+    right: 15px;
+    font-size: 22px;
     font-weight: bold;
-    color: #aaa;
     cursor: pointer;
+    color: var(--text-light);
+    transition: 0.3s ease-in-out;
+    padding: 25px;
 }
 
 .close:hover {
-    color: #333;
+    color: var(--primary-color);
 }
 
 /* Form Styles */

@@ -234,27 +234,21 @@
           transform: translateY(0);
         }
       }
-      .close-btn {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        font-size: 1.75rem;
-        color: var(--danger);
-        cursor: pointer;
-        transition: var(--transition);
-        background: none;
-        border: none;
-        width: 2.5rem;
-        height: 2.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-      }
-      .close-btn:hover {
-        background-color: rgba(220, 53, 69, 0.1);
-        transform: rotate(90deg);
-      }
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: 0.3s ease-in-out;
+    padding: 25px;
+}
+
+.close-btn:hover {
+    color: var(--primary-color);
+}
       .popup-header {
         display: flex;
         justify-content: space-between;
