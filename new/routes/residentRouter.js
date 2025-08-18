@@ -536,7 +536,7 @@ residentRouter.post("/issueRaising/feedback", async (req, res) => {
       remarks: null,
       belongTo: "Issue",
       belongToId: issue._id,
-      communityId: issue.workerAssigned.communityAssigned,
+      community: issue.community,
     });
 
     const uniqueId = generateCustomID(payment._id, "PA", null);
@@ -581,6 +581,7 @@ residentRouter.post("/issueRaising", async (req, res) => {
       description: description,
       status: "Pending",
       workerAssigned: null,
+      community: resident.community,
     });
 
     const issueID = generateCustomID(req.user.id, "IS", null);

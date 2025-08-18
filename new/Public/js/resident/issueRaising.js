@@ -182,8 +182,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const payBtn = event.target.closest(".action-btn.pay-btn");
     if (payBtn) {
       // For now, let's just log the ID. In a real app, you'd trigger a payment flow.
-      alert(`Initiating payment for Issue ID: ${issueID}`);
-      // Example: window.location.href = `/resident/makePayment/${issueID}`;
+     
+      window.location.href = `/resident/payments`;
     }
   });
 

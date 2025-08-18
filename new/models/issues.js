@@ -43,6 +43,10 @@ const issueSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Payment",
     default: null,
+  },community: {
+    type: Schema.Types.ObjectId,
+    ref: "Community",
+    
   },
   paymentStatus: {
     type: String,
