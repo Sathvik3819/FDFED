@@ -12,7 +12,7 @@ import auth from "../controllers/auth.js";
 import { authorizeR } from "../controllers/authorization.js";
 import Ad from "../models/Ad.js";
 import communities from "../models/communities.js";
-
+import PaymentController from "../controllers/payments.js";
 import { OTP } from "../controllers/OTP.js";
 
 import multer from "multer";
@@ -146,6 +146,23 @@ function getTimeAgo(date) {
   const diffDays = Math.floor(diffHours / 24);
   return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
 }
+
+residentRouter.get("/payment/community", async (req, res) => {
+   try {
+           
+        
+            const user = await Community.findById(req.user.community)
+            
+            if (!user) {
+                return res.status(404).json({ message: 'community not found' });
+            }
+            
+            return res.status(200).json(user);
+        } catch (error) {
+            console.error('Error fetching current user:', error);
+            return res.status(500).json({ message: 'Error fetching user data', error: error.message });
+        }
+});
 
 residentRouter.get("/commonSpace", async (req, res) => {
   try {
