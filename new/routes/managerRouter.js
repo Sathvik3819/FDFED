@@ -48,7 +48,9 @@ const upload = multer({ storage: storage });
 managerRouter.get("/commonSpace", async (req, res) => {
   const c = req.user.community;
   const csb = await CommonSpaces.find({ community: c });
-  const ads = await Ad.find({ community: req.user.community });
+ const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
   const community = await Community.findById(req.user.community)
     .select('commonSpaces')
     .lean();
@@ -1299,7 +1301,9 @@ managerRouter.delete('/payments/:id', PaymentController.deletePayment);
 
 
 managerRouter.get("/userManagement", async (req, res) => {
-  const ads = await Ad.find({ community: req.user.community });
+ const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
 
   const R = await Resident.find({ community: req.user.community });
   const W = await Worker.find({ community: req.user.community });
@@ -1575,7 +1579,9 @@ managerRouter.delete("/userManagement/worker/:id", async (req, res) => {
   res.status(200).json({ ok: true });
 });
 managerRouter.get("/dashboard", async (req, res) => {
-  const ads = await Ad.find({ community: req.user.community });
+ const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
 
   const issues = await Issue.find({ community: req.user.community });
   const residents = await Resident.find({ community: req.user.community });
@@ -1641,7 +1647,9 @@ managerRouter.get("/issueResolving", async (req, res) => {
     const managerId = req.user.id;
     const manager = await CommunityManager.findById(managerId);
 
-    const ads = await Ad.find({ community: req.user.community });
+   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
 
     if (!manager) {
       return res.status(404).json({ message: "Community manager not found" });
@@ -1722,7 +1730,9 @@ managerRouter.get("/issueResolving/:id", async (req, res) => {
 
 managerRouter.get("/payments", async (req, res) => {
   try {
-    const ads = await Ad.find({ community: req.user.community });
+   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
 
     const community = req.user.community;
     const payments = community.subscriptionHistory || [];
@@ -1758,7 +1768,7 @@ managerRouter.get("/payments", async (req, res) => {
 
 
 managerRouter.get("/ad", async (req, res) => {
-  const ads = await Ad.find({ community: req.user.community, status: "active" });
+  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
   res.render("communityManager/Advertisement", { path: "ad", ads });
 });
@@ -1783,7 +1793,9 @@ managerRouter.post("/ad", upload.single("image"), async (req, res) => {
 
 
 managerRouter.get("/profile", async (req, res) => {
-  const ads = await Ad.find({ community: req.user.community });
+ const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
 
   const r = await CommunityManager.findById(req.user.id);
 

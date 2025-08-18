@@ -178,7 +178,9 @@ residentRouter.get("/commonSpace", async (req, res) => {
     });
     await resi.save();
 
-    const ads = await Ad.find({ community: req.user.community });
+   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
     const community = await Community.findById(req.user.community);
     const availableSpaces = community ? community.commonSpaces : [];
     console.log(bookings);
@@ -387,7 +389,9 @@ residentRouter.get("/dashboard", async (req, res) => {
   const recents = [];
   const notifications = [];
 
-  const ads = await Ad.find({ community: req.user.community });
+ const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
   const issues = await Issue.find({ resident: req.user.id });
   const commonSpaces = await CommonSpaces.find({ bookedBy: req.user.id });
   const payments = await Payment.find({ sender: req.user.id });
@@ -479,7 +483,9 @@ residentRouter.get("/issueRaising", async (req, res) => {
         },
       }
     );
-    const ads = await Ad.find({ community: req.user.community });
+   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
 
     console.log(ads);
 
@@ -647,7 +653,9 @@ residentRouter.get("/payments", async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const ads = await Ad.find({ community: req.user.community });
+   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
 
     console.log(ads);
 
@@ -770,7 +778,9 @@ residentRouter.get("/preApprovals", async (req, res) => {
     const resident = await Resident.findById(req.user.id).populate(
       "preApprovedVisitors"
     );
-    const ads = await Ad.find({ community: req.user.community });
+   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
 
     console.log(resident.preApprovedVisitors);
 
@@ -887,7 +897,9 @@ residentRouter.delete("/preapproval/cancel/:id", async (req, res) => {
 });
 
 residentRouter.get("/profile", async (req, res) => {
-  const ads = await Ad.find({ community: req.user.community });
+ const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  res.render("communityManager/Advertisement", { path: "ad", ads });
 
   const r = await Resident.findById(req.user.id);
 
