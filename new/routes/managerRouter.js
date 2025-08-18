@@ -55,6 +55,41 @@ managerRouter.get("/commonSpace", async (req, res) => {
 
   res.render("communityManager/CSB", { path: "cbs", csb, community: community,ads });
 });
+managerRouter.get("/commonSpace/details/:id", async (req, res) => {
+  try {
+    const booking = await CommonSpaces.findById(req.params.id)
+      .populate("bookedBy", "name email") // fetch resident info
+      .populate("payment", "amount status method") // fetch payment info
+      .populate("community", "name"); // fetch community info
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found" });
+    }
+
+    res.json({
+      success: true,
+      name: booking.name,
+      description: booking.description,
+      date: booking.Date,
+      from: booking.from,
+      to: booking.to,
+      status: booking.status,
+      paymentStatus: booking.paymentStatus,
+      payment: booking.payment || null,
+      availability: booking.availability,
+      bookedBy: booking.bookedBy ? {
+        name: booking.bookedBy.name,
+        email: booking.bookedBy.email
+      } : null,
+      community: booking.community?.name || null,
+      feedback: booking.feedback
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 
 function mergeBusySlots(slots) {
   // Convert time strings to minutes
@@ -139,7 +174,7 @@ managerRouter.get("/commonSpace/checkAvailability/:id", async (req, res) => {
       await current.save();
       return res
         .status(200)
-        .json({ message: "Available and booked succesfully" });
+        .json({ message: "Requested slots are available." });
     }
   } catch (err) {
     console.error(err);

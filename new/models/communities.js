@@ -66,7 +66,7 @@ const CommunitySchema = new mongoose.Schema({
   commonSpaces: [{
     type: {
       type: String,
-      enum: [
+      enum: [ 
         "Clubhouse",
         "Banquet Hall",
         "Community Hall",

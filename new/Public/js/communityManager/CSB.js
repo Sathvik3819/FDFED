@@ -8,6 +8,60 @@ function closeForm(type) {
     popup.style.display = "none";
   }
 }
+// View Details buttons
+document.querySelectorAll('.view-btn').forEach(button => {
+  button.addEventListener('click', async function (e) {
+    e.preventDefault();
+
+    const id = this.getAttribute('data-id');
+    if (!id) {
+      alert("Invalid booking ID");
+      return;
+    }
+
+    // Loading state
+    this.disabled = true;
+    const originalText = this.innerHTML;
+    this.innerHTML = '<i class="bi bi-hourglass-split"></i> Loading...';
+
+    try {
+      const response = await fetch(`/manager/commonSpace/details/${id}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const detailsDiv = document.getElementById("detailsContent");
+      detailsDiv.innerHTML = `
+        <p><strong>Name:</strong> ${data.name || "N/A"}</p>
+        <p><strong>Description:</strong> ${data.description || "N/A"}</p>
+        <p><strong>Date:</strong> ${data.date || "N/A"}</p>
+        <p><strong>From:</strong> ${data.from || "N/A"}</p>
+        <p><strong>To:</strong> ${data.to || "N/A"}</p>
+        <p><strong>Status:</strong> ${data.status || "N/A"}</p>
+        <p><strong>Payment Status:</strong> ${data.paymentStatus || "N/A"}</p>
+        <p><strong>Booked By:</strong> ${data.bookedBy ? data.bookedBy.name + " (" + data.bookedBy.email + ")" : "N/A"}</p>
+        <p><strong>Feedback:</strong> ${data.feedback || "N/A"}</p>
+      `;
+
+      // Show popup
+      const popup = document.getElementById("bookingDetailsPopup");
+      if (popup) popup.style.display = "flex";
+
+    } catch (error) {
+      console.error("Error fetching details:", error);
+      alert("Error fetching booking details. Please try again.");
+    } finally {
+      this.disabled = false;
+      this.innerHTML = originalText;
+    }
+  });
+});
 
 document.addEventListener("DOMContentLoaded", function () {
   // Initialize elements
