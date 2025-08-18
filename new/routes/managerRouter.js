@@ -144,7 +144,7 @@ managerRouter.get("/commonSpace/checkAvailability/:id", async (req, res) => {
       ],
       _id: { $ne: id },
       name: current.name,
-      status: "Booked",
+      status: "payment Pending",
     });
 
     console.log("Conflicting Bookings:", result);
@@ -194,7 +194,7 @@ managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
     b.status = "avalaible";
     b.availability = "NO";
     b.paymentStatus = "Pending";
-    b.status = "Booked";
+    b.status = "Pending Payment";
 
     console.log("Booking Data after update:", b);
 

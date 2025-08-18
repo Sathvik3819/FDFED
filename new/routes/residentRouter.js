@@ -749,8 +749,8 @@ residentRouter.post("/payment/post", async (req, res) => {
       ob = await Issue.findById(payment.belongToId);
     } else if (type === "commonSpaces") {
       ob = await CommonSpaces.findById(payment.belongToId);
-    }
-    ob.status = "Resolved";
+    } 
+    ob.status = "Booked";
     ob.paymentStatus = "Completed";
     ob.payment = payment._id;
     await ob.save();
