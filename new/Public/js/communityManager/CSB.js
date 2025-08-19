@@ -409,7 +409,46 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+ bookingRules.addEventListener('focus', function () {
+  if (bookingRules.value.trim() === "") {
+    bookingRules.value = "1. ";
+    // put cursor at end
+    bookingRules.selectionStart = bookingRules.selectionEnd = bookingRules.value.length;
+  }
+});
 
+// Handle Enter key for auto-numbering
+bookingRules.addEventListener('keydown', function (e) {
+  if (e.key === "Enter") {
+    e.preventDefault(); // stop default newline
+
+    const start = bookingRules.selectionStart;
+    const end = bookingRules.selectionEnd;
+
+    const textBefore = bookingRules.value.substring(0, start);
+    const textAfter = bookingRules.value.substring(end);
+
+    const lines = textBefore.split("\n");
+    const lastLine = lines[lines.length - 1].trim();
+
+    let nextNum = 1;
+    const match = lastLine.match(/^(\d+)\./);
+    if (match) {
+      nextNum = parseInt(match[1]) + 1;
+    } else if (lines.length > 1) {
+      const prevMatch = lines[lines.length - 2].match(/^(\d+)\./);
+      if (prevMatch) {
+        nextNum = parseInt(prevMatch[1]) + 1;
+      }
+    }
+
+    const insertText = "\n" + nextNum + ". ";
+    bookingRules.value = textBefore + insertText + textAfter;
+
+    const newPos = start + insertText.length;
+    bookingRules.selectionStart = bookingRules.selectionEnd = newPos;
+  }
+});
   // Delete Space buttons
   document.querySelectorAll('.delete-space-btn').forEach(btn => {
     btn.addEventListener('click', function () {
