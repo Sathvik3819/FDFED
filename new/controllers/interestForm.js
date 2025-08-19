@@ -12,7 +12,7 @@ dotenv.config();
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-
+import mongoose from 'mongoose';
 // Ensure uploads directory exists
 const uploadsDir = 'uploads';
 if (!fs.existsSync(uploadsDir)) {

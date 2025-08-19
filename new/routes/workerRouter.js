@@ -25,7 +25,7 @@ workerRouter.get("/dashboard", async (req, res) => {
 
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+  
 
   console.log(ads);
 
@@ -43,7 +43,7 @@ workerRouter.get("/history", async (req, res) => {
 
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+  
   
   console.log(issues);
   
@@ -58,7 +58,7 @@ workerRouter.get("/tasks", async (req, res) => {
 
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+  
 
   res.render("worker/Task", { path: "t", tasks, ads });
 });
@@ -90,7 +90,7 @@ workerRouter.post("/issueResolving/resolve/:id", async (req, res) => {
 workerRouter.get("/profile", async (req, res) => {
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+  
 
   const r = await Worker.findById(req.user.id);
   console.log(r);

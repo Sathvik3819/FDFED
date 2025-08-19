@@ -73,7 +73,7 @@ securityRouter.get("/dashboard", async (req, res) => {
 
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+  
 
   console.log(ads);
 
@@ -94,7 +94,7 @@ securityRouter.get("/preApproval", async (req, res) => {
 
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+  
 
 
   res.render("security/preApproval", { path: "pa", pa, ads });
@@ -182,7 +182,7 @@ securityRouter.get("/visitorManagement", async (req, res) => {
 
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+  
 
   console.log(ads);
 
@@ -240,7 +240,7 @@ securityRouter.get("/visitorManagement/:action/:id", async (req, res) => {
 securityRouter.get("/profile", async (req, res) => {
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+  
 
   const r = await Security.findById(req.user.id);
 

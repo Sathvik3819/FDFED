@@ -50,7 +50,7 @@ managerRouter.get("/commonSpace", async (req, res) => {
   const csb = await CommonSpaces.find({ community: c });
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+  
   const community = await Community.findById(req.user.community)
     .select('commonSpaces')
     .lean();
@@ -1303,8 +1303,7 @@ managerRouter.delete('/payments/:id', PaymentController.deletePayment);
 managerRouter.get("/userManagement", async (req, res) => {
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
-
+  
   const R = await Resident.find({ community: req.user.community });
   const W = await Worker.find({ community: req.user.community });
   const S = await Security.find({ community: req.user.community });
@@ -1649,7 +1648,7 @@ managerRouter.get("/issueResolving", async (req, res) => {
 
    const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+  
 
     if (!manager) {
       return res.status(404).json({ message: "Community manager not found" });
@@ -1732,7 +1731,7 @@ managerRouter.get("/payments", async (req, res) => {
   try {
    const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+  
 
     const community = req.user.community;
     const payments = community.subscriptionHistory || [];
@@ -1795,7 +1794,7 @@ managerRouter.post("/ad", upload.single("image"), async (req, res) => {
 managerRouter.get("/profile", async (req, res) => {
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
+
 
   const r = await CommunityManager.findById(req.user.id);
 
