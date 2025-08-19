@@ -1493,7 +1493,7 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
       contact,
       address,
       salary,
-      availabilityStatus,
+   
     } = req.body;
 
     console.log("Incoming Worker ID:", Wid);
@@ -1513,7 +1513,7 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
       w.contact = contact;
       w.address = address;
       w.salary = salary;
-      w.availabilityStatus = availabilityStatus;
+     
 
       await w.save();
       req.flash("alert-msg", { text: "Worker updated successfully", type: "success" });
@@ -1527,7 +1527,7 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
         contact,
         address,
         salary,
-        availabilityStatus,
+       
         community: req.user.community,
       });
 

@@ -15,11 +15,7 @@ const workerSchema = new mongoose.Schema({
   },
   image:String,
 
-  availabilityStatus: {
-    type: String,
-    enum: ["Available", "Busy", "On Leave"],
-    default: "Available",
-  },
+  
   salary: { type: Number, required: true },
   joiningDate: { type: Date, default: Date.now },
   community: {

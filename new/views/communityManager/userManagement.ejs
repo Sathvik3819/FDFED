@@ -654,7 +654,8 @@
                 <p><strong>Email:</strong> <%= w.email %></p>
                 <p><strong>Job Role:</strong> <%= w.jobRole %></p>
                 <p><strong>Contact:</strong> <%= w.contact %></p>
-                <p><strong>Status:</strong> <%= w.availabilityStatus %></p>
+                
+
               </div>
               <div class="card-actions">
                 <button
@@ -910,19 +911,7 @@
             />
           </div>
 
-          <div class="form-group">
-            <label for="workerAvailabilityStatus">Availability Status:</label>
-            <select
-              id="workerAvailabilityStatus"
-              name="availabilityStatus"
-              required
-            >
-              <option value="Available">Available</option>
-              <option value="Busy">Busy</option>
-              <option value="On Leave">On Leave</option>
-            </select>
-          </div>
-
+         
           <button type="submit" class="form-button">
             <i class="bi bi-check-circle"></i>Submit
           </button>
@@ -992,9 +981,7 @@
             document.getElementById("workerJobRole").value = data.jobRole || "";
             document.getElementById("workerContact").value = data.contact || "";
             document.getElementById("workerAddress").value = data.address || "";
-            document.getElementById("workerSalary").value = data.salary || "";
-            document.getElementById("workerAvailabilityStatus").value =
-              data.availabilityStatus || "Available";
+          
           } else {
             document.getElementById("Wid").value = "";
             document.getElementById("workerForm").reset();

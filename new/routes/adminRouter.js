@@ -1118,7 +1118,7 @@ AdminRouter.post("/api/workers", async (req, res) => {
   try {
     const requiredFields = [
       'name', 'email', 'contact', 'address', 
-      'jobRole', 'availabilityStatus', 'salary', 'password'
+      'jobRole', 'salary', 'password'
     ];
     const missingFields = requiredFields.filter(field => !req.body[field]);
     
