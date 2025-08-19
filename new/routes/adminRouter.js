@@ -578,16 +578,7 @@ AdminRouter.put("/api/communities/:id", async (req, res) => {
       return res.status(400).json({ error: "Name, location and status are required fields" });
     }
     
-    // Check if another community has the same name (excluding this one)
-    const existingCommunity = await Community.findOne({ 
-      name, 
-      _id: { $ne: req.params.id } 
-    });
-    
-    if (existingCommunity) {
-      return res.status(409).json({ error: "Another community with this name already exists" });
-    }
-    
+  
     const updatedCommunity = await Community.findByIdAndUpdate(
       req.params.id,
       {
@@ -841,13 +832,7 @@ AdminRouter.delete("/api/community-managers/:id", async (req, res) => {
       });
     }
     
-    // Remove manager reference from assigned community
-    if (manager.assignedCommunity) {
-      await Community.findByIdAndUpdate(
-        manager.assignedCommunity,
-        { $unset: { communityManager: 1 } }
-      );
-    }
+   
     
     // Delete the manager
     await CommunityManager.findByIdAndDelete(req.params.id);
