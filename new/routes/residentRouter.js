@@ -17,7 +17,8 @@ import { OTP } from "../controllers/OTP.js";
 
 import multer from "multer";
 import cron from "node-cron";
-
+import checkSubscriptionStatus from '../middleware/subcriptionStatus.js'
+residentRouter.use(checkSubscriptionStatus);
 function getPaymentRemainders(pending, notifications) {
   const now = new Date();
   const reminders = [];

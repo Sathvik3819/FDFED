@@ -16,29 +16,58 @@
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../../css/nav.css" />
 
     <style>
+      :root {
+        --primary: #0d6efd;
+        --secondary: #6c757d;
+        --success: #198754;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --info: #0dcaf0;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --gray: #6c757d;
+        --border-radius: 12px;
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Outfit', sans-serif;
+        overflow: hidden;
+      }
+
       .subscription-container {
-        min-height: calc(100vh - 80px);
+        height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
         background: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
-        padding: 40px 20px;
-      }
-
-      .subscription-card {
-        background: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        max-width: 600px;
-        width: 100%;
-        text-align: center;
-        padding: 50px 40px;
-        position: relative;
+        padding: 0;
         overflow: hidden;
       }
+
+.subscription-card {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  width: 90%;              /* responsive base */
+  max-width: 800px;        /* limit width */
+  height: auto;            /* let content define height */
+  min-height: 70vh;        /* still keep a tall look */
+  margin: auto;            /* center horizontally */
+  text-align: center;
+  padding: 40px 20px;
+  position: relative;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 
       .subscription-card::before {
         content: "";
@@ -48,6 +77,15 @@
         right: 0;
         height: 6px;
         background: linear-gradient(90deg, var(--danger), var(--warning));
+      }
+
+      .card-content {
+        max-width: 600px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
       }
 
       .expired-icon {
@@ -146,35 +184,6 @@
         color: white;
       }
 
-      .feature-list {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 25px;
-        margin-top: 30px;
-        text-align: left;
-      }
-
-      .feature-list h4 {
-        color: var(--primary);
-        font-weight: 600;
-        margin-bottom: 20px;
-        text-align: center;
-      }
-
-      .feature-item {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 10px 0;
-        color: var(--gray);
-      }
-
-      .feature-item i {
-        color: var(--success);
-        font-size: 1.2rem;
-        width: 20px;
-      }
-
       .back-link {
         position: absolute;
         top: 20px;
@@ -188,51 +197,12 @@
         padding: 8px 15px;
         border-radius: 8px;
         transition: var(--transition);
+        z-index: 10;
       }
 
       .back-link:hover {
         background: rgba(108, 117, 125, 0.1);
         color: var(--primary);
-      }
-
-      @media (max-width: 768px) {
-        .subscription-card {
-          padding: 40px 25px;
-          margin: 20px;
-        }
-
-        .subscription-title {
-          font-size: 1.8rem;
-        }
-
-        .subscription-subtitle {
-          font-size: 1.1rem;
-        }
-
-        .subscription-message {
-          font-size: 1rem;
-        }
-
-        .expired-icon {
-          width: 100px;
-          height: 100px;
-        }
-
-        .expired-icon i {
-          font-size: 3rem;
-        }
-
-        .contact-section {
-          padding: 20px;
-        }
-
-        .back-link {
-          position: relative;
-          top: auto;
-          left: auto;
-          margin-bottom: 20px;
-          align-self: flex-start;
-        }
       }
 
       .alert-badge {
@@ -257,77 +227,86 @@
         40% { transform: translateY(-10px); }
         60% { transform: translateY(-5px); }
       }
+
+      @media (max-width: 768px) {
+        .subscription-card {
+          padding: 20px 15px;
+        }
+
+        .card-content {
+          padding: 0 10px;
+        }
+
+        .subscription-title {
+          font-size: 1.8rem;
+        }
+
+        .subscription-subtitle {
+          font-size: 1.1rem;
+        }
+
+        .subscription-message {
+          font-size: 1rem;
+        }
+
+        .expired-icon {
+          width: 80px;
+          height: 80px;
+          margin-bottom: 20px;
+        }
+
+        .expired-icon i {
+          font-size: 2.5rem;
+        }
+
+        .contact-section {
+          padding: 20px;
+          margin: 20px 0;
+        }
+
+        .back-link {
+          position: absolute;
+          top: 20px;
+          left: 20px;
+        }
+      }
     </style>
   </head>
 
   <body>
-    <%- include('../../partials/managerNav.ejs') %>
-
     <div class="subscription-container">
       <div class="subscription-card">
-        <a href="javascript:history.back()" class="back-link">
+        <a href="/logout" class="back-link">
           <i class="bi bi-arrow-left"></i>
-          Go Back
+          logout
         </a>
 
-        <div class="expired-icon">
-          <i class="bi bi-shield-exclamation"></i>
-          <div class="alert-badge">!</div>
-        </div>
-
-        <h1 class="subscription-title">Access Restricted</h1>
-        <h2 class="subscription-subtitle">Subscription Expired</h2>
-        
-        <p class="subscription-message">
-          Your community portal subscription has expired and access to the application has been temporarily suspended. 
-          To continue enjoying all the features and services, please contact your community manager to renew your subscription.
-        </p>
-
-        <div class="contact-section">
-          <div class="contact-title">
-            <i class="bi bi-person-check"></i>
-            Contact Community Manager
+        <div class="card-content">
+          <div class="expired-icon">
+            <i class="bi bi-shield-exclamation"></i>
+            <div class="alert-badge">!</div>
           </div>
-          <p class="contact-info">
-            Our community management team is ready to assist you with subscription renewal and answer any questions you may have.
+
+          <h1 class="subscription-title">Access Restricted</h1>
+          <h2 class="subscription-subtitle">Subscription Expired</h2>
+          
+          <p class="subscription-message">
+            Your community portal subscription has expired and access to the application has been temporarily suspended. 
+            To continue enjoying all the features and services, please contact your community manager to renew your subscription.
           </p>
-          <a href="mailto:manager@community.com" class="contact-button">
-            <i class="bi bi-envelope"></i>
-            Send Email
-          </a>
-        </div>
 
-        <div class="feature-list">
-          <h4>What You're Missing:</h4>
-          <div class="feature-item">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>Access to community dashboard and facilities</span>
-          </div>
-          <div class="feature-item">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>Online payment and maintenance requests</span>
-          </div>
-          <div class="feature-item">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>Event bookings and community announcements</span>
-          </div>
-          <div class="feature-item">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>Visitor management and security features</span>
-          </div>
-        </div>
+     
 
-        <div class="mt-4">
-          <small class="text-muted">
-            <i class="bi bi-info-circle"></i>
-            For immediate assistance, please contact your community manager or administrator.
-          </small>
+          <div class="mt-4">
+            <small class="text-muted">
+              <i class="bi bi-info-circle"></i>
+              For immediate assistance, please contact your community manager or administrator.
+            </small>
+          </div>
         </div>
       </div>
     </div>
 
-    <script src="../../js/sidebar.js"></script>
-    
     <script>
       // Add some interactivity
       document.addEventListener('DOMContentLoaded', function() {
