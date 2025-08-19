@@ -13,7 +13,7 @@ const saltRounds = 10;
 
 import {
   getAllApplications,
-  getApplication,
+  
   approveApplication,
   rejectApplication
 } from '../controllers/interestForm.js';
@@ -22,7 +22,7 @@ import {
 
 // Application management routes
 AdminRouter.get('/interests', getAllApplications);
-AdminRouter.get('/interests/:id', getApplication);
+
 AdminRouter.post('/interests/:id/approve', approveApplication);
 AdminRouter.post('/interests/:id/reject', rejectApplication);
 
