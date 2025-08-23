@@ -234,6 +234,7 @@ managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
       ID: uniqueId,
       belongTo: "CommonSpaces",
       community: req.user.community,
+      belongToId: b._id
     });
 
     b.payment = payment._id;
@@ -1660,7 +1661,7 @@ managerRouter.get("/issueResolving", async (req, res) => {
     }
 
     const workers = await Worker.find({ community: community });
-    const issues = await Issue.find({})
+    const issues = await Issue.find({community: community})
       .populate("resident")
       .populate("workerAssigned");
 

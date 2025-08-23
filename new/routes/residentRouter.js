@@ -164,7 +164,11 @@ residentRouter.get("/payment/community", async (req, res) => {
             return res.status(500).json({ message: 'Error fetching user data', error: error.message });
         }
 });
+residentRouter.get("/ad", async (req, res) => {
+  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
+  res.render("resident/Advertisement", { path: "ad", ads });
+});
 residentRouter.get("/commonSpace", async (req, res) => {
   try {
     const bookings = await CommonSpaces.find({ bookedBy: req.user.id }).sort({
@@ -756,10 +760,12 @@ residentRouter.post("/payment/post", async (req, res) => {
 
     if (type === "Issue") {
       ob = await Issue.findById(payment.belongToId);
-    } else if (type === "commonSpaces") {
+       ob.status = "Resolved";
+    } else if (type === "CommonSpaces") {
       ob = await CommonSpaces.findById(payment.belongToId);
+       ob.status = "Booked";
     } 
-    ob.status = "Booked";
+   
     ob.paymentStatus = "Completed";
     ob.payment = payment._id;
     await ob.save();
