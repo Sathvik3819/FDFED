@@ -293,7 +293,8 @@
       }
 
       .booking-header {
-        background: linear-gradient(135deg, #ff4d4d, #f94444);
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        
         color: white;
         padding: 25px;
         position: relative;
@@ -698,7 +699,7 @@
       <!-- AD SECTION -->
       <div class="adCon d-flex justify-content-center align-items-center">
         <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.filter(ad => ad.status==="active").length > 0) { %> <% ads.filter(ad => ad.status==="active").forEach(ad => { %>
+          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length > 0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
           <img
             src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
             class="ad-slide"
@@ -894,7 +895,6 @@
         </button>
 
         <div class="booking-header">
-          <div class="booking-badge emergency">Emergency</div>
           <h2 class="booking-title">Issue Details</h2>
         </div>
 

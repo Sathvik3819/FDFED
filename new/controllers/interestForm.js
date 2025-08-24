@@ -271,28 +271,7 @@ export const getAllApplications = async (req, res) => {
   }
 };
 
-// Admin: Get single application
-export const getApplication = async (req, res) => {
-  try {
-    const interest = await Interest.findById(req.params.id)
-      .populate('approvedBy', 'name email')
-      .populate('rejectedBy', 'name email');
-    
-    if (!interest) {
-      req.flash('error', 'Application not found');
-      return res.redirect('/admin/interests'); // Updated route
-    }
 
-    res.render('admin/interestDetail', { // Updated view name
-      title: 'Interest Application Details',
-      interest // Changed from application to interest
-    });
-  } catch (error) {
-    console.error('Get interest error:', error);
-    req.flash('error', 'Error fetching application');
-    res.redirect('/admin/interests'); // Updated route
-  }
-};
 
 export const approveApplication = async (req, res) => {
   console.log("=== Approve Application Request ===");
@@ -399,7 +378,7 @@ export const approveApplication = async (req, res) => {
 
 export const rejectApplication = async (req, res) => {
   try {
-    if (!req.body.reason || req.body.reason.trim().length < 10) {
+    if (!req.body.reason || req.body.reason.trim().length <=0) {
       req.flash('error', 'Rejection reason must be at least 10 characters');
       return res.redirect(`/admin/interests/${req.params.id}`); // Updated route
     }

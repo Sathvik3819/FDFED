@@ -48,7 +48,7 @@ const upload = multer({ storage: storage });
 managerRouter.get("/commonSpace", async (req, res) => {
   const c = req.user.community;
   const csb = await CommonSpaces.find({ community: c });
- const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+   const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
   
   const community = await Community.findById(req.user.community)
@@ -234,6 +234,7 @@ managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
       ID: uniqueId,
       belongTo: "CommonSpaces",
       community: req.user.community,
+      belongToId: b._id
     });
 
     b.payment = payment._id;
@@ -1301,7 +1302,7 @@ managerRouter.delete('/payments/:id', PaymentController.deletePayment);
 
 
 managerRouter.get("/userManagement", async (req, res) => {
- const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+   const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
   
   const R = await Resident.find({ community: req.user.community });
@@ -1352,7 +1353,7 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
         community: req.user.community,
       });
 
-      const password = await sendPassword(email);
+      const password = await sendPassword({email,userType:"Resident"});
       const hashedPassword = await bcrypt.hash(password, 10);
       r.password = hashedPassword;
       await r.save();
@@ -1433,7 +1434,7 @@ managerRouter.post("/userManagement/security", async (req, res) => {
         community: req.user.community,
       });
 
-      const password = await sendPassword(email);
+      const password = await sendPassword({email,userType:"Security"});
       const hashedPassword = await bcrypt.hash(password, 10);
       s.password = hashedPassword;
       await s.save();
@@ -1530,7 +1531,8 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
         community: req.user.community,
       });
 
-      const password = await sendPassword(email);
+     const password = await sendPassword({ email, userType: "Worker" });
+
       const hashedPassword = await bcrypt.hash(password, 10);
       w.password = hashedPassword;
       await w.save();
@@ -1578,10 +1580,9 @@ managerRouter.delete("/userManagement/worker/:id", async (req, res) => {
   res.status(200).json({ ok: true });
 });
 managerRouter.get("/dashboard", async (req, res) => {
- const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+   const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
-  res.render("communityManager/Advertisement", { path: "ad", ads });
-
+  
   const issues = await Issue.find({ community: req.user.community });
   const residents = await Resident.find({ community: req.user.community });
   const workers = await Worker.find({ community: req.user.community });
@@ -1646,7 +1647,7 @@ managerRouter.get("/issueResolving", async (req, res) => {
     const managerId = req.user.id;
     const manager = await CommunityManager.findById(managerId);
 
-   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+     const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
   
 
@@ -1660,7 +1661,7 @@ managerRouter.get("/issueResolving", async (req, res) => {
     }
 
     const workers = await Worker.find({ community: community });
-    const issues = await Issue.find({})
+    const issues = await Issue.find({community: community})
       .populate("resident")
       .populate("workerAssigned");
 
@@ -1729,7 +1730,7 @@ managerRouter.get("/issueResolving/:id", async (req, res) => {
 
 managerRouter.get("/payments", async (req, res) => {
   try {
-   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+     const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
   
 
@@ -1767,7 +1768,7 @@ managerRouter.get("/payments", async (req, res) => {
 
 
 managerRouter.get("/ad", async (req, res) => {
-  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+  const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
   res.render("communityManager/Advertisement", { path: "ad", ads });
 });
@@ -1792,7 +1793,7 @@ managerRouter.post("/ad", upload.single("image"), async (req, res) => {
 
 
 managerRouter.get("/profile", async (req, res) => {
- const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+   const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
 
 

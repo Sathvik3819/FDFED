@@ -44,6 +44,7 @@ const checkSubscriptionStatus = async (req, res, next) => {
     }
 
     if (community.subscriptionStatus === 'expired') {
+      console.log(community.subscriptionStatus)
       return res.render('subscriptionExpired', {
         user: req.user,
         community

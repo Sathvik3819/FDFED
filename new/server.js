@@ -165,8 +165,7 @@ app.use((req, res, next) => {
   res.locals.alert = req.flash("alert-msg");
   next();
 });
-import checkSubscriptionStatus from './middleware/subcriptionStatus.js'
-app.use(checkSubscriptionStatus);
+
 app.use("/uploads", express.static("uploads"));
 
 app.use(express.urlencoded({ extended: true }));

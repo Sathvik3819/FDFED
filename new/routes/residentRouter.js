@@ -18,7 +18,8 @@ import { getPreApprovals, getCommonSpace } from "../controllers/Resident.js";
 
 import multer from "multer";
 import cron from "node-cron";
-
+import checkSubscriptionStatus from '../middleware/subcriptionStatus.js'
+residentRouter.use(checkSubscriptionStatus);
 function getPaymentRemainders(pending, notifications) {
   const now = new Date();
   const reminders = [];
@@ -164,7 +165,46 @@ residentRouter.get("/payment/community", async (req, res) => {
             return res.status(500).json({ message: 'Error fetching user data', error: error.message });
         }
 });
+residentRouter.get("/ad", async (req, res) => {
+  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
+  res.render("resident/Advertisement", { path: "ad", ads });
+});
+residentRouter.get("/commonSpace", async (req, res) => {
+  try {
+    const bookings = await CommonSpaces.find({ bookedBy: req.user.id }).sort({
+      createdAt: -1,
+    });
+    console.log("Booking Data:", bookings);
+
+    const resi = await Resident.findById(req.user.id);
+
+    resi.notifications.forEach(async (n) => {
+      n.timeAgo = getTimeAgo(resi.notifications[0].createdAt);
+    });
+    await resi.save();
+
+   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  
+    const community = await Community.findById(req.user.community);
+    const availableSpaces = community ? community.commonSpaces : [];
+    console.log(bookings);
+    console.log(resi);
+    console.log(availableSpaces);
+    res.render("resident/commonSpace", {
+      path: "cbs",
+      bookings: bookings,
+      ads,
+      resi,
+      availableSpaces: availableSpaces,
+    });
+  } catch (error) {
+    console.error("Error fetching common space data:", error);
+    req.flash("message", "Error loading common space data.");
+    res.redirect("/resident/dashboardx");
+  }
+});
 residentRouter.get("/commonSpace", getCommonSpace);
 
 residentRouter.post("/commonSpace/:id", async (req, res) => {
@@ -722,10 +762,12 @@ residentRouter.post("/payment/post", async (req, res) => {
 
     if (type === "Issue") {
       ob = await Issue.findById(payment.belongToId);
-    } else if (type === "commonSpaces") {
+       ob.status = "Resolved";
+    } else if (type === "CommonSpaces") {
       ob = await CommonSpaces.findById(payment.belongToId);
+       ob.status = "Booked";
     } 
-    ob.status = "Booked";
+   
     ob.paymentStatus = "Completed";
     ob.payment = payment._id;
     await ob.save();

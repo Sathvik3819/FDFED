@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | Urban Ease</title>
+    <title>Community Manager Applications | Urban Ease</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -263,6 +263,7 @@
             gap: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: none;
         }
 
         .btn i {
@@ -272,7 +273,6 @@
         .btn-approve {
             background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
             color: white;
-            border: none;
         }
 
         .btn-approve:hover {
@@ -283,7 +283,6 @@
         .btn-reject {
             background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
             color: white;
-            border: none;
         }
 
         .btn-reject:hover {
@@ -333,10 +332,13 @@
             align-items: center;
             justify-content: center;
             z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .modal-backdrop.show {
             display: flex;
+            opacity: 1;
         }
 
         .modal {
@@ -407,6 +409,8 @@
             border-radius: 8px;
             font-size: 14px;
             transition: all 0.3s ease;
+            font-family: "Poppins", sans-serif;
+            resize: vertical;
         }
 
         .form-control:focus {
@@ -415,9 +419,14 @@
             box-shadow: 0 0 0 3px rgba(21, 26, 45, 0.1);
         }
 
+        .form-control::placeholder {
+            color: #9ca3af;
+            opacity: 1;
+        }
+
         textarea.form-control {
-            resize: vertical;
             min-height: 100px;
+            line-height: 1.5;
         }
 
         .modal-footer {
@@ -443,7 +452,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #151A2D 0%, #2c3441 100%);
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -455,7 +464,23 @@
 
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(21, 26, 45, 0.3);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .warning-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            margin: 0 auto 16px;
+        }
+
+        .warning-icon i {
+            font-size: 1.5rem;
+            color: #dc2626;
         }
 
         /* Responsive Design */
@@ -520,14 +545,31 @@
             .status-badge {
                 align-self: flex-start;
             }
+
+            .modal {
+                width: 95%;
+                margin: 20px;
+            }
+
+            .modal-header, .modal-body, .modal-footer {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Sidebar would be included here -->
-        <%- include('../partials/sidebarAdmin') %>
-
+         <%- include('../partials/sidebarAdmin') %>
+  
         <!-- Main content -->
         <div class="main-content">
             <div class="header">
@@ -660,21 +702,35 @@
                 <button type="button" class="modal-close" onclick="closeRejectModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="text-center mb-4">
-                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                        <i class="fas fa-exclamation text-red-600"></i>
-                    </div>
+                <div class="warning-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <p class="text-center text-gray-600 mb-6">Please provide a reason for rejecting this application.</p>
-                <form id="rejectForm" method="POST">
+                <p style="text-align: center; color: #6b7280; margin-bottom: 24px;">
+                    Please provide a reason for rejecting this application. This will help the applicant understand the decision.
+                </p>
+                <form id="rejectForm" method="POST" > 
                     <div class="form-group">
-                        <textarea name="reason" rows="4" class="form-control" placeholder="Reason for rejection..." required></textarea>
+                        <label for="rejectionReason" class="form-label">Rejection Reason *</label>
+                        <textarea 
+                            name="reason" 
+                            id="rejectionReason"
+                            rows="4" 
+                            class="form-control" 
+                            placeholder="Please provide a detailed reason for rejecting this application..." 
+                            required
+                            maxlength="500"
+                        ></textarea>
+                        <small style="color: #6b7280; font-size: 0.8rem; display: block; margin-top: 4px;">
+                            Maximum 500 characters
+                        </small>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
-                <button type="submit" form="rejectForm" class="btn btn-primary">Confirm Reject</button>
+                <button type="button" onclick="submitRejection()" class="btn btn-primary">
+                    <i class="fas fa-times"></i> Confirm Rejection
+                </button>
             </div>
         </div>
     </div>
@@ -682,7 +738,7 @@
     <script>
         // Toggle sidebar on mobile
         document.getElementById('menu-toggle').addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('menu-active');
+            document.querySelector('.sidebar')?.classList.toggle('menu-active');
         });
 
         // Filter applications by status
@@ -719,21 +775,101 @@
         
         function openRejectModal(applicationId) {
             currentApplicationId = applicationId;
-            document.getElementById('rejectForm').action = `/admin/interests/${applicationId}/reject`;
-            document.getElementById('rejectModal').classList.add('show');
+            const form = document.getElementById('rejectForm');
+            form.action = "/admin/interests/" + applicationId + "/reject";
+            
+            // Clear the textarea
+            const textarea = document.getElementById('rejectionReason');
+            textarea.value = '';
+            textarea.focus();
+            
+            // Show modal with animation
+            const modal = document.getElementById('rejectModal');
+            modal.style.display = 'flex';
+            
+            // Trigger reflow to ensure transition works
+            modal.offsetHeight;
+            modal.classList.add('show');
+            
+            // Prevent body scrolling
+            document.body.style.overflow = 'hidden';
         }
         
         function closeRejectModal() {
-            document.getElementById('rejectModal').classList.remove('show');
+            const modal = document.getElementById('rejectModal');
+            modal.classList.remove('show');
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }, 300);
+            
             currentApplicationId = null;
+            
+            // Clear form
+            document.getElementById('rejectForm').reset();
+        }
+
+        // Submit rejection form
+        function submitRejection() {
+            const form = document.getElementById('rejectForm');
+            const textarea = document.getElementById('rejectionReason');
+            const reason = textarea.value.trim();
+            
+            if (!reason) {
+                textarea.focus();
+                textarea.style.borderColor = '#dc2626';
+                return;
+            }
+            
+            if (reason.length > 500) {
+                alert('Rejection reason must be less than 500 characters.');
+                textarea.focus();
+                return;
+            }
+            
+            // Reset border color
+            textarea.style.borderColor = '';
+            
+            // Submit the form
+            form.submit();
         }
 
         // Close modal when clicking outside
-        window.addEventListener('click', function(event) {
-            const modal = document.getElementById('rejectModal');
-            if (event.target === modal) {
+        document.getElementById('rejectModal').addEventListener('click', function(event) {
+            if (event.target === this) {
                 closeRejectModal();
             }
+        });
+
+        // Handle escape key to close modal
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('rejectModal');
+                if (modal.classList.contains('show')) {
+                    closeRejectModal();
+                }
+            }
+        });
+
+        // Character counter for textarea
+        document.getElementById('rejectionReason').addEventListener('input', function() {
+            const remaining = 500 - this.value.length;
+            const small = this.nextElementSibling;
+            
+            if (remaining < 0) {
+                small.style.color = '#dc2626';
+                small.textContent = `${Math.abs(remaining)} characters over limit`;
+            } else {
+                small.style.color = '#6b7280';
+                small.textContent = `${remaining} characters remaining`;
+            }
+        });
+
+        // Auto-resize textarea
+        document.getElementById('rejectionReason').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
         });
     </script>
 </body>
