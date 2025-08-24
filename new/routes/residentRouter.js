@@ -14,6 +14,7 @@ import Ad from "../models/Ad.js";
 import communities from "../models/communities.js";
 import PaymentController from "../controllers/payments.js";
 import { OTP } from "../controllers/OTP.js";
+import { getPreApprovals, getCommonSpace } from "../controllers/Resident.js";
 
 import multer from "multer";
 import cron from "node-cron";
@@ -164,41 +165,7 @@ residentRouter.get("/payment/community", async (req, res) => {
         }
 });
 
-residentRouter.get("/commonSpace", async (req, res) => {
-  try {
-    const bookings = await CommonSpaces.find({ bookedBy: req.user.id }).sort({
-      createdAt: -1,
-    });
-    console.log("Booking Data:", bookings);
-
-    const resi = await Resident.findById(req.user.id);
-
-    resi.notifications.forEach(async (n) => {
-      n.timeAgo = getTimeAgo(resi.notifications[0].createdAt);
-    });
-    await resi.save();
-
-   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
-
-  
-    const community = await Community.findById(req.user.community);
-    const availableSpaces = community ? community.commonSpaces : [];
-    console.log(bookings);
-    console.log(resi);
-    console.log(availableSpaces);
-    res.render("resident/commonSpace", {
-      path: "cbs",
-      bookings: bookings,
-      ads,
-      resi,
-      availableSpaces: availableSpaces,
-    });
-  } catch (error) {
-    console.error("Error fetching common space data:", error);
-    req.flash("message", "Error loading common space data.");
-    res.redirect("/resident/dashboardx");
-  }
-});
+residentRouter.get("/commonSpace", getCommonSpace);
 
 residentRouter.post("/commonSpace/:id", async (req, res) => {
   try {
@@ -773,27 +740,7 @@ residentRouter.post("/payment/post", async (req, res) => {
   }
 });
 
-residentRouter.get("/preApprovals", async (req, res) => {
-  try {
-    const resident = await Resident.findById(req.user.id).populate(
-      "preApprovedVisitors"
-    );
-   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
-
-  
-
-    console.log(resident.preApprovedVisitors);
-
-    res.render("resident/preApproval", {
-      path: "pa",
-      visitors: resident.preApprovedVisitors || [],
-      ads,
-    });
-  } catch (err) {
-    console.error("Error loading visitor history:", err);
-    res.render("users/resident/preapproval", { visitors: [] });
-  }
-});
+residentRouter.get('/preApprovals',auth, authorizeR ,getPreApprovals)
 
 //pre approval routes
 residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {

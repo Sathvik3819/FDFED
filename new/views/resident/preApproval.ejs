@@ -550,15 +550,15 @@
         <div class="stats-grid mb-4">
           <div class="stat-card" style="border-left: 6px solid var(--success)">
             <p class="card-label">Approved Requests</p>
-            <h2 class="card-value text-success">12</h2>
+            <h2 class="card-value text-success"><%= counts.approved %></h2>
           </div>
           <div class="stat-card" style="border-left: 6px solid var(--warning)">
             <p class="card-label">Pending Requests</p>
-            <h2 class="card-value text-warning">5</h2>
+            <h2 class="card-value text-warning"><%= counts.pending %></h2>
           </div>
           <div class="stat-card" style="border-left: 6px solid var(--danger)">
             <p class="card-label">Rejected Requests</p>
-            <h2 class="card-value text-danger">3</h2>
+            <h2 class="card-value text-danger"><%= counts.rejected %></h2>
           </div>
         </div>
 

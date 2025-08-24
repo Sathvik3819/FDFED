@@ -23,7 +23,7 @@ const commonSpacesSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  status: String,
+  status: {type: String, default: "pending"},
   paymentStatus: String,
   payment: {
     type: mongoose.Schema.Types.ObjectId,

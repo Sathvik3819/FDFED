@@ -1090,11 +1090,11 @@
         <div class="stats-grid mb-4">
           <div class="stat-card" style="border-left-color: var(--success)">
             <p class="card-label">Total Bookings (this month)</p>
-            <h2 class="card-value text-success">5</h2>
+            <h2 class="card-value text-success"><%= approvedBookings%></h2>
           </div>
           <div class="stat-card" style="border-left-color: var(--warning)">
             <p class="card-label">Pending Bookings</p>
-            <h2 class="card-value text-warning">10</h2>
+            <h2 class="card-value text-warning"><%= pendingBookings%> </h2>
           </div>
           <div class="stat-card" style="border-left-color: var(--primary)">
             <p class="card-label">Total Facilities</p>
