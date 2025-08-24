@@ -10,10 +10,16 @@ const advertisementSchema = new mongoose.Schema(
     imagePath: { type: String, required: true },
     link: { type: String },
     status: {
-      type: String,
-      enum: ["Pending", "Active", "Expired"],
-      default: "Pending",
-    },
+  type: String,
+  enum: ["Pending", "Active", "Expired"],
+  default: "Pending",
+  set: (val) => {
+    if (!val) return val;
+    const formatted = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+    return formatted;
+  },
+},
+
     community: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Community",
