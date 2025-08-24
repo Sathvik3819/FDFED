@@ -1,3 +1,4 @@
+
 // controllers/residentController.js
 import Resident from "../models/resident.js";
 import VisitorPreApproval from "../models/preapproval.js";
@@ -5,6 +6,29 @@ import Ad from "../models/Ad.js";
 import CommonSpaces from "../models/commonSpaces.js";
 import Community from "../models/communities.js";
 import Issue from "../models/issues.js";
+
+// Utils function
+function getTimeAgo(date) {
+  const now = new Date(Date.now());
+  const diffMs = now - new Date(date);
+  const diffSeconds = Math.floor(diffMs / 1000);
+
+
+  if (diffSeconds < 60)
+    return `${diffSeconds} second${diffSeconds !== 1 ? "s" : ""} ago`;
+
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  if (diffMinutes < 60)
+    return `${diffMinutes} minute${diffMinutes !== 1 ? "s" : ""} ago`;
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24)
+    return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+}
+
 
 const getPreApprovals = async (req, res) => {
   try {
@@ -90,6 +114,42 @@ try {
   }
 
 };
+
+const getPaymentData = async (req,res) =>{
+     try {
+    const userId = req.user.id;
+
+    const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+
+  
+
+    console.log(ads);
+
+    const payments = await Payment.find({ sender: userId })
+      .populate("receiver", "name");
+
+    // sort the payments  so that object with status overdue at first next with status pending and next with status completed , and in there are multiple objects with same status they should be in ascending order of paymentdeadline
+    payments.sort((a, b) => {
+      const statusOrder = { "Overdue": 1, "Pending": 2, "Completed": 3 };
+      if (statusOrder[a.status] !== statusOrder[b.status]) {
+        return statusOrder[a.status] - statusOrder[b.status];
+      }
+      
+      return new Date(a.paymentDeadline) - new Date(b.paymentDeadline);
+    });
+    
+    
+
+    console.log(payments);
+
+    res.render("resident/payments", { path: "p", payments, ads });
+  } catch (error) {
+    console.error("Error fetching payments:", error);
+    req.flash("message", "Failed to load payment data");
+    res.redirect("/dashboard");
+  }
+}
+
 
 const getIssueData = async(req, res) =>{
     try {
