@@ -48,7 +48,7 @@ const upload = multer({ storage: storage });
 managerRouter.get("/commonSpace", async (req, res) => {
   const c = req.user.community;
   const csb = await CommonSpaces.find({ community: c });
- const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+   const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
   
   const community = await Community.findById(req.user.community)
@@ -1302,7 +1302,7 @@ managerRouter.delete('/payments/:id', PaymentController.deletePayment);
 
 
 managerRouter.get("/userManagement", async (req, res) => {
- const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+   const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
   
   const R = await Resident.find({ community: req.user.community });
@@ -1580,7 +1580,7 @@ managerRouter.delete("/userManagement/worker/:id", async (req, res) => {
   res.status(200).json({ ok: true });
 });
 managerRouter.get("/dashboard", async (req, res) => {
- const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+   const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
   
   const issues = await Issue.find({ community: req.user.community });
@@ -1647,7 +1647,7 @@ managerRouter.get("/issueResolving", async (req, res) => {
     const managerId = req.user.id;
     const manager = await CommunityManager.findById(managerId);
 
-   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+     const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
   
 
@@ -1730,7 +1730,7 @@ managerRouter.get("/issueResolving/:id", async (req, res) => {
 
 managerRouter.get("/payments", async (req, res) => {
   try {
-   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+     const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
   
 
@@ -1768,7 +1768,7 @@ managerRouter.get("/payments", async (req, res) => {
 
 
 managerRouter.get("/ad", async (req, res) => {
-  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+  const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
   res.render("communityManager/Advertisement", { path: "ad", ads });
 });
@@ -1793,7 +1793,7 @@ managerRouter.post("/ad", upload.single("image"), async (req, res) => {
 
 
 managerRouter.get("/profile", async (req, res) => {
- const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+   const ads = await Ad.find({ community: req.user.community,status: "Active" });
 
 
 

@@ -10,11 +10,12 @@ const advertisementSchema = new mongoose.Schema(
     imagePath: { type: String, required: true },
     link: { type: String },
     status: {
-      type: String, 
+      type: String,
+      enum: ["Pending", "Active", "Expired"],
       default: "Pending",
     },
     community: {
-      type: mongoose.Schema.Types.ObjectId, 
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Community",
     },
   },
@@ -22,6 +23,31 @@ const advertisementSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Pre-save hook to set status based on current date
+advertisementSchema.pre("save", function (next) {
+  const now = new Date();
+  if (this.startDate <= now && now <= this.endDate) {
+    this.status = "Active";
+  } else if (now < this.startDate) {
+    this.status = "Pending";
+  } else if (now > this.endDate) {
+    this.status = "Expired";
+  }
+  next();
+});
+
+// Optional: virtual or method to update status dynamically when fetching
+advertisementSchema.methods.updateStatus = function () {
+  const now = new Date();
+  if (this.startDate <= now && now <= this.endDate) {
+    this.status = "Active";
+  } else if (now < this.startDate) {
+    this.status = "Pending";
+  } else if (now > this.endDate) {
+    this.status = "Expired";
+  }
+};
 
 const Ad = mongoose.model("Ad", advertisementSchema);
 export default Ad;
