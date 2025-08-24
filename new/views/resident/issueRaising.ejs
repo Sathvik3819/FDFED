@@ -737,15 +737,15 @@
                 <div class="stats-grid mb-4">
                     <div class="stat-card" style="border-left: 6px solid var(--warning)">
                         <p class="card-label">Pending Issues</p>
-                        <h2 class="card-value text-warning">5</h2>
+                        <h2 class="card-value text-warning"><%= issueCounts.pending %></h2>
                     </div>
                     <div class="stat-card" style="border-left: 6px solid var(--info)">
                         <p class="card-label">In-Progress Issues</p>
-                        <h2 class="card-value text-info">3</h2>
+                        <h2 class="card-value text-info"><%= issueCounts.inProgress %></h2>
                     </div>
                     <div class="stat-card" style="border-left: 6px solid var(--success)">
-                        <p class="card-label">Resolved (this month)</p>
-                        <h2 class="card-value text-success">12</h2>
+                        <p class="card-label">Resolved</p>
+                        <h2 class="card-value text-success"><%= issueCounts.resolved %></h2>
                     </div>
                 </div>
 

@@ -14,7 +14,7 @@ import Ad from "../models/Ad.js";
 import communities from "../models/communities.js";
 import PaymentController from "../controllers/payments.js";
 import { OTP } from "../controllers/OTP.js";
-import { getPreApprovals, getCommonSpace } from "../controllers/Resident.js";
+import { getPreApprovals, getCommonSpace, getIssueData } from "../controllers/Resident.js";
 
 import multer from "multer";
 import cron from "node-cron";
@@ -446,90 +446,91 @@ residentRouter.get("/", (req, res) => {
   res.redirect("dashboard");
 });
 
-residentRouter.get("/issueRaising", async (req, res) => {
-  try {
-    const resident = await Resident.findOne({ email: req.user.email }).populate(
-      {
-        path: "raisedIssues",
-        populate: {
-          path: "workerAssigned",
-        },
-      }
-    );
-   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+residentRouter.get('/issueRaising',getIssueData);
+// residentRouter.get("/issueRaising", async (req, res) => {
+//   try {
+//     const resident = await Resident.findOne({ email: req.user.email }).populate(
+//       {
+//         path: "raisedIssues",
+//         populate: {
+//           path: "workerAssigned",
+//         },
+//       }
+//     );
+//    const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
   
 
-    console.log(ads);
+//     console.log(ads);
 
-    if (!resident) {
-      return res.status(404).json({ error: "Resident not found." });
-    }
+//     if (!resident) {
+//       return res.status(404).json({ error: "Resident not found." });
+//     }
 
-    const issues = await resident.raisedIssues;
+//     const issues = await resident.raisedIssues;
 
-    res.render("resident/issueRaising", { path: "ir", i: issues, ads });
-  } catch (error) {
-    console.error("Error fetching issues:", error);
-    return res.status(500).json({ error: "Internal server error." });
-  }
-});
+//     res.render("resident/issueRaising", { path: "ir", i: issues, ads });
+//   } catch (error) {
+//     console.error("Error fetching issues:", error);
+//     return res.status(500).json({ error: "Internal server error." });
+//   }
+// });
 
-residentRouter.post("/issueRaising/feedback", async (req, res) => {
-  try {
-    const { id, rating, feedback } = req.body;
+// residentRouter.post("/issueRaising/feedback", async (req, res) => {
+//   try {
+//     const { id, rating, feedback } = req.body;
 
-    const issue = await Issue.findById(id).populate("workerAssigned");
-    if (!issue) {
-      req.flash("message", "Issue not found.");
-      console.log("Issue not found for ID:", id);
-      return res.redirect("/resident/issueRaising");
-    }
+//     const issue = await Issue.findById(id).populate("workerAssigned");
+//     if (!issue) {
+//       req.flash("message", "Issue not found.");
+//       console.log("Issue not found for ID:", id);
+//       return res.redirect("/resident/issueRaising");
+//     }
 
-    issue.rating = rating;
-    issue.feedback = feedback;
-    issue.status = "Payment Pending";
-    await issue.save();
+//     issue.rating = rating;
+//     issue.feedback = feedback;
+//     issue.status = "Payment Pending";
+//     await issue.save();
 
-    let amount = null;
+//     let amount = null;
 
-    if(issue.title==="Electricity"){
-      amount = process.env.ELECTRICITY
-    }else if(issue.title==="Maintenance"){
-      amount = process.env.MAINTENANCE
-    }else if(issue.title==="Cleaning"){
-      amount = process.env.CLEANING
-    }else if(issue.title==="Water Supply"){
-      amount = process.env.WATERSUPPLY
-    }
+//     if(issue.title==="Electricity"){
+//       amount = process.env.ELECTRICITY
+//     }else if(issue.title==="Maintenance"){
+//       amount = process.env.MAINTENANCE
+//     }else if(issue.title==="Cleaning"){
+//       amount = process.env.CLEANING
+//     }else if(issue.title==="Water Supply"){
+//       amount = process.env.WATERSUPPLY
+//     }
 
-    const payment = await Payment.create({
-      title: issue.issueID,
-      sender: req.user.id,
-      receiver: issue.workerAssigned.community,
-      amount: amount,
-      paymentDeadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-      paymentDate: null,
-      paymentMethod: "None",
-      status: "Pending",
-      remarks: null,
-      belongTo: "Issue",
-      belongToId: issue._id,
-      community: issue.community,
-    });
+//     const payment = await Payment.create({
+//       title: issue.issueID,
+//       sender: req.user.id,
+//       receiver: issue.workerAssigned.community,
+//       amount: amount,
+//       paymentDeadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+//       paymentDate: null,
+//       paymentMethod: "None",
+//       status: "Pending",
+//       remarks: null,
+//       belongTo: "Issue",
+//       belongToId: issue._id,
+//       community: issue.community,
+//     });
 
-    const uniqueId = generateCustomID(payment._id, "PA", null);
+//     const uniqueId = generateCustomID(payment._id, "PA", null);
 
-    payment.ID = uniqueId;
-    await payment.save();
+//     payment.ID = uniqueId;
+//     await payment.save();
 
-    res.redirect("/resident/issueRaising");
-  } catch (error) {
-    console.error("Error submitting feedback:", error);
-    req.flash("message", "Something went wrong.");
-    return res.redirect("/resident/issueRaising");
-  }
-});
+//     res.redirect("/resident/issueRaising");
+//   } catch (error) {
+//     console.error("Error submitting feedback:", error);
+//     req.flash("message", "Something went wrong.");
+//     return res.redirect("/resident/issueRaising");
+//   }
+// });
 
 residentRouter.post("/issueRaising", async (req, res) => {
   try {

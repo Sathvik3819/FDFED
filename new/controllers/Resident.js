@@ -4,6 +4,7 @@ import VisitorPreApproval from "../models/preapproval.js";
 import Ad from "../models/Ad.js";
 import CommonSpaces from "../models/commonSpaces.js";
 import Community from "../models/communities.js";
+import Issue from "../models/issues.js";
 
 const getPreApprovals = async (req, res) => {
   try {
@@ -90,4 +91,44 @@ try {
 
 };
 
-export {getPreApprovals,getCommonSpace};
+const getIssueData = async(req, res) =>{
+    try {
+    const resident = await Resident.findOne({ email: req.user.email }).populate(
+      {
+        path: "raisedIssues",
+        populate: {
+          path: "workerAssigned",
+        },
+      }
+    );
+    const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+    console.log(ads);
+    
+    if (!resident) {
+      return res.status(404).json({ error: "Resident not found." });
+    }
+
+    const issues = await resident.raisedIssues;
+
+    const issueCounts = {
+      pending: 0,
+      inProgress: 0,
+      resolved: 0,
+    };
+
+    issues.forEach((issue) => {
+      const status = issue.status.toLowerCase();
+      if (status === "pending") issueCounts.pending += 1;
+      else if (status === "in progress") issueCounts.inProgress += 1;
+      else if (status === "resolved") issueCounts.resolved += 1;
+    });
+    
+    console.log(issueCounts.pending);
+    
+    res.render("resident/issueRaising", { path: "ir", i: issues, ads, issueCounts });
+  } catch (error) {
+    console.error("Error fetching issues:", error);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+}
+export {getPreApprovals,getCommonSpace, getIssueData};
