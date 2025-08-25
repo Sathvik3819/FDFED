@@ -28,112 +28,284 @@ AdminRouter.post('/interests/:id/reject', rejectApplication);
 
 
 
-// ===== PAGE ROUTES =====
-
-// Dashboard Route
-// Add this to your AdminRouter.js
-AdminRouter.get(["/","/dashboard"], async (req, res) => {
+AdminRouter.get("/api/dashboard", async (req, res) => {
   try {
-    // Get recent data from all collections
-    const [
-      recentCommunities,
-      recentManagers,
-      recentResidents,
-      recentSecurity,
-      recentWorkers,
-      recentPayments,
-      recentApplications
-    ] = await Promise.all([
-      Community.find().sort({ createdAt: -1 }).limit(5).lean(),
-      CommunityManager.find().sort({ createdAt: -1 }).limit(5).populate('assignedCommunity', 'name').lean(),
-      Resident.find().sort({ createdAt: -1 }).limit(5).populate('community', 'name').lean(),
-      Security.find().sort({ createdAt: -1 }).limit(5).populate('community', 'name').lean(),
-      Worker.find().sort({ createdAt: -1 }).limit(5).populate('community', 'name').lean(),
-      Community.aggregate([
-        { $unwind: "$subscriptionHistory" },
-        { $sort: { "subscriptionHistory.paymentDate": -1 } },
-        { $limit: 5 },
-        { 
-          $project: {
-            transactionId: "$subscriptionHistory._id",
-            communityName: "$name",
-            amount: "$subscriptionHistory.amount",
-            date: "$subscriptionHistory.paymentDate",
-            status: "$subscriptionHistory.status",
-            planType: "$subscriptionHistory.planType"
-          }
-        }
-      ]),
-      // Assuming you have an Application model for interest forms
-      // If not, you might need to adjust this part
-      Application.find().sort({ createdAt: -1 }).limit(5).lean()
-    ]);
+    // KPIs
+    const totalCommunities = await Community.countDocuments();
+    const totalResidents = await Resident.countDocuments();
+    const pendingApplications = await Application.countDocuments({ status: "pending" });
 
-    // Get counts for stats cards
-    const [
+   const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+const monthlyRevenueAgg = await Community.aggregate([
+  { $unwind: "$subscriptionHistory" },
+  {
+    $match: {
+      "subscriptionHistory.status": "completed",
+      "subscriptionHistory.paymentDate": { $gte: startOfMonth }
+    }
+  },
+  {
+    $group: {
+      _id: null,
+      total: { $sum: "$subscriptionHistory.amount" }
+    }
+  }
+]);
+
+const monthlyRevenue = monthlyRevenueAgg[0]?.total || 0;
+
+    const growthChart = await Community.aggregate([
+  { $unwind: "$subscriptionHistory" },
+  {
+    $match: { "subscriptionHistory.status": "completed" }
+  },
+  {
+    $group: {
+      _id: { $month: "$subscriptionHistory.paymentDate" },
+      revenue: { $sum: "$subscriptionHistory.amount" },
+      communities: { $sum: 1 }
+    }
+  },
+  { $sort: { "_id": 1 } }
+]);
+
+// Format for frontend
+const labels = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const revenueTrend = Array(12).fill(0);
+const communityTrend = Array(12).fill(0);
+
+growthChart.forEach(item => {
+  const monthIndex = item._id - 1;
+  revenueTrend[monthIndex] = item.revenue;
+  communityTrend[monthIndex] = item.communities;
+});
+
+    // Application breakdown
+    const appStatus = await Application.aggregate([
+      { $group: { _id: "$status", count: { $sum: 1 } } }
+    ]);
+    const appStatusMap = appStatus.reduce((acc, a) => {
+      acc[a._id] = a.count;
+      return acc;
+    }, {});
+
+    // --- Hardcoded Notifications ---
+    const systemAlerts = [
+      { id: 1, message: "System update scheduled for tonight", priority: "medium", time: "2h ago" },
+      { id: 2, message: "Backup completed successfully", priority: "low", time: "5h ago" }
+    ];
+
+    const actionRequired = [
+      { id: 1, message: "3 applications pending approval", priority: "high", time: "1h ago" },
+      { id: 2, message: "2 payments overdue", priority: "high", time: "30m ago" }
+    ];
+
+   res.json({
+  success: true,
+  data: {
+    kpis: {
       totalCommunities,
-      totalManagers,
       totalResidents,
-      totalSecurity,
-      totalWorkers,
-      totalRevenue,
-      totalApplications
-    ] = await Promise.all([
-      Community.countDocuments(),
-      CommunityManager.countDocuments(),
-      Resident.countDocuments(),
-      Security.countDocuments(),
-      Worker.countDocuments(),
-      Community.aggregate([
-        { $unwind: "$subscriptionHistory" },
-        { $match: { "subscriptionHistory.status": "completed" } },
-        { $group: { _id: null, total: { $sum: "$subscriptionHistory.amount" } } }
-      ]),
-      Application.countDocuments()
-    ]);
-
-    // Calculate growth percentages (simplified - in real app you'd compare with previous period)
-    const growthPercentage = (current) => Math.floor(Math.random() * 15) + 5; // Random 5-20% growth for demo
-
-    res.render("admin/dashboard", {
-      // Stats for cards
-      stats: {
-        communities: {
-          total: totalCommunities,
-          growth: growthPercentage(totalCommunities)
-        },
-        users: {
-          total: totalResidents + totalManagers + totalSecurity + totalWorkers,
-          growth: growthPercentage(totalResidents + totalManagers + totalSecurity + totalWorkers)
-        },
-        payments: {
-          total: totalRevenue[0]?.total || 0,
-          growth: growthPercentage(totalRevenue[0]?.total || 0)
-        },
-        applications: {
-          total: totalApplications,
-          growth: growthPercentage(totalApplications)
-        }
+      pendingApplications,
+      monthlyRevenue
+    },
+    chartData: {
+      applicationsStatus: {
+        approved: appStatusMap.approved || 0,
+        pending: appStatusMap.pending || 0,
+        rejected: appStatusMap.rejected || 0
       },
-      
-      // Recent data for tables
-      recentData: {
-        communities: recentCommunities,
-        users: [
-          ...recentManagers.map(m => ({ ...m, role: 'Manager' })),
-          ...recentResidents.map(r => ({ ...r, role: 'Resident' })),
-          ...recentSecurity.map(s => ({ ...s, role: 'Security' })),
-          ...recentWorkers.map(w => ({ ...w, role: 'Worker' }))
-        ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5),
-        payments: recentPayments,
-        applications: recentApplications
+      growthChart: {
+        labels,
+        communities: communityTrend,
+        revenue: revenueTrend
       }
-    });
-  } catch (error) {
-    console.error("Dashboard error:", error);
-    res.status(500).send("Server Error");
+    },
+    notifications: {
+      systemAlerts,
+      actionRequired
+    }
   }
 });
+
+  } catch (err) {
+    console.error("Dashboard fetch error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// --- KPIs Only ---
+AdminRouter.get("/api/dashboard/kpis", async (req, res) => {
+  try {
+    const totalCommunities = await Community.countDocuments();
+    const totalResidents = await Resident.countDocuments();
+    const pendingApplications = await Application.countDocuments({ status: "pending" });
+    const activeManagers = await CommunityManager.countDocuments({ status: "active" });
+
+    res.json({
+      success: true,
+      data: {
+        kpis: { totalCommunities, totalResidents, pendingApplications, activeManagers }
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// --- Charts ---
+AdminRouter.get("/api/dashboard/charts", async (req, res) => {
+  const { period } = req.query;
+
+  let chartData;
+  if (period === "1Y") {
+    // Example: 12 months aggregation
+    chartData = await Payment.aggregate([
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          revenue: { $sum: "$amount" }
+        }
+      }
+    ]);
+  } else if (period === "All") {
+    // Example: Yearly aggregation
+    chartData = await Payment.aggregate([
+      {
+        $group: {
+          _id: { $year: "$createdAt" },
+          revenue: { $sum: "$amount" }
+        }
+      }
+    ]);
+  }
+
+  res.json({ success: true, data: chartData });
+});
+
+// --- Notifications ---
+// --- Notifications (Hardcoded) ---
+AdminRouter.get("/api/notifications", (req, res) => {
+  try {
+    const systemAlerts = [
+      {
+        id: 1,
+        type: "alert",
+        category: "systemAlerts",
+        icon: "⚠️",
+        message: "Server maintenance scheduled for tonight.",
+        priority: "high",
+        priorityLabel: "High",
+        time: "2h ago"
+      },
+      {
+        id: 2,
+        type: "info",
+        category: "systemAlerts",
+        icon: "ℹ️",
+        message: "New feature rollout in progress.",
+        priority: "medium",
+        priorityLabel: "Medium",
+        time: "5h ago"
+      }
+    ];
+
+    const actionRequired = [
+      {
+        id: 3,
+        type: "task",
+        category: "actionRequired",
+        icon: "📝",
+        message: "3 pending applications need review.",
+        priority: "high",
+        priorityLabel: "High",
+        time: "1h ago"
+      },
+      {
+        id: 4,
+        type: "task",
+        category: "actionRequired",
+        icon: "👤",
+        message: "2 residents reported issues in billing.",
+        priority: "low",
+        priorityLabel: "Low",
+        time: "30m ago"
+      }
+    ];
+
+    res.json({
+      success: true,
+      data: {
+        total: systemAlerts.length + actionRequired.length,
+        systemAlerts,
+        actionRequired
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Optional: If you don’t need POST anymore, remove it
+// Or keep a dummy POST to simulate adding (but won’t save anywhere)
+AdminRouter.post("/api/notifications", (req, res) => {
+  try {
+    const { type, category, icon, message, priority, priorityLabel } = req.body;
+
+    const newNotification = {
+      id: Date.now(),
+      type,
+      category,
+      icon,
+      message,
+      priority,
+      priorityLabel,
+      time: "Just now"
+    };
+
+    // just return it back (not saving in DB)
+    res.json({ success: true, data: newNotification });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+// --- Community Performance ---
+AdminRouter.get("/api/communities/performance", async (req, res) => {
+  // Example: occupancy, collection, satisfaction from Community model
+  const communities = await Community.find().limit(5);
+  const performanceData = communities.map(c => ({
+    id: c._id,
+    name: c.name,
+    occupancy: c.occupancy,
+    collection: Math.floor(Math.random() * 20) + 80, // placeholder
+    satisfaction: (Math.random() * 2 + 3).toFixed(1) // placeholder
+  }));
+
+  res.json({ success: true, data: performanceData });
+});
+
+// --- Health Check ---
+AdminRouter.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "Server is running",
+    timestamp: new Date().toISOString()
+  });
+});
+
+// --- Render Dashboard Page ---
+AdminRouter.get("/dashboard", (req, res) => {
+  res.render("admin/dashboard", {
+    title: "Admin Dashboard - Community Management",
+    pageTitle: "Dashboard Overview",
+    pageSubtitle: "Welcome back, Admin! Here's what's happening across all communities."
+  });
+});
+
+
 AdminRouter.get(["/profile"], (req, res) => {
   res.render("admin/profile");
 });
