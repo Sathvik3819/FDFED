@@ -98,6 +98,11 @@ try {
     status: "approved"
     });
 
+    const ammenities = await CommonSpaces.countDocuments({
+      community : req.user.community,
+    })
+    console.log(ammenities);
+
     res.render("resident/commonSpace", {
       path: "cbs",
       bookings: bookings,
@@ -105,7 +110,8 @@ try {
       resi,
       availableSpaces: availableSpaces,
       approvedBookings,
-      pendingBookings,  
+      pendingBookings,
+      ammenities,               
     });
   } catch (error) {
     console.error("Error fetching common space data:", error);
