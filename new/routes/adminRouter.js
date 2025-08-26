@@ -297,7 +297,7 @@ AdminRouter.get("/api/health", (req, res) => {
 });
 
 // --- Render Dashboard Page ---
-AdminRouter.get("/dashboard", (req, res) => {
+AdminRouter.get(["/","/dashboard"], (req, res) => {
   res.render("admin/dashboard", {
     title: "Admin Dashboard - Community Management",
     pageTitle: "Dashboard Overview",

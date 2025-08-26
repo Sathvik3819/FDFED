@@ -95,7 +95,7 @@ try {
     const approvedBookings = await CommonSpaces.countDocuments({
     bookedBy: req.user.id,
     community: req.user.community,
-    status: "approved"
+    status: "Booked"
     });
 
     res.render("resident/commonSpace", {
