@@ -766,15 +766,15 @@
         <div class="stats-grid mb-4">
           <div class="stat-card" style="border-left: 6px solid var(--danger)">
             <p class="card-label">Overdue payments</p>
-            <h2 class="card-value text-danger">$5</h2>
+            <h2 class="card-value text-danger"><%= stats.overdueAmount%></h2>
           </div>
           <div class="stat-card" style="border-left: 6px solid var(--warning)">
             <p class="card-label">Pending Payments</p>
-            <h2 class="card-value text-warning">$10</h2>
+            <h2 class="card-value text-warning"><%=  stats.pendingAmount %></h2>
           </div>
           <div class="stat-card" style="border-left: 6px solid var(--primary)">
             <p class="card-label">Total Bills</p>
-            <h2 class="card-value text-primary">5</h2>
+            <h2 class="card-value text-primary"><%= stats.totalBills %></h2>
           </div>
         </div>
 

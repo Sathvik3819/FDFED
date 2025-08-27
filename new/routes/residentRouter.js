@@ -14,7 +14,7 @@ import Ad from "../models/Ad.js";
 import communities from "../models/communities.js";
 import PaymentController from "../controllers/payments.js";
 import { OTP } from "../controllers/OTP.js";
-import { getPreApprovals, getCommonSpace, getIssueData } from "../controllers/Resident.js";
+import { getPreApprovals, getCommonSpace, getIssueData, getPaymentData } from "../controllers/Resident.js";
 
 import multer from "multer";
 import cron from "node-cron";
@@ -539,40 +539,42 @@ residentRouter.get("/getIssueData/:issueID", async (req, res) => {
 });
 
 // Payment routes - corrected version
-residentRouter.get("/payments", async (req, res) => {
-  try {
-    const userId = req.user.id;
+residentRouter.get('/payments', getPaymentData);
 
-   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
+// residentRouter.get("/payments", async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+
+//    const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
   
 
-    console.log(ads);
+//     console.log(ads);
 
-    const payments = await Payment.find({ sender: userId })
-      .populate("receiver", "name");
+//     const payments = await Payment.find({ sender: userId })
+//       .populate("receiver", "name");
 
-    // sort the payments  so that object with status overdue at first next with status pending and next with status completed , and in there are multiple objects with same status they should be in ascending order of paymentdeadline
-    payments.sort((a, b) => {
-      const statusOrder = { "Overdue": 1, "Pending": 2, "Completed": 3 };
-      if (statusOrder[a.status] !== statusOrder[b.status]) {
-        return statusOrder[a.status] - statusOrder[b.status];
-      }
+//     // sort the payments  so that object with status overdue at first next with status pending and next with status completed , and in there are multiple objects with same status they should be in ascending order of paymentdeadline
+//     payments.sort((a, b) => {
+//       const statusOrder = { "Overdue": 1, "Pending": 2, "Completed": 3 };
+//       if (statusOrder[a.status] !== statusOrder[b.status]) {
+//         return statusOrder[a.status] - statusOrder[b.status];
+//       }
       
-      return new Date(a.paymentDeadline) - new Date(b.paymentDeadline);
-    });
+//       return new Date(a.paymentDeadline) - new Date(b.paymentDeadline);
+//     });
     
     
 
-    console.log(payments);
+//     console.log(payments);
 
-    res.render("resident/payments", { path: "p", payments, ads });
-  } catch (error) {
-    console.error("Error fetching payments:", error);
-    req.flash("message", "Failed to load payment data");
-    res.redirect("/dashboard");
-  }
-});
+//     res.render("resident/payments", { path: "p", payments, ads });
+//   } catch (error) {
+//     console.error("Error fetching payments:", error);
+//     req.flash("message", "Failed to load payment data");
+//     res.redirect("/dashboard");
+//   }
+// });
 
 residentRouter.get("/payment/receipt/:id", async (req, res) => {
   const Id = req.params.id;
