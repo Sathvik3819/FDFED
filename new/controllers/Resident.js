@@ -44,7 +44,7 @@ const getPreApprovals = async (req, res) => {
       { $group: { _id: "$status", count: { $sum: 1 } } },
     ]);
 
-    const counts = { pending: 0, approved: 0, rejected: 0 };
+    const counts = { Pending: 0, Approved: 0, Rejected: 0 };
     stats.forEach((s) => {
       counts[s._id] = s.count;
     });
@@ -89,7 +89,7 @@ try {
     const pendingBookings = await CommonSpaces.countDocuments({
     bookedBy: req.user.id,
     community: req.user.community,
-    status: "pending"
+    status: "Pending"
     });
 
     // Count only approved bookings
