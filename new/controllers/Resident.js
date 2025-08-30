@@ -5,6 +5,7 @@ import VisitorPreApproval from "../models/preapproval.js";
 import Ad from "../models/Ad.js";
 import CommonSpaces from "../models/commonSpaces.js";
 import Community from "../models/communities.js";
+import Payment from '../models/payment.js'
 import Issue from "../models/issues.js";
 
 // Utils function
@@ -43,7 +44,7 @@ const getPreApprovals = async (req, res) => {
       { $group: { _id: "$status", count: { $sum: 1 } } },
     ]);
 
-    const counts = { pending: 0, approved: 0, rejected: 0 };
+    const counts = { Pending: 0, Approved: 0, Rejected: 0 };
     stats.forEach((s) => {
       counts[s._id] = s.count;
     });
@@ -88,7 +89,7 @@ try {
     const pendingBookings = await CommonSpaces.countDocuments({
     bookedBy: req.user.id,
     community: req.user.community,
-    status: "pending"
+    status: "Pending"
     });
 
     // Count only approved bookings
@@ -98,6 +99,11 @@ try {
     status: "Booked"
     });
 
+    const ammenities = await CommonSpaces.countDocuments({
+      community : req.user.community,
+    })
+    console.log(ammenities);
+
     res.render("resident/commonSpace", {
       path: "cbs",
       bookings: bookings,
@@ -105,7 +111,8 @@ try {
       resi,
       availableSpaces: availableSpaces,
       approvedBookings,
-      pendingBookings,  
+      pendingBookings,
+      ammenities,               
     });
   } catch (error) {
     console.error("Error fetching common space data:", error);
@@ -127,7 +134,7 @@ const getPaymentData = async (req,res) =>{
 
     const payments = await Payment.find({ sender: userId })
       .populate("receiver", "name");
-
+    console.log(payments);  
     // sort the payments  so that object with status overdue at first next with status pending and next with status completed , and in there are multiple objects with same status they should be in ascending order of paymentdeadline
     payments.sort((a, b) => {
       const statusOrder = { "Overdue": 1, "Pending": 2, "Completed": 3 };
@@ -137,12 +144,31 @@ const getPaymentData = async (req,res) =>{
       
       return new Date(a.paymentDeadline) - new Date(b.paymentDeadline);
     });
-    
-    
 
-    console.log(payments);
+    payments.forEach(p => {
+      if (p.status === "Pending" && p.paymentDeadline && new Date(p.paymentDeadline) < new Date()) {
+        p.status = "Overdue";
+      }
+    });
+    
+    const overduePayments = payments.filter(p => p.status === "Overdue");
+    const pendingPayments = payments.filter(p => p.status === "Pending");
+    const completedPayments = payments.filter(p => p.status === "Completed");
 
-    res.render("resident/payments", { path: "p", payments, ads });
+    const stats = {
+      overdueCount: overduePayments.length,
+      pendingCount: pendingPayments.length,
+      completedCount: completedPayments.length,
+      totalBills: payments.length,
+
+      // sums
+      overdueAmount: overduePayments.reduce((sum, p) => sum + p.amount, 0),
+      pendingAmount: pendingPayments.reduce((sum, p) => sum + p.amount, 0),
+      completedAmount: completedPayments.reduce((sum, p) => sum + p.amount, 0),
+      totalAmount: payments.reduce((sum, p) => sum + p.amount, 0),
+    };
+
+    res.render("resident/payments", { path: "p", payments, ads, stats });
   } catch (error) {
     console.error("Error fetching payments:", error);
     req.flash("message", "Failed to load payment data");
@@ -191,4 +217,4 @@ const getIssueData = async(req, res) =>{
     return res.status(500).json({ error: "Internal server error." });
   }
 }
-export {getPreApprovals,getCommonSpace, getIssueData};
+export {getPreApprovals,getCommonSpace, getIssueData, getPaymentData};

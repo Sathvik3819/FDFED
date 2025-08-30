@@ -21,7 +21,8 @@ const visitorPreApprovalSchema = new mongoose.Schema(
     isCheckedIn: { type: Boolean, default: false },
     status: {
       type: String,
-      default: "pending",
+      enum : ["Pending","Approved","Rejected"],
+      default: "Pending",
     },
     vehicleNo: String,
     OTP: String,

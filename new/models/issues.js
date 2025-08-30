@@ -19,6 +19,7 @@ const issueSchema = new Schema({
   },
   status: {
     type: String,
+    enum : ["Pending","Payment Pending","Assigned","Resolved"], // assingned : In progress, resolved : work done & payment completed
     default: "Pending",
   },
   resident: {
