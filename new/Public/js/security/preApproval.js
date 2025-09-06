@@ -24,11 +24,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Handle approve/reject buttons in the popup
   document.getElementById("approveBtn")?.addEventListener("click", () => {
-    handleVisitorAction("approved");
+    handleVisitorAction("Approved");
   });
 
   document.getElementById("rejectBtn")?.addEventListener("click", () => {
-    handleVisitorAction("rejected");
+    handleVisitorAction("Rejected");
   });
 
   async function handleVisitorAction(action) {
