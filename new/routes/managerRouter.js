@@ -302,7 +302,6 @@ managerRouter.post("/commonSpace/reject/:id", async (req, res) => {
   }
 });
 
-// Add new space
 managerRouter.post("/spaces", async (req, res) => {
   try {
     // Validate required fields
@@ -378,7 +377,6 @@ managerRouter.post("/spaces", async (req, res) => {
   }
 });
 
-// Update space
 managerRouter.put("/spaces/:id", async (req, res) => {
   try {
     // Validate space ID
@@ -488,7 +486,6 @@ managerRouter.put("/spaces/:id", async (req, res) => {
   }
 });
 
-// Delete space
 managerRouter.delete("/spaces/:id", async (req, res) => {
   try {
     // Validate space ID
@@ -565,7 +562,6 @@ managerRouter.delete("/spaces/:id", async (req, res) => {
   }
 });
 
-// Update booking rules
 managerRouter.post("/api/community/booking-rules", async (req, res) => {
   try {
     // Validate input
@@ -614,7 +610,6 @@ managerRouter.post("/api/community/booking-rules", async (req, res) => {
   }
 });
 
-// Optional: Get all spaces (for consistency)
 managerRouter.get("/api/community/spaces", async (req, res) => {
   try {
     // Check if user has community access
@@ -648,58 +643,7 @@ managerRouter.get("/api/community/spaces", async (req, res) => {
   }
 });
 
-// Optional: Get single space
-managerRouter.get("/api/community/spaces/:id", async (req, res) => {
-  try {
-    const spaceId = req.params.id;
-    if (!spaceId) {
-      return res.status(400).json({
-        success: false,
-        message: "Space ID is required",
-      });
-    }
 
-    // Check if user has community access
-    if (!req.user || !req.user.community) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized access",
-      });
-    }
-
-    const community = await Community.findById(req.user.community);
-    if (!community) {
-      return res.status(404).json({
-        success: false,
-        message: "Community not found",
-      });
-    }
-
-    const space = community.commonSpaces.find(
-      (s) => s._id.toString() === spaceId
-    );
-
-    if (!space) {
-      return res.status(404).json({
-        success: false,
-        message: "Space not found",
-      });
-    }
-
-    res.json({
-      success: true,
-      space: space,
-    });
-  } catch (error) {
-    console.error("Error fetching space:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    });
-  }
-});
-// Middleware to check subscription status
 async function checkSubscription(req, res, next) {
   try {
     // Skip check for payment-related routes
