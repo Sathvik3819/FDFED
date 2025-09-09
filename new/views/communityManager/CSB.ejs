@@ -1,5 +1,4 @@
-
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -18,11 +17,9 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../../css/nav.css" />
+    <link rel="stylesheet" href="/notyf/notyf.min.css" />
 
     <style>
-     
-         
-     
       .section-title {
         position: relative;
         padding-bottom: 15px;
@@ -41,7 +38,6 @@
         border-radius: 3px;
       }
 
-      /* Stats Container */
       .stats-container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -75,7 +71,6 @@
         display: block;
       }
 
-      /* Search Bar */
       .search-bar {
         display: flex;
         margin-bottom: 25px;
@@ -113,7 +108,6 @@
         transform: translateY(-2px);
       }
 
-      /* Booking Cards Container */
       .bookings-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -121,7 +115,6 @@
         margin-bottom: 30px;
       }
 
-      /* Booking Card */
       .booking-card {
         background: white;
         border-radius: var(--border-radius);
@@ -131,6 +124,10 @@
         border-top: 4px solid var(--primary);
         position: relative;
         overflow: hidden;
+      }
+
+      .empty-state {
+        grid-column: 1/-1;
       }
 
       .booking-card:hover {
@@ -193,7 +190,7 @@
         color: var(--success);
       }
 
-      .status-avalaible {
+      .status-available {
         background-color: rgba(0, 102, 255, 0.363);
         color: rgb(7, 58, 135);
       }
@@ -274,7 +271,6 @@
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       }
 
-      /* Popup Styles */
       .popup {
         display: none;
         position: fixed;
@@ -284,6 +280,7 @@
         height: 100%;
         backdrop-filter: blur(2px);
         -webkit-backdrop-filter: blur(10px);
+        background-color: #1b1b1b70;
         z-index: 2000;
         justify-content: center;
         align-items: center;
@@ -291,12 +288,12 @@
 
       .popup-content {
         background: white;
-        padding: 2rem;
+        padding: 1.5rem 2rem 1rem 2rem;
         border-radius: var(--border-radius);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         width: 90%;
         max-width: 600px;
-        max-height: 90vh;
+        max-height: 95vh;
         overflow-y: auto;
         position: relative;
         animation: popupFadeIn 0.3s ease-out;
@@ -314,20 +311,20 @@
       }
 
       .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-    color: var(--text-light);
-    transition: 0.3s ease-in-out;
-    padding: 25px;
-}
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 22px;
+        font-weight: bold;
+        cursor: pointer;
+        color: var(--text-light);
+        transition: 0.3s ease-in-out;
+        padding: 25px;
+      }
 
-.close-btn:hover {
-    color: var(--primary-color);
-}
+      .close-btn:hover {
+        color: var(--primary-color);
+      }
 
       .form-title {
         margin: 0 0 1.5rem 0;
@@ -376,7 +373,6 @@
         font-weight: 600;
       }
 
-      /* Empty State */
       .empty-state {
         text-align: center;
         padding: 40px 20px;
@@ -401,7 +397,6 @@
         opacity: 0.8;
       }
 
-      /* Responsive Styles */
       @media (max-width: 1200px) {
         .bookings-container {
           grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -462,7 +457,7 @@
           padding: 15px;
         }
       }
-      /* New styles for management section */
+
       .management-section {
         background: white;
         border-radius: var(--border-radius);
@@ -470,14 +465,14 @@
         padding: 25px;
         margin-bottom: 30px;
       }
-      
+
       .management-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
       }
-      
+
       .toggle-management {
         background-color: var(--primary);
         color: white;
@@ -487,18 +482,18 @@
         cursor: pointer;
         transition: var(--transition);
       }
-      
+
       .toggle-management:hover {
         background-color: #0b5ed7;
       }
-      
+
       .space-list {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 15px;
         margin-top: 20px;
       }
-      
+
       .space-item {
         background: #f8f9fa;
         border-radius: 5px;
@@ -506,18 +501,18 @@
         border-left: 4px solid var(--primary);
         position: relative;
       }
-      
+
       .space-item h4 {
         margin-bottom: 10px;
         color: var(--dark);
       }
-      
+
       .space-item p {
         margin-bottom: 5px;
         font-size: 0.9rem;
         color: var(--gray);
       }
-      
+
       .space-actions {
         position: absolute;
         top: 10px;
@@ -525,8 +520,9 @@
         display: flex;
         gap: 5px;
       }
-      
-      .edit-space-btn, .delete-space-btn {
+
+      .edit-space-btn,
+      .delete-space-btn {
         background: none;
         border: none;
         cursor: pointer;
@@ -534,50 +530,132 @@
         padding: 2px 5px;
         border-radius: 3px;
       }
-      
+
       .edit-space-btn {
         color: var(--primary);
       }
-      
+
       .delete-space-btn {
         color: var(--danger);
       }
-      
-      /* Form styles for adding/editing spaces */
+
       .space-form {
         display: none;
-        margin-top: 20px;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 5px;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        padding: 25px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2100;
+        animation: popupFadeIn 0.3s ease-out;
       }
-      
+
       .space-form.active {
         display: block;
       }
-      
+
+      #formTitle {
+        margin: 0 0 1.5rem 0;
+        color: var(--dark);
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        text-align: center;
+        position: relative;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--light-gray);
+      }
+
+      #formTitle::after {
+        content: "";
+        position: absolute;
+        bottom: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        border-radius: 3px;
+      }
+
       .form-row {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 15px;
-        margin-bottom: 15px;
       }
-      
+
       .form-group {
-        flex: 1;
+        display: flex;
+        flex-direction: column;
       }
-      
+
+      .form-group label {
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 0.9rem;
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: var(--border-radius);
+        font-size: 0.95rem;
+      }
+
       .form-actions {
         display: flex;
         justify-content: flex-end;
         gap: 10px;
-        margin-top: 15px;
+        margin-top: 20px;
       }
-      
-      /* Rules section */
+
+      .form-actions button {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: var(--transition);
+      }
+
+      .form-actions .btn-primary {
+        background-color: var(--primary);
+        color: white;
+      }
+
+      .form-actions .btn-primary:hover {
+        background-color: #0b5ed7;
+      }
+
+      .form-actions .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+      }
+
+      .form-actions .btn-secondary:hover {
+        background-color: #5a6268;
+      }
+
+      @media (max-width: 768px) {
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+      }
+
       .rules-section {
         margin-top: 30px;
       }
-      
+
       .rules-textarea {
         width: 100%;
         min-height: 150px;
@@ -586,7 +664,7 @@
         border-radius: 5px;
         font-family: inherit;
       }
-      
+
       .save-rules-btn {
         margin-top: 15px;
         background-color: var(--success);
@@ -596,6 +674,25 @@
         border-radius: 4px;
         cursor: pointer;
       }
+
+      #closeSpaceForm {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        padding: 3px 5.5px 3px 5.5px;
+        font-size: 22px;
+        font-weight: bold;
+        cursor: pointer;
+        color: var(--text-light);
+        transition: 0.3s ease-in-out;
+      }
+
+      #closeSpaceForm:hover {
+        transform: rotatez(90deg);
+
+        color: red;
+      }
+
     </style>
   </head>
 
@@ -607,7 +704,8 @@
       <!-- AD SECTION -->
       <div class="adCon d-flex justify-content-center align-items-center">
         <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length > 0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
+          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length >
+          0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
           <img
             src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
             class="ad-slide"
@@ -642,35 +740,43 @@
         <!-- Management Section -->
         <div class="management-section">
           <div class="management-header">
-            <h2>Manage Common Spaces</h2>
+            <h3 style="color: rgba(0, 0, 0, 0.669)">Manage Common Spaces</h3>
             <button class="toggle-management" id="toggleManagement">
               Show Management
             </button>
           </div>
-          
-          <div id="managementContent" style="display: none;">
+
+          <div id="managementContent" style="display: none">
             <!-- Add New Space Form -->
-            <button class="toggle-management" id="addSpaceBtn">
-              Add New Space
+            <div class="d-flex justify-content-end">
+              <button class="toggle-management" id="addSpaceBtn" >
+              <i class="bi bi-plus"></i>Add New Space
             </button>
-            
-            <div class="space-form" id="spaceForm">
-              <h4 id="formTitle">Add New Common Space</h4>
+            </div>
+
+            <div class="popup" id="spaceFormPopup" style="display: none">
+              <div class="popup-content" id="spaceForm">
+              <div class="d-flex justify-content-center align-items-start"><h4 id="formTitle">Add New Common Space</h4><i class="bi bi-x rounded-circle" id="closeSpaceForm"></i></div>
               <form id="spaceFormElement">
                 <div class="form-row">
                   <div class="form-group">
                     <label for="spaceType">Space Type</label>
-                    <select class="form-control" id="spaceType" name="spaceType" required>
+                    <select
+                      class="form-control"
+                      id="spaceType"
+                      name="spaceType"
+                      required
+                    >
                       <option value="">Select Type</option>
                       <option value="Clubhouse">Clubhouse</option>
                       <option value="Banquet Hall">Banquet Hall</option>
-
-                     
                       <option value="Swimming Pool">Swimming Pool</option>
                       <option value="Tennis Court">Tennis Court</option>
                       <option value="Badminton Court">Badminton Court</option>
                       <option value="Basketball Court">Basketball Court</option>
-                      <option value="Indoor Games Room">Indoor Games Room</option>
+                      <option value="Indoor Games Room">
+                        Indoor Games Room
+                      </option>
                       <option value="Amphitheatre">Amphitheatre</option>
                       <option value="Guest Room">Guest Room</option>
                       <option value="Other">Other</option>
@@ -678,10 +784,16 @@
                   </div>
                   <div class="form-group">
                     <label for="spaceName">Space Name</label>
-                    <input type="text" class="form-control" id="spaceName" name="spaceName" required>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="spaceName"
+                      name="spaceName"
+                      required
+                    />
                   </div>
                 </div>
-                
+
                 <div class="form-row">
                   <div class="form-group">
                     <label for="bookable">Bookable</label>
@@ -692,64 +804,104 @@
                   </div>
                   <div class="form-group">
                     <label for="maxHours">Max Booking Duration (hours)</label>
-                    <input type="number" class="form-control" id="maxHours" name="maxHours" min="1" value="4">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="maxHours"
+                      name="maxHours"
+                      min="1"
+                      value="4"
+                    />
                   </div>
                 </div>
 
                 <div class="form-group">
                   <label for="bookingRent">Rent (per hour)</label>
-                  <input type="text" class="form-control" id="bookingRent" name="bookingRent" />
-                </div>
-                
-                <div class="form-group">
-                  <label for="bookingRules">Booking Rules</label>
-                  <textarea class="form-control" id="bookingRules" name="bookingRules" rows="3"></textarea>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="bookingRent"
+                    name="bookingRent"
+                  />
                 </div>
 
-                
+                <div class="form-group">
+                  <label for="bookingRules">Booking Rules</label>
+                  <textarea
+                    class="form-control"
+                    id="bookingRules"
+                    name="bookingRules"
+                    rows="3"
+                  ></textarea>
+                </div>
+
                 <div class="form-actions">
-                  <button type="button" class="btn btn-secondary" id="cancelSpaceBtn">Cancel</button>
-                  <button type="submit" class="btn btn-primary">Save Space</button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="cancelSpaceBtn"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    Save Space
+                  </button>
                 </div>
               </form>
             </div>
-            
+            </div>
+
             <!-- Spaces List -->
-         <div class="space-list" id="spacesList">
-  <% if (locals.community && community.commonSpaces && community.commonSpaces.length > 0) { %>
-    <% community.commonSpaces.forEach(space => { %>
-      <div class="space-item" data-id="<%= space._id %>">
-        <div class="space-actions">
-          <button class="edit-space-btn" data-space='<%= JSON.stringify(space) %>'>
-            <i class="bi bi-pencil"></i>
-          </button>
-          <button class="delete-space-btn" data-id="<%= space._id %>">
-            <i class="bi bi-trash"></i>
-          </button>
-        </div>
-        <h4><%= space.name %></h4>
-        <p><strong>Type:</strong> <%= space.type %></p>
-        <p><strong>Bookable:</strong> <%= space.bookable ? 'Yes' : 'No' %></p>
-        <% if (space.bookable) { %>
-          <p><strong>Max Hours:</strong> <%= space.maxBookingDurationHours || 'Not specified' %></p>
-        <% } %>
-        <% if (space.bookingRules) { %>
-          <p><strong>Rules:</strong> <%= space.bookingRules.substring(0, 50) %>...</p>
-        <% } %>
-      </div>
-    <% }) %>
-  <% }
-   else { %>
-    <div class="empty-state">
-      <i class="bi bi-building"></i>
-      <h3>No Common Spaces Configured</h3>
-      <p>Add your first common space to get started.</p>
-    </div>
-  <% } %>
-</div>
-            
+            <div class="space-list" id="spacesList">
+              <% if (locals.community && community.commonSpaces &&
+              community.commonSpaces.length > 0) { %> <%
+              community.commonSpaces.forEach(space => { %>
+              <div class="space-item" data-id="<%= space._id %>">
+                <div class="space-actions">
+                  <button
+                    class="edit-space-btn"
+                    data-id="<%= space._id %>"
+                    data-name="<%= space.name %>"
+                    data-type="<%= space.type %>"
+                    data-bookable="<%= space.bookable %>"
+                    data-maxhours="<%= space.maxBookingDurationHours %>"
+                    data-rent="<%= space.rent %>"
+                    data-rules="<%= space.bookingRules %>"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="delete-space-btn" data-id="<%= space._id %>">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+                <h4><%= space.name %></h4>
+                <p><strong>Type:</strong> <%= space.type %></p>
+                <p>
+                  <strong>Bookable:</strong> <%= space.bookable ? 'Yes' : 'No'
+                  %>
+                </p>
+                <% if (space.bookable) { %>
+                <p>
+                  <strong>Max Hours:</strong> <%= space.maxBookingDurationHours
+                  || 'Not specified' %>
+                </p>
+                <% } %> <% if (space.bookingRules) { %>
+                <p>
+                  <strong>Rules:</strong> <%= space.bookingRules.substring(0,
+                  50) %>...
+                </p>
+                <% } %>
+              </div>
+              <% }) %> <% } else { %>
+              <div class="empty-state">
+                <i class="bi bi-building"></i>
+                <h3>No Common Spaces Configured</h3>
+                <p>Add your first common space to get started.</p>
+              </div>
+              <% } %>
+            </div>
+
             <!-- Booking Rules Section -->
-            
           </div>
         </div>
 
@@ -757,15 +909,15 @@
         <div class="stats-container">
           <div class="stat-card" style="border-left: 6px solid var(--primary)">
             <h3>Today's Bookings</h3>
-            <span class="stat-number" style="color: var(--primary)">20</span>
+            <span class="stat-number" style="color: var(--primary)"><%= csb.length %></span>
           </div>
           <div class="stat-card" style="border-left: 6px solid var(--danger)">
             <h3>Pending Approvals</h3>
-            <span class="stat-number" style="color: var(--danger)">3</span>
+            <span class="stat-number" style="color: var(--danger)"><%= csb.filter(c => c.status === "Pending").length %></span>
           </div>
           <div class="stat-card" style="border-left: 6px solid var(--success)">
             <h3>Approved</h3>
-            <span class="stat-number" style="color: var(--success)">13</span>
+            <span class="stat-number" style="color: var(--success)"><%= csb.filter(c => c.status === "Approved").length %></span>
           </div>
         </div>
 
@@ -778,7 +930,7 @@
           <% if (locals.csb && csb.length > 0) { %> <% csb.forEach(c => { %>
           <div class="booking-card">
             <div class="booking-card-header">
-              <span class="booking-id">ID: <%= c._id %></span>
+              <span class="booking-id">ID: <%= c.ID %></span>
               <span class="booking-status status-<%= c.status %>"
                 ><%= c.status %></span
               >
@@ -796,7 +948,7 @@
               <button class="available-btn" data-id="<%= c._id %>">
                 <i class="bi bi-eye"></i> Check Availability
               </button>
-              <% } else if(c.status==="avalaible"){ %>
+              <% } else if(c.status==="available"){ %>
               <button class="approve-btn" data-id="<%= c._id %>">
                 <i class="bi bi-check-circle-fill"></i> Approve
               </button>
@@ -811,7 +963,7 @@
             </div>
           </div>
           <% }) %> <% } else { %>
-          <div class="empty-state">
+          <div class="empty-state w-100">
             <i class="bi bi-calendar-x"></i>
             <h3>No Bookings Found</h3>
             <p>There are currently no common space bookings to display.</p>
@@ -821,25 +973,60 @@
       </div>
     </div>
 
-<div id="bookingDetailsPopup" class="popup" style="display:none;">
-  <div class="popup-content">
-    <h3>Booking Details</h3>
-    <div id="detailsContent"></div>
-    <button onclick="closeForm('details')">Close</button>
-  </div>
-</div>
+    <div id="bookingDetailsPopup" class="popup" style="display: none">
+      <div class="popup-content">
+        <h3>Booking Details</h3>
+        <div id="detailsContent"></div>
+        <button onclick="closeForm('details')">Close</button>
+      </div>
+    </div>
 
-    <div id="bookingDetailsPopup" class="popup" style="display:none;">
-  <div class="popup-content">
-    <h3>Booking Details</h3>
-    <div id="detailsContent"></div>
-    <button onclick="closeForm('details')">Close</button>
-  </div>
-</div>
+    <div id="cancellationReasonPopup" class="popup" style="display: none">
+      <div class="popup-content">
+        <h3>Rejection Reason</h3>
+        <textarea
+          id="rejectionReason"
+          rows="4"
+          style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"
+          placeholder="Enter reason for rejection..."
+        ></textarea>
+        <div style="margin-top: 15px; text-align: right">
+          <button
+            onclick="closeForm('cancellation')"
+            style="
+              background-color: #6c757d;
+              color: white;
+              border: none;
+              padding: 8px 15px;
+              border-radius: 4px;
+              cursor: pointer;
+              margin-right: 10px;
+            "
+          >
+            Cancel
+          </button>
+          <button
+            id="submitRejection"
+            style="
+              background-color: var(--danger);
+              color: white;
+              border: none;
+              padding: 8px 15px;
+              border-radius: 4px;
+              cursor: pointer;
+            "
+          >
+            Submit
+          </button>
+        </div>
+      </div>
 
+    </div>
+
+    
+
+    <script src="/notyf/notyf.min.js"></script>
     <script src="../../js/communityManager/CSB.js"></script>
     <script src="../../js/sidebar.js"></script>
-    
-    
   </body>
 </html>

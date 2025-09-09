@@ -24,7 +24,7 @@ const commonSpacesSchema = new mongoose.Schema({
     required: true,
   },
   status: {type: String,
-    enum :["Pending","Booked","Pending Payment"], //Booked : payment completed & booked
+    enum :["Pending","available","Booked","Pending Payment","Paid","Rejected"], 
     default: "Pending"},
   paymentStatus: String,
   payment: {

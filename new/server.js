@@ -22,12 +22,7 @@ import {
   authorizeC,
   authorizeA,
 } from "./controllers/authorization.js";
-import {
-  authenticateC,
-  authenticateR,
-  authenticateS,
-  authenticateW,
-} from "./controllers/registerController.js";
+
 import {
   AuthenticateC,
   AuthenticateR,
@@ -170,8 +165,11 @@ app.use("/uploads", express.static("uploads"));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use('/notyf', express.static(__dirname + '/node_modules/notyf'));
 
-app.use(express.static(path.join(__dirname, "public")));
+
+
+app.use(express.static(path.join(__dirname, "Public")));
 app.use(cookieParser());
 app.use((req, res, next) => {
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
@@ -184,7 +182,7 @@ app.use((req, res, next) => {
 // Set up EJS
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-
+app.use('/chartjs', express.static(__dirname + '/node_modules/chart.js/dist'));
 app.use("/uploads", express.static("uploads"));
 import AdminRouter from "./routes/adminRouter.js";
 import residentRouter from "./routes/residentRouter.js";
