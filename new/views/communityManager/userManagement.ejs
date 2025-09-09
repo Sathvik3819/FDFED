@@ -17,7 +17,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../../css/nav.css" />
-
+    <link rel="stylesheet" href="/notyf/notyf.min.css" />
     <style>
       .activity-entry {
         border-left: 4px solid var(--primary);
@@ -28,12 +28,10 @@
         margin-bottom: 20px;
         transition: var(--transition);
       }
-
       .activity-entry:hover {
         background-color: #d8e8ff;
         transform: translateX(5px);
       }
-
       .activity-entry::before {
         content: "";
         position: absolute;
@@ -45,7 +43,6 @@
         left: -10px;
         top: 20px;
       }
-
       .add-member-section {
         background: linear-gradient(135deg, #fff8f5, #fff0e8);
         border: 2px solid var(--secondary);
@@ -61,13 +58,11 @@
         cursor: pointer;
         margin-bottom: 30px;
       }
-
       .add-member-section:hover {
         background: linear-gradient(135deg, #fff0e8, #ffe8e0);
         transform: translateY(-3px);
         box-shadow: 0 6px 15px rgba(255, 107, 53, 0.2);
       }
-
       .add-member-section i {
         background: var(--secondary);
         color: white;
@@ -79,14 +74,12 @@
         justify-content: center;
         font-size: 1.5rem;
       }
-
       .section-title {
         position: relative;
         padding-bottom: 15px;
         margin-bottom: 25px;
         border-bottom: 2px solid #e9ecef;
       }
-
       .section-title::after {
         content: "";
         position: absolute;
@@ -97,54 +90,45 @@
         background: linear-gradient(90deg, var(--primary), var(--secondary));
         border-radius: 3px;
       }
-
       .card-value {
         font-size: 2.5rem;
         font-weight: 700;
         margin: 10px 0;
         letter-spacing: -1px;
       }
-
       .card-label {
         color: var(--gray);
         font-size: 1.1rem;
         font-weight: 500;
       }
-
       .stats-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 20px;
         margin-bottom: 30px;
       }
-
       .activity-grid {
         display: grid;
         grid-template-columns: 3fr 1fr;
         gap: 30px;
       }
-
       .activity-container {
         background: white;
         border-radius: var(--border-radius);
         padding: 25px;
         box-shadow: var(--shadow);
       }
-
       .activity-title {
         display: flex;
         align-items: center;
         gap: 10px;
         margin-bottom: 25px;
       }
-
       .activity-title h2 {
         font-size: 1.8rem;
         color: var(--primary);
         margin: 0;
       }
-
-      /* Card Styles */
       .cards-container {
         margin-bottom: 2rem;
         padding: 1.5rem;
@@ -154,17 +138,14 @@
         border: 1px solid #eaeaea;
         transition: var(--transition);
       }
-
       .cards-container:hover {
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
       }
-
       .card-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 20px;
       }
-
       .info-card {
         background-color: var(--light);
         border: 1px solid #e0e0e0;
@@ -176,49 +157,40 @@
         flex-direction: column;
         justify-content: space-between;
       }
-
       .info-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
       }
-
       .card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 15px;
       }
-
       .card-title {
         font-size: 1.25rem;
         font-weight: 600;
         color: var(--primary);
         margin-bottom: 5px;
       }
-
       .card-id {
         font-size: 0.9rem;
         color: var(--gray);
       }
-
       .card-body p {
         margin-bottom: 8px;
         font-size: 0.95rem;
         color: var(--dark);
       }
-
       .card-body p strong {
         color: var(--primary);
       }
-
       .card-actions {
         margin-top: 15px;
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
       }
-
-      /* Tabs */
       .tab-btn {
         margin-right: 0.5rem;
         padding: 8px 16px;
@@ -229,26 +201,21 @@
         color: var(--primary);
         font-weight: 500;
       }
-
       .tab-btn.active {
         background-color: var(--primary);
         color: white;
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
       }
-
       .tab-btn:hover:not(.active) {
         background-color: rgba(13, 110, 253, 0.1);
       }
-
       .tabs {
         margin-bottom: 1.5rem;
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
       }
-
-      /* Popup Styles */
       .popup {
         display: none;
         position: fixed;
@@ -262,102 +229,26 @@
         align-items: center;
         z-index: 2000;
       }
-
       .popup-content {
         background: white;
         padding: 30px;
-        width: 450px;
+        width: 600px;
         max-height: 90vh;
-        overflow-y: auto;
         border-radius: var(--border-radius);
         position: relative;
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
         animation: popupFadeIn 0.3s ease-out;
       }
-
       @keyframes popupFadeIn {
         from {
           opacity: 0;
           transform: translateY(-20px);
         }
-
         to {
           opacity: 1;
           transform: translateY(0);
         }
       }
-
-      .form-group {
-        margin-bottom: 18px;
-      }
-
-      .form-group label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: 500;
-        color: var(--dark);
-      }
-
-      .form-group input,
-      .form-group select,
-      .form-group textarea {
-        width: 100%;
-        padding: 12px;
-        margin-top: 5px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 15px;
-        transition: var(--transition);
-      }
-
-      .form-group input:focus,
-      .form-group select:focus,
-      .form-group textarea:focus {
-        border-color: var(--primary);
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
-      }
-
-      .form-button {
-        background-color: var(--success);
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        cursor: pointer;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        transition: var(--transition);
-        width: 100%;
-        margin-top: 15px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .form-button:hover {
-        background-color: #157347;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(25, 135, 84, 0.3);
-      }
-
-     .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-    color: var(--text-light);
-    transition: 0.3s ease-in-out;
-    padding: 25px;
-}
-
-.close-btn:hover {
-    color: var(--primary-color);
-}
-
       .form-title {
         text-align: center;
         margin-bottom: 25px;
@@ -366,7 +257,6 @@
         position: relative;
         padding-bottom: 15px;
       }
-
       .form-title::after {
         content: "";
         position: absolute;
@@ -378,64 +268,81 @@
         background: linear-gradient(90deg, var(--primary), var(--secondary));
         border-radius: 4px;
       }
-
-      @media (max-width: 992px) {
-        .stats-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-
-        .activity-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .bodyContainer {
-          grid-template-columns: 1fr;
-        }
-
-        .adCon {
-          height: auto;
-          position: relative;
-          top: 0;
-          margin-bottom: 20px;
-        }
-
-        .ad-text {
-          transform: rotate(0);
-          padding: 30px;
-        }
-
-        .card-grid {
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        }
+      form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
       }
-
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+      .form-group label {
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: var(--dark);
+      }
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 15px;
+        transition: var(--transition);
+      }
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+      }
+      .form-button {
+        grid-column: span 2;
+        background-color: var(--success);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        cursor: pointer;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        transition: var(--transition);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+      }
+      .form-button:hover {
+        background-color: #157347;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(25, 135, 84, 0.3);
+      }
+      .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 22px;
+        font-weight: bold;
+        cursor: pointer;
+        color: var(--text-light);
+        transition: 0.3s ease-in-out;
+        padding: 25px;
+      }
+      .close-btn:hover {
+        color: var(--primary-color);
+      }
       @media (max-width: 768px) {
-        .stats-grid {
+        form {
           grid-template-columns: 1fr;
         }
-
-        nav ul {
-          gap: 10px !important;
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-
-        .tabs {
-          flex-direction: column;
-          align-items: stretch;
-        }
-
-        .tab-btn {
-          width: 100%;
-          margin-right: 0;
-        }
-
         .popup-content {
           width: 95%;
           padding: 20px;
         }
       }
-
       .badge-entry {
         position: absolute;
         right: 15px;
@@ -444,23 +351,19 @@
         padding: 5px 10px;
         border-radius: 20px;
       }
-
       .entry-in {
         background: #d1e7dd;
         color: var(--success);
       }
-
       .entry-out {
         background: #f8d7da;
         color: var(--danger);
       }
-
       .entry-time {
         font-size: 0.9rem;
         color: var(--gray);
         margin-top: 5px;
       }
-
       .action-btn {
         padding: 8px 15px;
         border-radius: 8px;
@@ -472,21 +375,17 @@
         gap: 5px;
         cursor: pointer;
         text-decoration: none;
-        /* Ensure no underline for anchor tags if used */
       }
-
       .action-btn.edit {
         background-color: var(--warning);
         color: var(--dark);
         border: none;
       }
-
       .action-btn.delete {
         background-color: var(--danger);
         color: white;
         border: none;
       }
-
       .action-btn:hover {
         opacity: 0.9;
         transform: translateY(-2px);
@@ -501,7 +400,8 @@
     <div class="bodyContainer">
       <div class="adCon d-flex justify-content-center align-items-center">
         <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length > 0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
+          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length >
+          0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
           <img
             src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
             class="ad-slide"
@@ -560,7 +460,7 @@
               </div>
               <div class="card-body">
                 <p><strong>Email:</strong> <%= r.email %></p>
-                
+
                 <p><strong>Unit Code:</strong> <%= r.uCode %></p>
                 <p><strong>Contact:</strong> <%= r.contact %></p>
               </div>
@@ -580,7 +480,7 @@
               </div>
             </div>
             <% }) %> <% } else { %>
-            <p class="text-muted">No residents found.</p>
+            <p class="text-muted empty">No residents found.</p>
             <% } %>
           </div>
         </div>
@@ -629,7 +529,7 @@
               </div>
             </div>
             <% }) %> <% } else { %>
-            <p class="text-muted">No security personnel found.</p>
+            <p class="text-muted empty">No security personnel found.</p>
             <% } %>
           </div>
         </div>
@@ -654,8 +554,6 @@
                 <p><strong>Email:</strong> <%= w.email %></p>
                 <p><strong>Job Role:</strong> <%= w.jobRole %></p>
                 <p><strong>Contact:</strong> <%= w.contact %></p>
-                
-
               </div>
               <div class="card-actions">
                 <button
@@ -673,7 +571,7 @@
               </div>
             </div>
             <% }) %> <% } else { %>
-            <p class="text-muted">No workers found.</p>
+            <p class="text-muted empty">No workers found.</p>
             <% } %>
           </div>
         </div>
@@ -684,11 +582,7 @@
       <div class="popup-content">
         <span class="close-btn" onclick="closeForm('resident')">&times;</span>
         <h3 class="form-title">Add Resident</h3>
-        <form
-          id="residentForm"
-          action="/manager/userManagement/resident"
-          method="POST"
-        >
+        <form id="residentForm">
           <input type="text" id="Rid" name="Rid" value="" hidden />
           <div class="form-group">
             <label for="residentFirstname">First Name:</label>
@@ -734,8 +628,6 @@
             />
           </div>
 
-          
-
           <div class="form-group">
             <label for="residentContact">Contact:</label>
             <input
@@ -756,14 +648,9 @@
 
     <div id="securityFormPopup" class="popup">
       <div class="popup-content">
-        
         <span class="close-btn" onclick="closeForm('security')">&times;</span>
         <h3 class="form-title">Add Security</h3>
-        <form
-          id="securityForm"
-          action="/manager/userManagement/security"
-          method="POST"
-        >
+        <form id="securityForm">
           <input type="text" id="Sid" name="Sid" value="" hidden />
 
           <div class="form-group">
@@ -837,11 +724,7 @@
       <div class="popup-content">
         <span class="close-btn" onclick="closeForm('worker')">&times;</span>
         <h3 class="form-title">Add Worker</h3>
-        <form
-          id="workerForm"
-          action="/manager/userManagement/worker"
-          method="POST"
-        >
+        <form id="workerForm">
           <input type="text" id="Wid" name="Wid" value="" hidden />
 
           <div class="form-group">
@@ -911,7 +794,6 @@
             />
           </div>
 
-         
           <button type="submit" class="form-button">
             <i class="bi bi-check-circle"></i>Submit
           </button>
@@ -919,231 +801,8 @@
       </div>
     </div>
 
-    <script>
-      // Open the form popup
-      function openForm(formType, data = {}) {
-        let formPopupId;
-        let formTitle;
-        let formAction;
-        let formId;
-
-        if (formType === "resident") {
-          formPopupId = "residentFormPopup";
-          formTitle = "Add Resident";
-          formAction = "/manager/userManagement/resident";
-          formId = "residentForm";
-          if (data._id) {
-            formTitle = "Edit Resident";
-            document.getElementById("Rid").value = data._id;
-            document.getElementById("residentFirstname").value =
-              data.residentFirstname || "";
-            document.getElementById("residentLastname").value =
-              data.residentLastname || "";
-            document.getElementById("residentEmail").value = data.email || "";
-            
-            document.getElementById("uCode").value = data.uCode || "";
-            document.getElementById("residentContact").value =
-              data.contact || "";
-          } else {
-            document.getElementById("Rid").value = "";
-            document.getElementById("residentForm").reset();
-          }
-        } else if (formType === "security") {
-          formPopupId = "securityFormPopup";
-          formTitle = "Add Security";
-          formAction = "/manager/userManagement/security";
-          formId = "securityForm";
-          if (data._id) {
-            formTitle = "Edit Security";
-            document.getElementById("Sid").value = data._id;
-            document.getElementById("securityName").value = data.name || "";
-            document.getElementById("securityEmail").value = data.email || "";
-            document.getElementById("securityContact").value =
-              data.contact || "";
-            document.getElementById("securityAddress").value =
-              data.address || "";
-            document.getElementById("securityShift").value = data.Shift || "";
-            document.getElementById("gate").value = data.workplace || "";
-          } else {
-            document.getElementById("Sid").value = "";
-            document.getElementById("securityForm").reset();
-          }
-        } else if (formType === "worker") {
-          formPopupId = "workerFormPopup";
-          formTitle = "Add Worker";
-          formAction = "/manager/userManagement/worker";
-          formId = "workerForm";
-          if (data._id) {
-            formTitle = "Edit Worker";
-            document.getElementById("Wid").value = data._id;
-            document.getElementById("workerName").value = data.name || "";
-            document.getElementById("workerEmail").value = data.email || "";
-            document.getElementById("workerJobRole").value = data.jobRole || "";
-            document.getElementById("workerContact").value = data.contact || "";
-            document.getElementById("workerAddress").value = data.address || "";
-          
-          } else {
-            document.getElementById("Wid").value = "";
-            document.getElementById("workerForm").reset();
-          }
-        }
-
-        document.getElementById(formPopupId).style.display = "flex";
-        document
-          .getElementById(formId)
-          .querySelector(".form-title").textContent = formTitle;
-        document.getElementById(formId).action = formAction;
-      }
-      // Close popup when clicking the X button
-document.querySelectorAll(".close").forEach(button => {
-  button.addEventListener("click", () => {
-    button.closest(".popup").style.display = "none";
-  });
-});
-
-// Optional: click outside popup content to close
-document.querySelectorAll(".popup").forEach(popup => {
-  popup.addEventListener("click", e => {
-    if (e.target === popup) {
-      popup.style.display = "none";
-    }
-  });
-});
-
-      // Close the form popup
-      function closeForm(formType) {
-        if (formType === "resident") {
-          document.getElementById("residentFormPopup").style.display = "none";
-        } else if (formType === "security") {
-          document.getElementById("securityFormPopup").style.display = "none";
-        } else if (formType === "worker") {
-          document.getElementById("workerFormPopup").style.display = "none";
-        }
-      }
-
-      // Show/hide tabs
-      function showTab(tabId) {
-        const tabs = document.querySelectorAll(".cards-container");
-        tabs.forEach((tab) => {
-          tab.style.display = "none";
-        });
-
-        const activeTab = document.getElementById(tabId);
-        if (activeTab) {
-          activeTab.style.display = "block";
-        }
-
-        const tabButtons = document.querySelectorAll(".tab-btn");
-        tabButtons.forEach((btn) => {
-          btn.classList.remove("active");
-        });
-
-        document
-          .querySelector(`.tab-btn[onclick="showTab('${tabId}')"]`)
-          .classList.add("active");
-      }
-
-      document.addEventListener("DOMContentLoaded", function () {
-        // Initial tab display
-        showTab("residents");
-
-        // Add Resident Button
-        document
-          .getElementById("addResidentBtn")
-          .addEventListener("click", function () {
-            openForm("resident");
-          });
-
-        // Add Security Button
-        document
-          .getElementById("addSecurityBtn")
-          .addEventListener("click", function () {
-            openForm("security");
-          });
-
-        // Add Worker Button
-        document
-          .getElementById("addWorkerBtn")
-          .addEventListener("click", function () {
-            openForm("worker");
-          });
-
-        // Event delegation for Edit and Delete buttons on cards
-        const cardGrids = document.querySelectorAll(".card-grid");
-
-        cardGrids.forEach((grid) => {
-          grid.addEventListener("click", async function (event) {
-            const editBtn = event.target.closest(".action-btn.edit");
-            const deleteBtn = event.target.closest(".action-btn.delete");
-            const card = event.target.closest(".info-card");
-
-            if (!card) return; // Click was not on a card
-
-            const id = card.getAttribute("data-id");
-            let formType = "";
-            let endpoint = "";
-
-            if (card.parentElement.id === "residentCardGrid") {
-              formType = "resident";
-              endpoint = `/manager/userManagement/resident/${id}`;
-            } else if (card.parentElement.id === "securityCardGrid") {
-              formType = "security";
-              endpoint = `/manager/userManagement/security/${id}`;
-            } else if (card.parentElement.id === "workerCardGrid") {
-              formType = "worker";
-              endpoint = `/manager/userManagement/worker/${id}`;
-            }
-
-            if (editBtn) {
-              try {
-                const response = await fetch(endpoint, {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                });
-                const data = await response.json();
-                if (response.ok) {
-                  openForm(formType, data);
-                } else {
-                  alert(data.error || `Failed to fetch ${formType} data.`);
-                }
-              } catch (error) {
-                console.error(`Error fetching ${formType} data:`, error);
-                alert(`An error occurred while fetching ${formType} details.`);
-              }
-            } else if (deleteBtn) {
-              if (
-                confirm(`Are you sure you want to delete this ${formType}?`)
-              ) {
-                try {
-                  const response = await fetch(endpoint, {
-                    method: "DELETE",
-                  });
-                  const result = await response.json();
-                  if (response.ok) {
-                    alert(
-                      `${
-                        formType.charAt(0).toUpperCase() + formType.slice(1)
-                      } deleted successfully!`
-                    );
-                    card.remove(); // Remove the card from the DOM
-                  } else {
-                    alert(result.error || `Failed to delete ${formType}.`);
-                  }
-                } catch (error) {
-                  console.error(`Error deleting ${formType}:`, error);
-                  alert(`Error deleting ${formType}. Please try again.`);
-                }
-              }
-            }
-          });
-        });
-
-        // Advertisement slider functionality
-        
-      });
-    </script>
+    <script src="/notyf/notyf.min.js"></script>
+    <script src="../../js/communityManager/userManagement.js"></script>
     <script src="../../js/sidebar.js"></script>
   </body>
 </html>

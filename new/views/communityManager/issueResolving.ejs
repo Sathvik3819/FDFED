@@ -861,7 +861,7 @@
               <div class="issue-card-content">
                 <h4 class="issue-card-title"><%= i.title %></h4>
                 <p class="issue-card-reporter">
-                  Worker: <%= i.workerAssigned.name %>
+                  Worker: <%= i?.workerAssigned?.name %>
                 </p>
                 <p class="issue-card-date">
                   Completion Date: <%= i.resolvedAt ? i.resolvedAt : "-" %>
