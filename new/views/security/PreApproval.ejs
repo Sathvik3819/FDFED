@@ -425,7 +425,7 @@
         <!-- Requests Cards -->
         <div id="tab-requests">
           <div class="cards-container">
-            <% if (locals.pa && pa.filter(v => v.status === 'pending').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="pending" ) { %>
+            <% if (locals.pa && pa.filter(v => v.status === 'Pending').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="Pending" ) { %>
             <div class="visitor-card"
               data-id="<%= p._id %>"
               data-name="<%= p.visitorName %>"
@@ -518,7 +518,7 @@
         <!-- Rejected Cards -->
         <div id="tab-rejected" class="d-none">
           <div class="cards-container">
-            <% if (locals.pa && pa.filter(v => v.status === 'rejected').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="rejected" ) { %>
+            <% if (locals.pa && pa.filter(v => v.status === 'Rejected').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="Rejected" ) { %>
             <div class="visitor-card">
               <div class="card-header">
                 <span><i class="bi bi-person-fill"></i> <%= p.visitorName %></span>
