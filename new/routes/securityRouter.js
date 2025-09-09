@@ -14,6 +14,8 @@ import mongoose from "mongoose";
 import multer from "multer";
 import bcrypt from "bcrypt";
 
+import { getDashboardInfo } from "../controllers/Security.js";
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");
@@ -60,25 +62,7 @@ securityRouter.post("/addVisitor", async (req, res) => {
   res.redirect("/security/visitorManagement");
 });
 
-securityRouter.get("/dashboard", async (req, res) => {
-  const visitors = await visitor.find({
-    community: req.user.community,
-    addedBy: req.user.id,
-    $or: [{ status: "active" }, { status: "checkedOut" }],
-  });
-
-  const sec = await Security.findById(req.user.id);
-
-
-
- const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
-
-  
-
-  console.log(ads);
-
-  res.render("security/dashboard", { path: "d", visitors, ads,sec });
-});
+securityRouter.get("/dashboard", getDashboardInfo);
 
 securityRouter.get("/", (req, res) => {
   res.redirect("dashboard");
