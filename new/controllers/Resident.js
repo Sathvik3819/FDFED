@@ -1,7 +1,8 @@
 
 // controllers/residentController.js
 import Resident from "../models/resident.js";
-import VisitorPreApproval from "../models/preapproval.js";
+// import VisitorPreApproval from "../models/preapproval.js";
+import Visitor from '../models/visitors.js'
 import Ad from "../models/Ad.js";
 import CommonSpaces from "../models/commonSpaces.js";
 import Community from "../models/communities.js";
@@ -38,9 +39,11 @@ const getPreApprovals = async (req, res) => {
     );
     const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
+    //// Fetch all visitors this resident pre-approved
+    const visitors = await Visitor.find({ approvedBy: resident._id }).lean();
     
-    const stats = await VisitorPreApproval.aggregate([
-      { $match: { approvedBy: resident._id } },   // filter by logged-in resident
+    const stats = await Visitor.aggregate([
+      { $match: { approvedBy: resident._id } },
       { $group: { _id: "$status", count: { $sum: 1 } } },
     ]);
 
@@ -54,7 +57,7 @@ const getPreApprovals = async (req, res) => {
 
     res.render("resident/preApproval", {
       path: "pa",
-      visitors: resident.preApprovedVisitors || [],
+      visitors,
       ads,
       counts,
     });

@@ -597,7 +597,7 @@
                       <div>
                         <span class="detail-label">Visit name</span>
                         <span class="detail-value">
-                          <%= v.visitorName %>
+                          <%= v.name %>
                         </span>
                       </div>
                     </div>
@@ -606,7 +606,11 @@
                       <div>
                         <span class="detail-label">Visit Date</span>
                         <span class="detail-value">
-                          <%= v.dateOfVisit %>
+                          <%= v.scheduledAt ? new Date(v.scheduledAt).toLocaleDateString("en-IN", { 
+                                  year: "numeric", 
+                                  month: "short", 
+                                  day: "numeric" 
+                            }) : "N/A" %>
                         </span>
                       </div>
                     </div>
@@ -616,7 +620,10 @@
                       <div>
                         <span class="detail-label">Visit Time</span>
                         <span class="detail-value">
-                          <%= v.timeOfVisit %>
+                          <%= v.scheduledAt ? new Date(v.scheduledAt).toLocaleTimeString("en-IN", { 
+                                  hour: "2-digit", 
+                                  minute: "2-digit" 
+                            }) : "N/A" %>
                         </span>
                       </div>
                     </div>

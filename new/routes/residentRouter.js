@@ -6,7 +6,8 @@ import Issue from "../models/issues.js";
 import Resident from "../models/resident.js";
 import CommonSpaces from "../models/commonSpaces.js";
 import Payment from "../models/payment.js";
-import VisitorPreApproval from "../models/preapproval.js";
+// import VisitorPreApproval from "../models/preapproval.js";
+import Visitor from "../models/visitors.js";
 import Community from "../models/communities.js";
 import auth from "../controllers/auth.js";
 import { authorizeR } from "../controllers/authorization.js";
@@ -368,7 +369,7 @@ residentRouter.get("/dashboard", async (req, res) => {
   const issues = await Issue.find({ resident: req.user.id });
   const commonSpaces = await CommonSpaces.find({ bookedBy: req.user.id });
   const payments = await Payment.find({ sender: req.user.id });
-  const preApp = await VisitorPreApproval.find({ approvedBy: req.user.id });
+  const preApp = await Visitor.find({ approvedBy: req.user.id });
   const resi = await Resident.findById(req.user.id);
 
   // Add to recents (creation-based timeline)
@@ -708,12 +709,21 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
     const date = formatDate(dateOfVisit);
     console.log("Formatted Date:", date);
 
-    const newVisitor = await VisitorPreApproval.create({
-      visitorName,
+    const scheduledAt = new Date(`${dateOfVisit}T${timeOfVisit}`);
+    // const newVisitor = await VisitorPreApproval.create({
+    //   visitorName,
+    //   contactNumber,
+    //   dateOfVisit: date,
+    //   timeOfVisit,
+    //   purpose,
+    //   approvedBy: resident._id,
+    //   community: resident.community._id,
+    // });
+    const newVisitor = await Visitor.create({
+      name: visitorName,
       contactNumber,
-      dateOfVisit: date,
-      timeOfVisit,
       purpose,
+      scheduledAt,
       approvedBy: resident._id,
       community: resident.community._id,
     });
@@ -755,7 +765,7 @@ residentRouter.delete("/preapproval/cancel/:id", async (req, res) => {
   console.log("Canceling request with ID:", requestId);
 
   try {
-    const result = await VisitorPreApproval.findByIdAndDelete(requestId);
+    const result = await Visitor.findByIdAndDelete(requestId);
     if (!result) {
       console.log("Request not found for ID:", requestId);
       return res.status(404).json({ error: "Request not found" });

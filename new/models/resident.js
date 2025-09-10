@@ -21,7 +21,7 @@ const residentSchema = new mongoose.Schema(
     image: String,
     contact: { type: String },
     preApprovedVisitors: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "VisitorPreApproval" },
+      { type: mongoose.Schema.Types.ObjectId, ref: "Visitor" },
     ],
     bookedCommonSpaces: [
       { type: mongoose.Schema.Types.ObjectId, ref: "CommonSpaces" },

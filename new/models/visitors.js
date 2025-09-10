@@ -1,55 +1,49 @@
 import mongoose from "mongoose";
 
-const visitorSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  contactNumber: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-  },
-  purpose: {
-    type: String,
-    required: true,
-  },
-  vehicleNumber: {
-    type: String,
-    required: true,
-  },
-  entryDate: {
-    type: Date,
-  },
-  exitdate: {
-    type: Date,
-  },
-  entryTime: {
-    type: Date,
-  },
-  exitTime: {
-    type: Date,
-  },
-  verifiedByResident: {
-    type: Boolean,
-    default: false,
-  },
-  status: {
-    type: String,
-    default: "Pending",
-    enum : ["Pending","Active","Rejected","Unactive"]
-  },
-  addedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Security", // or 'Admin' depending on who adds visitors
-    required: true,
-  },
-  community: String,
-});
+const visitorSchema = new mongoose.Schema(
+  {
+    //Custom unique ID like PA-12345
+    ID: { type: String, unique: true },
 
-const visitor = mongoose.model("visitor", visitorSchema);
+    // Basic visitor info
+    name: { type: String, required: true, trim: true },
+    contactNumber: { type: String, required: true },
+    email: { type: String },
 
-export default visitor;
+    purpose: { type: String },
+    vehicleNumber: { type: String },
+
+    // QR for verification
+    qrCode: { type: String }, // store unique QR string or image URL
+
+    // Pre-approval details (if resident schedules a visit)
+    scheduledAt: { type: Date }, // planned visit date+time
+    approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Resident" },
+
+    // Actual check-in/out
+    isCheckedIn: { type: Boolean, default: false },
+    checkInAt: { type: Date },
+    checkOutAt: { type: Date },
+
+    // Status flow
+    status: {
+      type: String,
+      enum: ["Pending", "Approved", "Active", "Rejected", "Unactive"],
+      default: "Pending",
+    },
+    verifiedByResident: { type: Boolean, default: false },
+
+    // References
+    addedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Security" }, // security/admin who added visitor
+    community: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Community",
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
+
+const Visitor = mongoose.model("Visitor", visitorSchema);
+
+export default Visitor;
