@@ -16,7 +16,7 @@ async function OTP(email) {
   const otp = await generateOTP();
   otp1 = otp;
 
-  const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
     secure: false,
@@ -24,6 +24,9 @@ async function OTP(email) {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    tls: {
+    rejectUnauthorized: false
+  }
   });
 
   let mes = {
