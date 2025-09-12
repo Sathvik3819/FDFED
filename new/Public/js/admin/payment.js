@@ -169,11 +169,11 @@ function createTransactionRow(transaction) {
         <td>
             <div class="table-actions">
                 <button class="btn btn-sm btn-secondary" onclick="viewPaymentDetails('${transaction.communityId}', '${transaction._id}')">
-                    👁️ View
+                    View
                 </button>
                 ${transaction.status !== 'completed' ? `
                     <button class="btn btn-sm" onclick="updatePaymentStatus('${transaction.communityId}', '${transaction._id}', 'completed')">
-                        ✅ Complete
+                        Complete
                     </button>
                 ` : ''}
             </div>
