@@ -15,6 +15,7 @@ import multer from "multer";
 import bcrypt from "bcrypt";
 
 import { getDashboardInfo } from "../controllers/Security.js";
+import Visitor from "../models/visitors.js";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -69,7 +70,7 @@ securityRouter.get("/", (req, res) => {
 });
 
 securityRouter.get("/preApproval", async (req, res) => {
-  const pa = await VisitorPreApproval.find({
+  const pa = await Visitor.find({
     community: req.user.community,
   }).populate("approvedBy");
   

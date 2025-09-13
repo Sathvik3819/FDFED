@@ -428,16 +428,15 @@
             <% if (locals.pa && pa.filter(v => v.status === 'Pending').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="Pending" ) { %>
             <div class="visitor-card"
               data-id="<%= p._id %>"
-              data-name="<%= p.visitorName %>"
+              data-name="<%= p.name %>"
               data-contact="<%= p.contactNumber %>"
               data-date="<%= p.dateOfVisit %>"
-              data-time="<%= p.timeOfVisit %>"
               data-ID="<%= p._id %>"
               data-requested="<%= p.approvedBy.residentFirstname + ' ' + p.approvedBy.residentLastname %>"
               data-purpose="<%= p.purpose %>"
               data-vehicle="<%= p.vehicleNumber %>">
               <div class="card-header">
-                <span><i class="bi bi-person-fill"></i> <%= p.visitorName %></span>
+                <span><i class="bi bi-person-fill"></i> <%= p.name %></span>
                 <span class="status-badge badge-pending">Pending</span>
               </div>
               <div class="card-body">
@@ -451,7 +450,7 @@
                 </div>
                 <div class="detail-row">
                   <div class="detail-label">Visit Date:</div>
-                  <div class="detail-value"><%= p.dateOfVisit %>, <%= p.timeOfVisit %></div>
+                  <div class="detail-value"><%= p.scheduledAt ? p.scheduledAt.toLocaleDateString() : "N/A" %>, <%= p.scheduledAt ? p.scheduledAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"  %></div>
                 </div>
                 <div class="detail-row">
                   <div class="detail-label">Contact:</div>
@@ -483,7 +482,7 @@
             <% if (locals.pa && pa.filter(v => v.status === 'Approved').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="Approved" ) { %>
             <div class="visitor-card">
               <div class="card-header">
-                <span><i class="bi bi-person-fill"></i> <%= p.visitorName %></span>
+                <span><i class="bi bi-person-fill"></i> <%= p.name %></span>
                 <span class="status-badge badge-approved">Approved</span>
               </div>
               <div class="card-body">
@@ -497,7 +496,10 @@
                 </div>
                 <div class="detail-row">
                   <div class="detail-label">Visit Date:</div>
-                  <div class="detail-value"><%= p.dateOfVisit %>, <%= p.timeOfVisit %></div>
+                  <div class="detail-value">
+                    <%= p.scheduledAt ? p.scheduledAt.toLocaleDateString() : "N/A" %>, 
+                    <%= p.scheduledAt ? p.scheduledAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A" %>
+                  </div>
                 </div>
                 <div class="detail-row">
                   <div class="detail-label">Vehicle:</div>
@@ -521,7 +523,7 @@
             <% if (locals.pa && pa.filter(v => v.status === 'Rejected').length) { %> <% pa.forEach(p=> { %> <% if (p.status==="Rejected" ) { %>
             <div class="visitor-card">
               <div class="card-header">
-                <span><i class="bi bi-person-fill"></i> <%= p.visitorName %></span>
+                <span><i class="bi bi-person-fill"></i> <%= p.name %></span>
                 <span class="status-badge badge-rejected">Rejected</span>
               </div>
               <div class="card-body">
@@ -534,9 +536,12 @@
                   <div class="detail-value"><%= p.purpose %></div>
                 </div>
                 <div class="detail-row">
-                  <div class="detail-label">Visit Date:</div>
-                  <div class="detail-value"><%= p.dateOfVisit %>, <%= p.timeOfVisit %></div>
+                <div class="detail-label">Visit Date:</div>
+                <div class="detail-value">
+                  <%= p.scheduledAt ? p.scheduledAt.toLocaleDateString() : "N/A" %>, 
+                  <%= p.scheduledAt ? p.scheduledAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A" %>
                 </div>
+              </div>
               </div>
             </div>
             <% } %> <% }) %> <% } else { %>

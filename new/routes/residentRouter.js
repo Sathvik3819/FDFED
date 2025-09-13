@@ -1,6 +1,7 @@
 import express from "express";
 const residentRouter = express.Router();
 import bcrypt from "bcrypt";
+import mongoose from "mongoose";
 
 import Issue from "../models/issues.js";
 import Resident from "../models/resident.js";
@@ -719,7 +720,12 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
     //   approvedBy: resident._id,
     //   community: resident.community._id,
     // });
+    const tempId = new mongoose.Types.ObjectId();
+    const uniqueId = generateCustomID(tempId.toString(), "PA", null);
+
     const newVisitor = await Visitor.create({
+      _id : tempId,
+      ID: uniqueId,
       name: visitorName,
       contactNumber,
       purpose,
@@ -730,9 +736,6 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
 
     resident.preApprovedVisitors.push(newVisitor._id);
     await resident.save();
-
-    const uniqueId = generateCustomID(newVisitor._id.toString(), "PA", null);
-    newVisitor.ID = uniqueId;
 
     const o = OTP();
     await newVisitor.save();
