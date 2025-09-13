@@ -14,7 +14,7 @@ import mongoose from "mongoose";
 import multer from "multer";
 import bcrypt from "bcrypt";
 
-import { getDashboardInfo } from "../controllers/Security.js";
+import { getDashboardInfo,UpdatePreApprovalData } from "../controllers/Security.js";
 import Visitor from "../models/visitors.js";
 
 const storage = multer.diskStorage({
@@ -85,78 +85,80 @@ securityRouter.get("/preApproval", async (req, res) => {
   res.render("security/preApproval", { path: "pa", pa, ads });
 });
 
-securityRouter.post("/preApproval/action", async (req, res) => {
-  try {
-    const {
-      name,
-      contact,
-      requestedBy,
-      purpose,
-      date,
-      vehicleNumber,
-      ID,
-      status,
-    } = req.body;
+securityRouter.post("/preApproval/action", UpdatePreApprovalData);
 
-    console.log("Visitor ID received:", ID);
+// securityRouter.post("/preApproval/action", async (req, res) => {
+//   try {
+//     const {
+//       name,
+//       contact,
+//       requestedBy,
+//       purpose,
+//       date,
+//       vehicleNumber,
+//       ID,
+//       status,
+//     } = req.body;
 
-    // Validate ObjectId format first
-    if (!mongoose.Types.ObjectId.isValid(ID)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid visitor ID" });
-    }
+//     console.log("Visitor ID received:", ID);
 
-    // Fetch the visitor record
-    const vis = await Visitor.findById(ID).populate('approvedBy');
-    if (!vis) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Visitor not found" });
-    }
+//     // Validate ObjectId format first
+//     if (!mongoose.Types.ObjectId.isValid(ID)) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Invalid visitor ID" });
+//     }
 
-    vis.status = status; 
-    vis.isCheckedIn = status === "Approved";
-    vis.vehicleNumber = vehicleNumber; 
+//     // Fetch the visitor record
+//     const vis = await Visitor.findById(ID).populate('approvedBy');
+//     if (!vis) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Visitor not found" });
+//     }
 
-    vis.approvedBy.notifications.push({
-      n:`Pre approved Visitor ${vis.ID} is ${vis.status}`,
-      createdAt:new Date(Date.now()),
-      belongs:"PA"
-    });
+//     vis.status = status; 
+//     vis.isCheckedIn = status === "Approved";
+//     vis.vehicleNumber = vehicleNumber; 
 
-    await vis.approvedBy.save();
-    await vis.save();
+//     vis.approvedBy.notifications.push({
+//       n:`Pre approved Visitor ${vis.ID} is ${vis.status}`,
+//       createdAt:new Date(Date.now()),
+//       belongs:"PA"
+//     });
 
-    console.log("status of visitor : ",vis.status);
+//     await vis.approvedBy.save();
+//     await vis.save();
+
+//     console.log("status of visitor : ",vis.status);
     
 
-    // if(vis.status === "Approved"){
-    //   const v = await Visitor.create({
-    //   name: vis.name,
-    //   contactNumber: vis.contactNumber,
-    //   email: vis.email,
-    //   purpose: vis.purpose,
-    //   checkInAt : new Date(Date.now()),
-    //   vehicleNumber:vehicleNumber,
-    //   verifiedByResident:true,
-    //   community : req.user.community,
-    //   addedBy:req.user.id,
-    //   status:"Active",
-    // });
-    // console.log("new visitor by preapproval : "+ v);
+//     // if(vis.status === "Approved"){
+//     //   const v = await Visitor.create({
+//     //   name: vis.name,
+//     //   contactNumber: vis.contactNumber,
+//     //   email: vis.email,
+//     //   purpose: vis.purpose,
+//     //   checkInAt : new Date(Date.now()),
+//     //   vehicleNumber:vehicleNumber,
+//     //   verifiedByResident:true,
+//     //   community : req.user.community,
+//     //   addedBy:req.user.id,
+//     //   status:"Active",
+//     // });
+//     // console.log("new visitor by preapproval : "+ v);
     
-    // }
+//     // }
 
-    res.status(200).json({
-      success: true,
-      message: `Visitor ${status.toLowerCase()} successfully`,
-    });
-  } catch (error) {
-    console.error("Error updating visitor status:", error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
+//     res.status(200).json({
+//       success: true,
+//       message: `Visitor ${status.toLowerCase()} successfully`,
+//     });
+//   } catch (error) {
+//     console.error("Error updating visitor status:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
 
 securityRouter.get("/visitorManagement", async (req, res) => {
   const visitors = await visitor.find({
