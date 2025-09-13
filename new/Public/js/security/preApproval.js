@@ -34,9 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
   async function handleVisitorAction(action) {
     const name = document.getElementById("popupName").textContent.trim();
     const contact = document.getElementById("popupContact").textContent.trim();
-    const requestedBy = document
-      .getElementById("popupRequested")
-      .textContent.trim();
+    const requestedBy = document.getElementById("popupRequested").textContent.trim();
     const purpose = document.getElementById("popupPurpose").textContent.trim();
     const date = document.getElementById("popupDate").textContent.trim();
     const vehicleNumber = document.getElementById("popupVehicle").value.trim();

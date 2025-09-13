@@ -108,15 +108,15 @@ securityRouter.post("/preApproval/action", async (req, res) => {
     }
 
     // Fetch the visitor record
-    const vis = await VisitorPreApproval.findById(ID).populate('approvedBy');
+    const vis = await Visitor.findById(ID).populate('approvedBy');
     if (!vis) {
       return res
         .status(404)
         .json({ success: false, message: "Visitor not found" });
     }
 
-    vis.status = status.toLowerCase(); 
-    vis.isCheckedIn = status === "Approved"; 
+    vis.status = status; 
+    vis.isCheckedIn = status === "Approved";
     vis.vehicleNumber = vehicleNumber; 
 
     vis.approvedBy.notifications.push({
@@ -128,26 +128,25 @@ securityRouter.post("/preApproval/action", async (req, res) => {
     await vis.approvedBy.save();
     await vis.save();
 
-    console.log(vis.status);
+    console.log("status of visitor : ",vis.status);
     
 
-    if(vis.status === "approved"){
-      const v = await visitor.create({
-      name: vis.visitorName,
-      contactNumber: vis.contactNumber,
-      email: vis.email,
-      purpose: vis.purpose,
-      entryDate: new Date(Date.now()),
-      entryTime:new Date(Date.now()),
-      vehicleNumber:vehicleNumber,
-      verifiedByResident:true,
-      community : req.user.community,
-      addedBy:req.user.id,
-      status:"active",
-    });
-    console.log("new visitor by preapproval : "+ v);
+    // if(vis.status === "Approved"){
+    //   const v = await Visitor.create({
+    //   name: vis.name,
+    //   contactNumber: vis.contactNumber,
+    //   email: vis.email,
+    //   purpose: vis.purpose,
+    //   checkInAt : new Date(Date.now()),
+    //   vehicleNumber:vehicleNumber,
+    //   verifiedByResident:true,
+    //   community : req.user.community,
+    //   addedBy:req.user.id,
+    //   status:"Active",
+    // });
+    // console.log("new visitor by preapproval : "+ v);
     
-    }
+    // }
 
     res.status(200).json({
       success: true,
