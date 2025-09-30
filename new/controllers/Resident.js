@@ -102,10 +102,8 @@ try {
     status: "Booked"
     });
 
-    const ammenities = await CommonSpaces.countDocuments({
-      community : req.user.community,
-    })
-    console.log(ammenities);
+    const ammenities = await Community.findById(req.user.community).select('ammenities').countDocuments();
+    console.log("Amenities:", ammenities);
 
     res.render("resident/commonSpace", {
       path: "cbs",

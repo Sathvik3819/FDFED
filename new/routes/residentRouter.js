@@ -153,7 +153,6 @@ function getTimeAgo(date) {
 
 residentRouter.get("/payment/community", async (req, res) => {
    try {
-           
         
             const user = await Community.findById(req.user.community)
             
