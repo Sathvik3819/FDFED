@@ -108,6 +108,8 @@ async function setPenalties(overdues){
 
 
 function generateCustomID(userEmail, facility, countOrRandom = null) {
+  console.log("userEmail:", userEmail);
+  
   const emailPrefix = userEmail.toUpperCase().slice(-4);
 
   const facilityCode = facility.toUpperCase().slice(0, 2);
@@ -166,6 +168,8 @@ residentRouter.get("/payment/community", async (req, res) => {
             return res.status(500).json({ message: 'Error fetching user data', error: error.message });
         }
 });
+
+
 residentRouter.get("/ad", async (req, res) => {
   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
@@ -210,8 +214,7 @@ residentRouter.post("/commonSpace", async (req, res) => {
 
     // Validation
     if (!facility || !date || !from || !to) {
-      req.flash("message", "Facility, date, and time are required fields.");
-      return res.redirect("/resident/commonSpace");
+      return res.json({ success: false, message: "Facility, date, and time are required fields." });
     }
 
     // Validate date is not in the past
@@ -220,15 +223,13 @@ residentRouter.post("/commonSpace", async (req, res) => {
     today.setHours(0, 0, 0, 0);
 
     if (bookingDate < today) {
-      req.flash("message", "Cannot book for past dates.");
-      return res.redirect("/resident/commonSpace");
+      return res.json({ success: false, message: "Cannot book for past dates." });
     }
 
     // Validate time format and logic
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (!timeRegex.test(from) || !timeRegex.test(to)) {
-      req.flash("message", "Invalid time format.");
-      return res.redirect("/resident/commonSpace");
+      return res.json({ success: false, message: "Invalid time format." });
     }
 
     // Check if end time is after start time
@@ -251,7 +252,7 @@ residentRouter.post("/commonSpace", async (req, res) => {
     });
 
     // Generate unique ID
-    const uniqueId = generateCustomID(req.user.id, "CS", null);
+    const uniqueId = generateCustomID(space._id.toString(), "CS", null);
     space.ID = uniqueId;
     await space.save();
 
@@ -264,12 +265,10 @@ residentRouter.post("/commonSpace", async (req, res) => {
       await user.save();
     }
 
-    req.flash("message", "Booking request submitted successfully!");
-    return res.redirect("/resident/commonSpace");
+    return res.json({ success: true, message: "Booking request submitted successfully!",space });
   } catch (error) {
     console.error("Error creating booking:", error);
-    req.flash("message", "Something went wrong. Please try again.");
-    res.redirect("/resident/commonSpace");
+    res.json({ success: false, message: "Something went wrong. Please try again." });
   }
 });
 
@@ -310,6 +309,8 @@ residentRouter.get("/commonSpace/cancelled/:id", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
+
 residentRouter.get("/api/facilities", async (req, res) => {
   try {
     // Fetch facilities from your database
@@ -350,6 +351,8 @@ residentRouter.get("/api/facilities", async (req, res) => {
     });
   }
 });
+
+
 const formatDate = (rawDate) => {
   return new Date(rawDate).toLocaleDateString("en-IN", {
     day: "2-digit",
@@ -795,9 +798,12 @@ residentRouter.get("/profile", async (req, res) => {
 residentRouter.post("/profile", upload.single("image"), async (req, res) => {
   const { firstName, lastName, contact, email, address } = req.body;
 
+  console.log("Profile update data:", req.body);
+  
+
   const r = await Resident.findById(req.user.id);
 
-  const image = req.file.path;
+  const image = req.file?.path;
 
   r.residentFirstname = firstName;
   r.residentLastname = lastName;
@@ -815,7 +821,7 @@ residentRouter.post("/profile", upload.single("image"), async (req, res) => {
 
   await r.save();
 
-  res.redirect("/resident/Profile");
+  return res.json({success:true,message:"Profile updated successfully",r});
 });
 
 residentRouter.post("/change-password", async (req, res) => {

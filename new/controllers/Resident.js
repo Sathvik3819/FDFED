@@ -73,7 +73,6 @@ try {
     const bookings = await CommonSpaces.find({ bookedBy: req.user.id }).sort({
       createdAt: -1,
     });
-    console.log("Booking Data:", bookings);
 
     const resi = await Resident.findById(req.user.id);
 
@@ -96,14 +95,13 @@ try {
     });
 
     // Count only approved bookings
-    const approvedBookings = await CommonSpaces.countDocuments({
+    const allBookings = await CommonSpaces.countDocuments({
     bookedBy: req.user.id,
     community: req.user.community,
-    status: "Booked"
     });
 
     const ammenities = await Community.findById(req.user.community).select('ammenities').countDocuments();
-    console.log("Amenities:", ammenities);
+   
 
     res.render("resident/commonSpace", {
       path: "cbs",
@@ -111,7 +109,7 @@ try {
       ads,
       resi,
       availableSpaces: availableSpaces,
-      approvedBookings,
+      allBookings,
       pendingBookings,
       ammenities,               
     });

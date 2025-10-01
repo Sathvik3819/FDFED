@@ -1766,7 +1766,7 @@ managerRouter.get("/profile", async (req, res) => {
 managerRouter.post("/profile", upload.single("image"), async (req, res) => {
   const { name, email, contact } = req.body;
 
-  const image = "";
+  let image = "";
 
   const r = await CommunityManager.findById(req.user.id);
   if (req.file) {
@@ -1779,9 +1779,8 @@ managerRouter.post("/profile", upload.single("image"), async (req, res) => {
   r.image = image;
 
   await r.save();
-  req.flash("alert-msg", "profile updated");
 
-  res.redirect("/manager/profile");
+  res.json({ success: true, r, message: "Profile updated" });
 });
 
 managerRouter.post("/profile/changePassword", async (req, res) => {

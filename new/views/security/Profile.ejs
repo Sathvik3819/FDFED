@@ -17,6 +17,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../../css/nav.css" />
+    <link rel="stylesheet" href="/notyf/notyf.min.css" />
 
     <style>
       .section-title {
@@ -297,11 +298,7 @@
 
           <!-- Profile Section -->
           <div id="profileSection" class="form-section">
-            <form
-              action="/security/profile"
-              method="POST"
-              enctype="multipart/form-data"
-            >
+            <form id="profileForm" enctype="multipart/form-data" type="security" >
               <% if (r.image) { %>
               <div class="profile-image-container">
                 <img
@@ -336,7 +333,6 @@
                     type="file"
                     name="image"
                     id="image"
-                    name="image"
                     hidden
                   />
                   <i class="bi bi-camera"></i>
@@ -402,7 +398,7 @@
 
           <!-- Password Section -->
           <div id="passwordSection" class="form-section d-none">
-            <form id="passwordForm">
+            <form id="passwordForm" type="security" >
               <div class="form-group">
                 <label for="currentPassword">Current Password</label>
                 <input
@@ -449,85 +445,9 @@
       </div>
     </div>
 
-    <script>
-      function showSection(sectionId, activeTabId) {
-        // Hide all sections
-        document.querySelectorAll(".form-section").forEach((section) => {
-          section.classList.add("d-none");
-        });
-
-        // Show selected section
-        document.getElementById(sectionId).classList.remove("d-none");
-
-        // Remove active class from all tabs
-        document.querySelectorAll(".toggle-tab").forEach((tab) => {
-          tab.classList.remove("active");
-        });
-
-        // Add active class to clicked tab
-        document.getElementById(activeTabId).classList.add("active");
-      }
-
-      // Initialize the page with profile section visible
-      document.addEventListener("DOMContentLoaded", () => {
-        showSection("profileSection", "profileTab");
-
-        // Add animation to form sections
-        const sections = document.querySelectorAll(".form-section");
-        sections.forEach((section, index) => {
-          section.style.opacity = "0";
-          section.style.transform = "translateY(20px)";
-
-          setTimeout(() => {
-            section.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-            section.style.opacity = "1";
-            section.style.transform = "translateY(0)";
-          }, index * 100);
-        });
-
-        const form = document.getElementById("passwordForm");
-
-        form.addEventListener("submit", async (e) => {
-          e.preventDefault();
-
-          const currentPassword =
-            document.getElementById("currentPassword").value;
-          const newPassword = document.getElementById("newPassword").value;
-          const confirmPassword =
-            document.getElementById("confirmPassword").value;
-
-          if (newPassword !== confirmPassword) {
-            alert("New password and confirm password do not match.");
-            return;
-          }
-
-          try {
-            const response = await fetch("/security/change-password", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                currentPassword,
-                newPassword,
-              }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-              alert(data.message);
-              form.reset();
-            } else {
-              alert(data.message);
-            }
-          } catch (error) {
-            console.error("Error:", error);
-            alert("An error occurred while changing the password.");
-          }
-        });
-      });
-    </script>
+    
+    <script src="/notyf/notyf.min.js"></script>
+    <script src="../../js/profile.js"></script>
     <script src="../../js/sidebar.js"></script>
   </body>
 </html>

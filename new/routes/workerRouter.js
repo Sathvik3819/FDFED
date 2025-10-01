@@ -6,6 +6,7 @@ import Worker from "../models/workers.js";
 
 import multer from "multer";
 import bcrypt from "bcrypt";
+import { noop } from "chart.js/helpers";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -122,18 +123,18 @@ workerRouter.post("/profile", upload.single("image"), async (req, res) => {
 
   await r.save();
 
-  res.redirect("/worker/profile");
+  return res.json({success:true,message:"Profile updated successfully",r});
 });
 
 workerRouter.post("/change-password", async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
+  const { cp, np } = req.body;
   const security = await Worker.findById(req.user.id);
 
   if (!security) {
     return res.json({ success: false, message: "Security not found." });
   }
 
-  const isMatch = await bcrypt.compare(currentPassword, security.password);
+  const isMatch = await bcrypt.compare(cp, security.password);
   if (!isMatch) {
     return res.json({
       success: false,
@@ -142,10 +143,10 @@ workerRouter.post("/change-password", async (req, res) => {
   }
 
   const salt = await bcrypt.genSalt(10);
-  security.password = await bcrypt.hash(newPassword, salt);
+  security.password = await bcrypt.hash(np, salt);
   await security.save();
 
-  res.json({ ok: true, message: "Password changed successfully." });
+  res.json({ success: true, message: "Password changed successfully." });
 });
 
 export default workerRouter;
