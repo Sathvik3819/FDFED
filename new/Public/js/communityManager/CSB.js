@@ -105,28 +105,181 @@ document.addEventListener("DOMContentLoaded", () => {
           notyf.success("Booking rejected successfully.");
           cancellationReason.style.display = "none";
           document.getElementById("rejectionReason").value = "";
-        }else{
+        } else {
           notyf.error(data.message || "Failed to reject booking.");
         }
       });
     }
 
     if (e.target.closest(".view-btn")) {
-      fetch(`/manager/csb/${id}`)
-        .then((r) => r.json())
-        .then((data) => {
-          detailsContent.innerHTML = `
-          <p><strong>ID:</strong> ${data._id}</p>
-          <p><strong>Space:</strong> ${data.name}</p>
-          <p><strong>Date:</strong> ${data.Date}</p>
-          <p><strong>From:</strong> ${data.from}</p>
-          <p><strong>To:</strong> ${data.to}</p>
-          <p><strong>Status:</strong> ${data.status}</p>
+      fetch(`/manager/commonSpace/details/${id}`).then(async (r) => {
+        const data = await r.json();
+        console.log(data);
+
+        detailsContent.innerHTML = `
+            <div class="details-grid shadow-sm">
+            <div class="detail-item">
+              <span class="detail-label me-1">Booking ID</span>
+              <span class="detail-value" id="detail-id">${data.ID}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label me-2">Status</span>
+              <span class="detail-badge status-badge status-${
+                data.status
+              } " id="detail-status">${data.status}</span>
+            </div>
+            <div class="detail-item">
+              <div class="icon-col">
+                <i class="bi bi-building text-primary"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="detail-label">Facility</span>
+                <span class="detail-value" id="detail-facility">${
+                  data.name
+                }</span>
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="icon-col">
+                <i class="bi bi-calendar text-primary"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="detail-label">Date</span>
+                <span class="detail-value" id="detail-date">${data.date}</span>
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="icon-col">
+                <i class="bi bi-clock text-primary"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="detail-label">Time</span>
+                <span class="detail-value" id="detail-time">${data.from} - ${
+          data.to
+        }</span>
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="icon-col">
+                <i class="bi bi-person-circle text-primary"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="detail-label">Created</span>
+                <span class="detail-value" id="detail-created">${
+                  data.bookedBy.residentFirstName
+                } ${data.bookedBy.residentLastName}</span>
+              </div>
+            </div>
+            <div class="detail-item col-span-2">
+              <div class="icon-col">
+                <i class="bi bi-card-text text-primary"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <span class="detail-label">Purpose</span>
+                <span class="detail-value" id="detail-purpose">${
+                  data.description
+                }</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cancellation Section -->
           ${
-            data.reason ? `<p><strong>Reason:</strong> ${data.reason}</p>` : ""
-          }`;
-          openPopup(bookingDetailsPopup);
+            data.feedback
+              ? `
+                <div id="cancellation-section" class="cancellation-box">
+                  <h4>Cancellation Details</h4>
+                  <div class="detail-item">
+                    <span class="detail-label me-1">Reason : </span>
+                    <span class="detail-value mt-0" id="detail-cancellation-reason"> ${data.feedback}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label me-1">Cancelled By </span>
+                    <span class="detail-value mt-0" id="detail-cancelled-by"> Manager</span>
+                  </div>
+                  
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            data.status === "Pending Payment" || data.status === "Booked"
+              ? `
+              <div id="payment-section" class="payment-box"  >
+                  <h4>Payment Details</h4>
+                  <div class="detail-item">
+                    <span class="detail-label me-1">Amount : </span>
+                    <span class="detail-value mt-0" id="detail-cancellation-reason"> ${
+                      data.payment?.amount
+                    }</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label me-2">Status</span>
+                    <span class="detail-badge status-badge mb-1 status-${
+                      data.payment.status
+                    }   " id="detail-status">${data.payment?.status}</span>
+                  </div>
+
+                  ${
+                    data.payment.status === "Pending"
+                      ? `
+                    <div class="detail-item"> 
+                      <div class="detail-label me-1">Payment Deadline : </div>
+                      <div class="detail-value mt-0" id="detail-payment-deadline">
+                        ${
+                          data.payment?.paymentDeadline
+                            ? new Date(data.payment.paymentDeadline).toLocaleString("en-US", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })
+                            : "-"
+                        }
+                      </div>
+
+                    </div>
+                    `
+                      : data.payment.status === "Completed" ? `
+                    <div class="detail-item"> 
+                      <div class="detail-label me-1">Transaction ID : </div>
+                      <div class="detail-value mt-0" id="detail-transaction-id">
+                        ${data.payment?._id || "-"}
+                      </div>
+                    </div>
+                    <div class="detail-item"> 
+                      <div class="detail-label me-1">Paid On : </div>
+                      <div class="detail-value mt-0" id="detail-payment-completed">
+                        ${
+                          data.payment?.paymentDate
+                            ? new Date(data.payment.paymentDate).toLocaleString("en-US", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })
+                            : "-"
+                        }
+                      </div>
+                    </div>
+                    <div class="detail-item"> 
+                      <div class="detail-label me-1">Payment Method : </div>
+                      <div class="detail-value mt-0" id="detail-payment-method">
+                        ${data.payment?.paymentMethod || "-"}
+                      </div>
+                    </div>
+                   
+                      ` : "-"
+                  }
+                  
+              </div>
+            `
+              : ""
+          } 
+
+          `;
+        openPopup(bookingDetailsPopup);
+        document.querySelector(".close-btn").addEventListener("click", () => {
+          bookingDetailsPopup.style.display = "none";
         });
+      });
     }
   });
 

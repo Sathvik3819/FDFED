@@ -182,12 +182,11 @@ residentRouter.post("/commonSpace/:id", async (req, res) => {
   try {
     const bookingId = req.params.id;
 
-    const commonspace = await CommonSpaces.findById(bookingId);
+    const commonspace = await CommonSpaces.findById(bookingId).populate("payment");
     if (!commonspace) {
       return res.status(404).json({ error: "Booking not found" });
     }
 
-    // Verify that this booking belongs to the current user
     if (commonspace.bookedBy.toString() !== req.user.id) {
       return res.status(403).json({ error: "Unauthorized access" });
     }

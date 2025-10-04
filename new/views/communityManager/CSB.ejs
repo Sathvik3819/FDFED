@@ -271,59 +271,226 @@
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       }
 
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: capitalize;
+        letter-spacing: 0.3px;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      }
+      .status-badge::before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+        background: currentColor;
+        opacity: 0.7;
+      }
+      .status-Pending {
+        background-color: rgba(234, 179, 8, 0.1);
+        color: #b45309;
+      }
+      .status-Approved {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #047857;
+      }
+      .status-Rejected {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #b91c1c;
+      }
+      .status-Cancelled {
+        background-color: rgba(107, 114, 128, 0.1);
+        color: #4b5563;
+      }
+      .status-Completed {
+        background-color: rgba(6, 212, 57, 0.95);
+        color: white;
+      }
+      
+
       .popup {
-        display: none;
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        backdrop-filter: blur(2px);
-        -webkit-backdrop-filter: blur(10px);
-        background-color: #1b1b1b70;
-        z-index: 2000;
+        inset: 0;
+        display: flex;
         justify-content: center;
+        align-items: center;
+        background: rgba(17, 24, 39, 0.6); /* dark overlay */
+        z-index: 1000;
+      }
+
+      /* Popup content box */
+      .popup-content {
+       position: relative;
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 1000px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      .icon-col {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background-color: rgba(59, 130, 246, 0.1);
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+
+      /* Header */
+      .popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 24px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f9fafb;
+        border-radius: 12px 12px 0 0;
+      }
+
+      .popup-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #0010c4;
+        display: flex;
         align-items: center;
       }
 
-      .popup-content {
-        background: white;
-        padding: 1.5rem 2rem 1rem 2rem;
-        border-radius: var(--border-radius);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        width: 90%;
-        max-width: 600px;
-        max-height: 95vh;
-        overflow-y: auto;
-        position: relative;
-        animation: popupFadeIn 0.3s ease-out;
+      .close-btn {
+        background: none;
+        position: absolute;
+        right: 5%;
+        top: 5%;
+        border: none;
+        font-size: 1.5rem;
+        color: #6b7280;
+        cursor: pointer;
+        transition: color 0.2s;
       }
 
-      @keyframes popupFadeIn {
+      .close-btn:hover {
+        color: #db0000;
+      }
+
+      /* Body */
+      .popup-body {
+        padding: 24px;
+        background-color: rgba(232, 232, 232, 0.489);
+      }
+
+      /* Booking details grid */
+      .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px 24px;
+        margin-bottom: 20px;
+        padding: 1rem;
+        background: #ffffff;
+        border-radius: 8px;
+      }
+
+      .detail-item {
+        display: flex;
+        align-items: center;
+        padding: 5px;
+      }
+
+      .detail-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #6b7280;
+      }
+
+      .detail-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #111827;
+        margin-top: 4px;
+      }
+
+      .detail-item.col-span-2 {
+        grid-column: span 2;
+      }
+
+      /* Status badges */
+      .detail-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border-radius: 20px;
+        
+      }
+
+      /* Example status colors */
+      .detail-badge.Approved {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .detail-badge.Pending {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .detail-badge.Rejected,
+      .detail-badge.Cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      /* Cancellation box */
+      .cancellation-box {
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #fecaca;
+        background: #fef2f2;
+      }
+
+      .cancellation-box h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #b91c1c;
+        margin-bottom: 12px;
+      }
+
+      .payment-box{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #d1e7dd;
+        background: #d4edda83;
+      }
+
+      .payment-box h4 {
+        grid-column: 1/-1;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #00d532;
+        margin-bottom: 12px;
+      }
+
+      /* Animation */
+      @keyframes fadeIn {
         from {
           opacity: 0;
-          transform: translateY(-20px);
+          transform: translateY(-10px);
         }
         to {
           opacity: 1;
           transform: translateY(0);
         }
-      }
-
-      .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 22px;
-        font-weight: bold;
-        cursor: pointer;
-        color: var(--text-light);
-        transition: 0.3s ease-in-out;
-        padding: 25px;
-      }
-
-      .close-btn:hover {
-        color: var(--primary-color);
       }
 
       .form-title {
@@ -692,7 +859,6 @@
 
         color: red;
       }
-
     </style>
   </head>
 
@@ -749,106 +915,115 @@
           <div id="managementContent" style="display: none">
             <!-- Add New Space Form -->
             <div class="d-flex justify-content-end">
-              <button class="toggle-management" id="addSpaceBtn" >
-              <i class="bi bi-plus"></i>Add New Space
-            </button>
+              <button class="toggle-management" id="addSpaceBtn">
+                <i class="bi bi-plus"></i>Add New Space
+              </button>
             </div>
 
             <div class="popup" id="spaceFormPopup" style="display: none">
               <div class="popup-content" id="spaceForm">
-              <div class="d-flex justify-content-center align-items-start"><h4 id="formTitle">Add New Common Space</h4><i class="bi bi-x rounded-circle" id="closeSpaceForm"></i></div>
-              <form id="spaceFormElement">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="spaceType">Space Type</label>
-                    <select
-                      class="form-control"
-                      id="spaceType"
-                      name="spaceType"
-                      required
-                    >
-                      <option value="">Select Type</option>
-                      <option value="Clubhouse">Clubhouse</option>
-                      <option value="Banquet Hall">Banquet Hall</option>
-                      <option value="Swimming Pool">Swimming Pool</option>
-                      <option value="Tennis Court">Tennis Court</option>
-                      <option value="Badminton Court">Badminton Court</option>
-                      <option value="Basketball Court">Basketball Court</option>
-                      <option value="Indoor Games Room">
-                        Indoor Games Room
-                      </option>
-                      <option value="Amphitheatre">Amphitheatre</option>
-                      <option value="Guest Room">Guest Room</option>
-                      <option value="Other">Other</option>
-                    </select>
+                <div class="d-flex justify-content-center align-items-start">
+                  <h4 id="formTitle">Add New Common Space</h4>
+                  <i class="bi bi-x rounded-circle" id="closeSpaceForm"></i>
+                </div>
+                <form id="spaceFormElement">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="spaceType">Space Type</label>
+                      <select
+                        class="form-control"
+                        id="spaceType"
+                        name="spaceType"
+                        required
+                      >
+                        <option value="">Select Type</option>
+                        <option value="Clubhouse">Clubhouse</option>
+                        <option value="Banquet Hall">Banquet Hall</option>
+                        <option value="Swimming Pool">Swimming Pool</option>
+                        <option value="Tennis Court">Tennis Court</option>
+                        <option value="Badminton Court">Badminton Court</option>
+                        <option value="Basketball Court">
+                          Basketball Court
+                        </option>
+                        <option value="Indoor Games Room">
+                          Indoor Games Room
+                        </option>
+                        <option value="Amphitheatre">Amphitheatre</option>
+                        <option value="Guest Room">Guest Room</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="spaceName">Space Name</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="spaceName"
+                        name="spaceName"
+                        required
+                      />
+                    </div>
                   </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="bookable">Bookable</label>
+                      <select
+                        class="form-control"
+                        id="bookable"
+                        name="bookable"
+                      >
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="maxHours">Max Booking Duration (hours)</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="maxHours"
+                        name="maxHours"
+                        min="1"
+                        value="4"
+                      />
+                    </div>
+                  </div>
+
                   <div class="form-group">
-                    <label for="spaceName">Space Name</label>
+                    <label for="bookingRent">Rent (per hour)</label>
                     <input
                       type="text"
                       class="form-control"
-                      id="spaceName"
-                      name="spaceName"
-                      required
+                      id="bookingRent"
+                      name="bookingRent"
                     />
                   </div>
-                </div>
 
-                <div class="form-row">
                   <div class="form-group">
-                    <label for="bookable">Bookable</label>
-                    <select class="form-control" id="bookable" name="bookable">
-                      <option value="true">Yes</option>
-                      <option value="false">No</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label for="maxHours">Max Booking Duration (hours)</label>
-                    <input
-                      type="number"
+                    <label for="bookingRules">Booking Rules</label>
+                    <textarea
                       class="form-control"
-                      id="maxHours"
-                      name="maxHours"
-                      min="1"
-                      value="4"
-                    />
+                      id="bookingRules"
+                      name="bookingRules"
+                      rows="3"
+                    ></textarea>
                   </div>
-                </div>
 
-                <div class="form-group">
-                  <label for="bookingRent">Rent (per hour)</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="bookingRent"
-                    name="bookingRent"
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="bookingRules">Booking Rules</label>
-                  <textarea
-                    class="form-control"
-                    id="bookingRules"
-                    name="bookingRules"
-                    rows="3"
-                  ></textarea>
-                </div>
-
-                <div class="form-actions">
-                  <button
-                    type="button"
-                    class="btn btn-secondary"
-                    id="cancelSpaceBtn"
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" class="btn btn-primary">
-                    Save Space
-                  </button>
-                </div>
-              </form>
-            </div>
+                  <div class="form-actions">
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      id="cancelSpaceBtn"
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                      Save Space
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
 
             <!-- Spaces List -->
@@ -909,15 +1084,21 @@
         <div class="stats-container">
           <div class="stat-card" style="border-left: 6px solid var(--primary)">
             <h3>Today's Bookings</h3>
-            <span class="stat-number" style="color: var(--primary)"><%= csb.length %></span>
+            <span class="stat-number" style="color: var(--primary)"
+              ><%= csb.length %></span
+            >
           </div>
           <div class="stat-card" style="border-left: 6px solid var(--danger)">
             <h3>Pending Approvals</h3>
-            <span class="stat-number" style="color: var(--danger)"><%= csb.filter(c => c.status === "Pending").length %></span>
+            <span class="stat-number" style="color: var(--danger)"
+              ><%= csb.filter(c => c.status === "Pending").length %></span
+            >
           </div>
           <div class="stat-card" style="border-left: 6px solid var(--success)">
             <h3>Approved</h3>
-            <span class="stat-number" style="color: var(--success)"><%= csb.filter(c => c.status === "Approved").length %></span>
+            <span class="stat-number" style="color: var(--success)"
+              ><%= csb.filter(c => c.status === "Approved").length %></span
+            >
           </div>
         </div>
 
@@ -976,8 +1157,9 @@
     <div id="bookingDetailsPopup" class="popup" style="display: none">
       <div class="popup-content">
         <h3>Booking Details</h3>
+        <button class="close-btn">x</button>
+
         <div id="detailsContent"></div>
-        <button onclick="closeForm('details')">Close</button>
       </div>
     </div>
 
@@ -987,7 +1169,12 @@
         <textarea
           id="rejectionReason"
           rows="4"
-          style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"
+          style="
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+          "
           placeholder="Enter reason for rejection..."
         ></textarea>
         <div style="margin-top: 15px; text-align: right">
@@ -1020,10 +1207,7 @@
           </button>
         </div>
       </div>
-
     </div>
-
-    
 
     <script src="/notyf/notyf.min.js"></script>
     <script src="../../js/communityManager/CSB.js"></script>

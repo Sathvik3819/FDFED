@@ -186,7 +186,7 @@
   border-radius: 12px;
   width: 90%;
   max-width: 1000px;
-  max-height: 90vh;
+  max-height: 95vh;
   overflow-y: auto;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   animation: fadeIn 0.3s ease-in-out;
@@ -238,7 +238,7 @@
 /* Body */
 .popup-body {
   padding: 24px;
-  background-color: rgba(232, 232, 232, 0.489);
+  background-color: rgba(255, 255, 255, 0.489);
 }
 
 /* Booking details grid */
@@ -250,6 +250,7 @@
   padding: 1rem;
   background: #ffffff;
   border-radius: 8px;
+  border: 1px solid #e5e7eb;
 }
 
 .detail-item {
@@ -302,6 +303,8 @@
 
 /* Cancellation box */
 .cancellation-box {
+  display: flex;
+  flex-direction: column;
   padding: 16px;
   border-radius: 8px;
   border: 1px solid #fecaca;
@@ -312,6 +315,24 @@
   font-size: 1rem;
   font-weight: 600;
   color: #b91c1c;
+  margin-bottom: 12px;
+}
+
+.payment-section{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #bffec0;
+  background: #e9fdeb;
+  margin-top: 20px;
+}
+
+.payment-section h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1eaf45;
   margin-bottom: 12px;
 }
 
