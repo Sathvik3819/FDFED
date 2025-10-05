@@ -10,7 +10,6 @@
         /* Common Font Face */
         @font-face {
             font-family: 'MyFont';
-            /* Note: Ensure this font file (Poppins-Medium.ttf) is correctly hosted and accessible. */
             src: url('../imgs/Poppins/Poppins-Medium.ttf') format('woff2');
             font-weight: normal;
             font-style: normal;
@@ -24,48 +23,95 @@
             font-family: 'MyFont', 'Inter', sans-serif;
         }
 
-        /* Body Styling - Centers the container and uses the specified background color */
+        /* Body Styling */
         body {
             background-color: #f5f5f5;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow-y: auto; /* Allow scrolling if content overflows on smaller screens */
+            overflow-y: auto;
         }
 
-        /* Alert styling - Kept as provided */
+        /* Alert Styling */
         .alert {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 90%;
+            min-width: 250px;
             max-width: 500px;
-            z-index: 9999;
-            padding: 15px 20px;
-            background-color: #fa958f;
-            color: #b10000;
-            font-weight: bolder;
+            padding: 15px 40px 15px 20px;
             border-radius: 8px;
-            font-size: 18px;
+            font-weight: 600;
+            font-size: 16px;
             text-align: center;
+            z-index: 9999;
+            color: #fff;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        /* Main Container - Adjusted to be wider and use provided border-radius/shadow */
+        .alert.show {
+            display: block;
+            opacity: 1;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert.success {
+            background-color: #4CAF50;
+        }
+
+        .alert.error {
+            background-color: #f44336;
+        }
+
+        .alert .close-btn {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 25px;
+            height: 25px;
+            line-height: 1;
+        }
+
+        .alert .close-btn:hover {
+            opacity: 0.8;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translate(-50%, -20px);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        /* Main Container */
         .container {
             background: white;
             border-radius: 20px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             display: flex;
-            flex-direction: column; /* Allows header and form-content to stack */
-            max-width: 1200px; /* Max width for wider view on laptops */
-            width: 95%; /* Responsive width */
+            flex-direction: column;
+            max-width: 1200px;
+            width: 95%;
             height: auto;
-            padding: 40px; /* Internal padding for the container */
+            padding: 40px;
         }
 
-        /* Header - Applies specified heading colors */
+        /* Header */
         .header {
             text-align: center;
             margin-bottom: 20px;
@@ -73,24 +119,24 @@
 
         .header h2 {
             font-size: 2.2em;
-            color: #333; /* Color from your provided CSS */
+            color: #333;
             margin-bottom: 5px;
         }
 
         .header .subtitle {
             font-size: 1em;
-            color: #666; /* Color from your provided CSS */
+            color: #666;
         }
 
-        /* Form Content Layout - Two columns on wider screens */
+        /* Form Content Layout */
         .form-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 25px;
-            flex: 1; /* Allows it to grow and fill space */
+            flex: 1;
         }
 
-        /* Form Panels - Styled as cards */
+        /* Form Panels */
         .form-panel {
             background: #f8f9fa;
             border-radius: 10px;
@@ -98,14 +144,14 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
-            height: fit-content; /* Adjust height to content */
+            height: fit-content;
         }
 
-        /* Form Section Titles - Styled as provided */
+        /* Form Section Titles */
         .form-section-title {
             font-size: 1.1em;
             font-weight: 600;
-            color: #2c4b7c; /* Primary color, can be adjusted if #333 is preferred for titles */
+            color: #2c4b7c;
             margin-top: 0;
             margin-bottom: 15px;
             padding-bottom: 5px;
@@ -127,11 +173,11 @@
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
-            color: #262525; /* Text color from your provided CSS */
+            color: #262525;
             font-size: 0.85em;
         }
 
-        /* Input Fields - Styles and focus effects from your provided CSS */
+        /* Input Fields */
         input,
         textarea {
             width: 100%;
@@ -147,7 +193,7 @@
         input:focus,
         textarea:focus {
             outline: none;
-            border-color: #3b44f0; /* Focus color from your provided CSS */
+            border-color: #3b44f0;
         }
 
         textarea {
@@ -167,7 +213,7 @@
         }
 
         .photo-upload-area:hover {
-            border-color: #6a93cb; /* Hover color from your provided CSS */
+            border-color: #6a93cb;
         }
 
         .photo-upload-area img {
@@ -224,7 +270,7 @@
         .submit-btn {
             width: 100%;
             padding: 12px;
-            background-color: #ec3636; /* Submit button color from your provided CSS */
+            background-color: #ec3636;
             color: white;
             border: none;
             border-radius: 8px;
@@ -235,7 +281,7 @@
         }
 
         .submit-btn:hover {
-            background-color: #f33918; /* Submit button hover color from your provided CSS */
+            background-color: #f33918;
         }
 
         .login-link {
@@ -245,7 +291,7 @@
 
         .login-link a {
             font-size: 0.9em;
-            color: #2c4b7c; /* Consistent link color */
+            color: #2c4b7c;
             text-decoration: none;
             font-weight: 500;
         }
@@ -257,7 +303,7 @@
         /* Responsive Design */
         @media (max-width: 900px) {
             .form-content {
-                grid-template-columns: 1fr; /* Stack panels vertically on smaller screens */
+                grid-template-columns: 1fr;
             }
 
             .form-row {
@@ -266,13 +312,19 @@
             }
 
             .container {
-                padding: 20px; /* Adjust container padding on smaller screens */
+                padding: 20px;
             }
         }
     </style>
 </head>
 
 <body>
+    <!-- Alert Box -->
+    <div id="alertBox" class="alert">
+        <span id="alertMessage"></span>
+        <button class="close-btn" onclick="hideAlert()">&times;</button>
+    </div>
+
     <div class="container">
         <form id="combinedForm" method="POST" enctype="multipart/form-data">
             <div class="header">
@@ -351,6 +403,39 @@
     <script>
         let selectedPhotos = [];
 
+        // Alert Functions
+        function showAlert(message, type = 'success', duration = 4000) {
+            const alertBox = document.getElementById('alertBox');
+            const alertMessage = document.getElementById('alertMessage');
+
+            // Clear previous classes
+            alertBox.className = 'alert';
+            
+            // Set message
+            alertMessage.textContent = message;
+            
+            // Add appropriate type class
+            alertBox.classList.add(type === 'success' ? 'success' : 'error');
+            
+            // Show alert
+            alertBox.classList.add('show');
+
+            // Auto-hide after duration
+            setTimeout(() => {
+                hideAlert();
+            }, duration);
+        }
+
+        function hideAlert() {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.classList.remove('show');
+            
+            // Wait for animation to complete before hiding
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 300);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Photo upload handling
             const photoInput = document.getElementById('photoInput');
@@ -361,7 +446,7 @@
                 
                 // Limit to 5 photos
                 if (selectedPhotos.length + files.length > 5) {
-                    alert('You can upload a maximum of 5 photos.');
+                    showAlert('You can upload a maximum of 5 photos.', 'error');
                     return;
                 }
 
@@ -424,14 +509,14 @@
 
                 // Validation
                 if (!firstName || !lastName || !email || !phone || !communityName || !location || !description) {
-                    alert('Please fill in all required fields.');
+                    showAlert('Please fill in all required fields.', 'error');
                     return;
                 }
 
                 // Email validation
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(email)) {
-                    alert('Please enter a valid email address.');
+                    showAlert('Please enter a valid email address.', 'error');
                     return;
                 }
 
@@ -465,7 +550,7 @@
                 })
                 .then(data => {
                     console.log('Success:', data);
-                    alert('Application submitted successfully! An admin will review your request.');
+                    showAlert('Application submitted successfully! We will review your request.', 'success');
                     // Reset form
                     document.getElementById('combinedForm').reset();
                     selectedPhotos = [];
@@ -474,7 +559,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error submitting application: ' + error.message);
+                    showAlert('Error submitting application: ' + error.message, 'error');
                 });
             });
         });

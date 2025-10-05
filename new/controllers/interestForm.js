@@ -72,30 +72,19 @@ export const showInterestForm = (req, res) => {
 };
 
 
+
+import sharp from 'sharp';
+
+
 export const submitInterestForm = async (req, res) => {
   try {
-    // Extract form data
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      communityName,
-      location,
-      description
-    } = req.body;
+    const { firstName, lastName, email, phone, communityName, location, description } = req.body;
 
     // Required fields validation
     if (!firstName || !lastName || !email || !phone || !communityName || !location || !description) {
-      // Clean up uploaded files if validation fails
       if (req.files && req.files.length > 0) {
-        req.files.forEach(file => {
-          if (fs.existsSync(file.path)) {
-            fs.unlinkSync(file.path);
-          }
-        });
+        req.files.forEach(file => fs.existsSync(file.path) && fs.unlinkSync(file.path));
       }
-      
       return res.status(400).json({
         success: false,
         message: 'All required fields must be filled.',
@@ -113,49 +102,32 @@ export const submitInterestForm = async (req, res) => {
 
     // Email validation
     if (!validator.isEmail(email)) {
-      // Clean up uploaded files if validation fails
       if (req.files && req.files.length > 0) {
-        req.files.forEach(file => {
-          if (fs.existsSync(file.path)) {
-            fs.unlinkSync(file.path);
-          }
-        });
+        req.files.forEach(file => fs.existsSync(file.path) && fs.unlinkSync(file.path));
       }
-      
-      return res.status(400).json({
-        success: false,
-        message: 'Please enter a valid email address.'
-      });
+      return res.status(400).json({ success: false, message: 'Please enter a valid email address.' });
     }
 
-    // Phone validation (basic)
+    // Phone validation
     if (!validator.isMobilePhone(phone, 'any', { strictMode: false })) {
-      // Clean up uploaded files if validation fails
       if (req.files && req.files.length > 0) {
-        req.files.forEach(file => {
-          if (fs.existsSync(file.path)) {
-            fs.unlinkSync(file.path);
-          }
-        });
+        req.files.forEach(file => fs.existsSync(file.path) && fs.unlinkSync(file.path));
       }
-      
-      return res.status(400).json({
-        success: false,
-        message: 'Please enter a valid phone number.'
-      });
+      return res.status(400).json({ success: false, message: 'Please enter a valid phone number.' });
     }
 
-    // Process uploaded photos
+    // Process and compress uploaded photos
     let photoPaths = [];
     if (req.files && req.files.length > 0) {
-      console.log('Files received:', req.files.length);
-      
-      // The multer middleware already handles file type and size validation
-      // Store relative paths for database
-      photoPaths = req.files.map(file => {
-        console.log('File saved at:', file.path);
-        return file.path;
-      });
+      for (const file of req.files) {
+        const compressedPath = path.join(path.dirname(file.path), 'compressed_' + file.filename);
+        await sharp(file.path)
+          .resize({ width: 1024 }) // optional max width
+          .jpeg({ quality: 80 })   // compress quality
+          .toFile(compressedPath);
+        fs.unlinkSync(file.path); // remove original
+        photoPaths.push(compressedPath);
+      }
     }
 
     // Create new interest application
@@ -174,16 +146,7 @@ export const submitInterestForm = async (req, res) => {
 
     // Save to database
     const savedApplication = await newApplication.save();
-    console.log('New application saved:', savedApplication._id);
-    console.log('Photos saved:', photoPaths);
 
-    // Send notification email to admin (non-blocking)
-    // Uncomment if you have this function implemented
-    // notifyAdminOfNewApplication(savedApplication).catch(error => {
-    //   console.error('Failed to send admin notification:', error);
-    // });
-
-    // Success response
     res.status(201).json({
       success: true,
       message: 'Your application has been submitted successfully! We will review it and get back to you soon.',
@@ -197,52 +160,25 @@ export const submitInterestForm = async (req, res) => {
 
   } catch (error) {
     console.error('Error in submitInterestForm:', error);
-
-    // Clean up any uploaded files if there was an error
     if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
-        if (fs.existsSync(file.path)) {
-          fs.unlinkSync(file.path);
-        }
-      });
+      req.files.forEach(file => fs.existsSync(file.path) && fs.unlinkSync(file.path));
     }
 
-    // Handle specific error types
     if (error.name === 'ValidationError') {
       const validationErrors = Object.values(error.errors).map(err => err.message);
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: validationErrors
-      });
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: validationErrors });
     }
 
     if (error.code === 11000) {
-      // Duplicate key error
       const field = Object.keys(error.keyPattern)[0];
-      return res.status(400).json({
-        success: false,
-        message: `An application with this ${field} already exists.`
-      });
+      return res.status(400).json({ success: false, message: `An application with this ${field} already exists.` });
     }
 
-    // Multer error handling
     if (error instanceof multer.MulterError) {
-      if (error.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({
-          success: false,
-          message: 'File size too large. Each image must be smaller than 5MB.'
-        });
-      }
-      if (error.code === 'LIMIT_FILE_COUNT') {
-        return res.status(400).json({
-          success: false,
-          message: 'Too many files. Maximum 5 photos allowed.'
-        });
-      }
+      if (error.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ success: false, message: 'File size too large. Each image must be smaller than 5MB.' });
+      if (error.code === 'LIMIT_FILE_COUNT') return res.status(400).json({ success: false, message: 'Too many files. Maximum 5 photos allowed.' });
     }
 
-    // Generic server error
     res.status(500).json({
       success: false,
       message: 'An error occurred while processing your application. Please try again later.',
