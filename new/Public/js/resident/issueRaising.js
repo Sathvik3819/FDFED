@@ -1,4 +1,11 @@
-// Open the raise issue form popup
+
+const notyf = new Notyf({
+  duration: 3000,
+  position: { x: "center", y: "top" },
+  dismissible: true,
+});
+
+
 function openForm(formType) {
   if (formType === "issue") {
     document.getElementById("issueFormPopup").style.display = "flex";
@@ -28,18 +35,46 @@ async function openIssuePopup(data) {
       return;
     }
 
-    // Update the popup content
+    const progressLine = document.querySelector(".progress-indicator");
+    const steps = document.querySelectorAll(".step");
+    const status = issueData.status;
+
+    // Reset progress line and steps
+    progressLine.style.width = "0%";
+    steps.forEach((step) => {
+      step.querySelector(".step-icon").classList.remove("step-icon-completed");
+    }
+    );
+    // Update progress line and steps based on status
+    if (status === "Pending") {
+      progressLine.style.width = "0%";
+    } else if (status === "In Progress") {
+      progressLine.style.width = "28%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[2].querySelector(".step-icon").classList.add("step-icon-completed");
+    }else if (status === "Assigned") {
+      progressLine.style.width = "14%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
+    }else if (status === "Review Pending") {
+      progressLine.style.width = "42%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[2].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[3].querySelector(".step-icon").classList.add("step-icon-completed");
+    }
+
     document.getElementById("popupTrackingId").textContent =
       issueData.issueID || "-";
     document.getElementById("popupTitle").textContent = issueData.title || "-";
 
-    // Update status badge color dynamically
     const popupStatusElement = document.getElementById("popupStatus");
     popupStatusElement.textContent = issueData.status || "-";
     popupStatusElement.className = `status-badge status-${issueData.status.replace(
       /\s/g,
       ""
-    )}`; // Remove spaces for class name
+    )}`; 
 
     if (issueData.status === "Review Pending") {
       popupStatusElement.classList.add("review");
@@ -47,19 +82,22 @@ async function openIssuePopup(data) {
       popupStatusElement.classList.add("paymentPending");
     }
 
-    document.getElementById("popupCategory").textContent =
-      issueData.category || "-"; // Added category to popup
     document.getElementById("popupDescription").textContent =
       issueData.description || "-";
     document.getElementById("popupDate").textContent =
       new Date(issueData.createdAt).toLocaleDateString() || "-";
+    document.getElementById("popupDeadline").textContent =
+      issueData.deadline
+        ? new Date(issueData.deadline).toLocaleDateString()
+        : "-";
+    
 
     // Worker section
     const worker = issueData.workerAssigned;
     const workerSection = document.getElementById("workerDetails");
 
     if (worker && worker.name) {
-      workerSection.style.display = "block";
+      workerSection.style.display = "grid";
       document.getElementById("popupWorkerName").textContent =
         worker.name || "-";
       document.getElementById("popupWorkerContact").textContent =
@@ -72,16 +110,16 @@ async function openIssuePopup(data) {
 
     // Payment section
     const paymentDetailsSection = document.querySelector(".payment-details");
-    if (issueData.amount || issueData.paymentStatus) {
+    if (issueData.payment ) {
       // Assuming these fields indicate payment details exist
-      paymentDetailsSection.style.display = "block";
+      paymentDetailsSection.style.display = "grid";
       document.getElementById("popupAmount").textContent = issueData.amount
-        ? `₹${issueData.amount}`
+        ? `₹${issueData.payment.amount}`
         : "-";
       const popupPaymentStatusElement =
         document.getElementById("popupPaymentStatus");
-      popupPaymentStatusElement.textContent = issueData.paymentStatus || "-";
-      popupPaymentStatusElement.className = `status-badge status-${issueData.paymentStatus.replace(
+      popupPaymentStatusElement.textContent = issueData.payment.status || "-";
+      popupPaymentStatusElement.className = `status-badge status-${issueData.payment.status.replace(
         /\s/g,
         ""
       )}`;
@@ -132,6 +170,109 @@ document.addEventListener("DOMContentLoaded", function () {
   const issuesGrid = document.querySelector(".issues-grid");
   const cancelFeedbackBtn = document.querySelector(".cancel-feedback");
   const cancelIssueBtnPopup = document.getElementById("cancelBtn"); // For the cancel button inside the popup
+  const issueForm = document.getElementById("issueForm");
+
+  issueForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(issueForm);
+    const formObject = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch("/resident/issueRaising", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formObject),
+      });
+
+      const result = await response.json();
+      const issue = result.issue;
+
+      if (response.ok) {
+        const newdiv = document.createElement("div");
+        newdiv.className = "issue-card";
+        newdiv.setAttribute("data-id", result.issue._id);
+        newdiv.innerHTML = `
+          
+                            <div class="issue-card-header">
+                                <h5>${issue.title}</h5>
+                                <span class="status-badge status-${issue.status.replace(/\s/g, "")} 
+                                    ">
+                                    ${issue.status}
+                                </span>
+                            </div>
+                            <div class="issue-card-body">
+                                <p><strong>Tracking ID:</strong> ${issue.issueID}</p>
+                                <p><strong>Category:</strong> ${issue.title}</p>
+                                <p><strong>Worker Assigned:</strong> ${issue.workerAssigned}</p>
+                            </div>
+                            <div class="issue-card-actions">
+
+                                <button class="action-btn delete" data-id="${issue._id}" fdprocessedid="ixqtl5">
+                                    <i class="bi bi-trash"></i>Cancel
+                                </button>
+                                
+                            </div>
+                        
+        `
+        document.getElementsByClassName("issues-grid")[0].appendChild(newdiv);
+        notyf.success("Issue raised successfully!");
+        closeForm("issue");
+        issueForm.reset();
+      } else {
+        notyf.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error raising issue:", error);
+      notyf.error("An error occurred while raising the issue.");
+    }
+  });
+
+  document.getElementById("feedbackForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+    const formObject = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch("/resident/submitFeedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formObject),
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        const button = document.querySelector(`.issue-card[data-id="${formObject.id}"] .action-btn.review-btn`);
+        const card = document.querySelector(`.issue-card[data-id="${formObject.id}"] .status-badge`);
+
+        if (card) {
+          card.textContent = "Payment Pending";
+          card.className = `status-badge status-Payment Pending paymentPending`;
+        }
+
+        
+        if (button) {
+          button.classList.remove("review-btn");
+          button.classList.add("pay-btn");
+          button.innerHTML = 'Pay';
+        }
+        notyf.success("Feedback submitted successfully!");
+        closeFeedbackForm();
+        this.reset();
+      } else {
+        notyf.error(result.message || "Failed to submit feedback.");
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      notyf.error("An error occurred while submitting feedback.");
+    }
+
+  })
 
   // Event delegation for action buttons in issue cards
   issuesGrid.addEventListener("click", async function (event) {
@@ -147,20 +288,20 @@ document.addEventListener("DOMContentLoaded", function () {
       if (confirm("Are you sure you want to cancel this issue?")) {
         try {
           const response = await fetch(`/resident/deleteIssue/${issueID}`, {
-            method: "DELETE",
+            method: "POST",
           });
 
           const result = await response.json();
 
-          if (response.ok) {
-            alert("Issue cancelled successfully!");
-            issueCard.remove(); // Remove the card from the grid
+          if (result.success) {
+            notyf.success("Issue cancelled successfully!");
+            issueCard.remove();
           } else {
-            alert(result.error || "Failed to cancel issue.");
+            notyf.error(result.error || "Failed to cancel issue.");
           }
         } catch (error) {
           console.error("Error cancelling issue:", error);
-          alert("Error cancelling issue. Please try again.");
+          notyf.error("Error cancelling issue. Please try again.");
         }
       }
     }

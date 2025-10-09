@@ -492,30 +492,34 @@ residentRouter.post("/issueRaising", async (req, res) => {
     await resident.save();
     console.log("Resident's raisedIssues updated:", resident.raisedIssues);
 
-    return res.redirect("issueRaising");
+    return res.json({ success: true, message: "Issue raised successfully!", issue: newIssue });
   } catch (error) {
     console.error("Error raising issue:", error);
     req.flash("message", "Something went wrong.");
-    return res.redirect("issueRaising");
+    return res.json({ success: false, message: "Something went wrong." });
   }
 });
 
-residentRouter.delete("/deleteIssue/:issueID", async (req, res) => {
+residentRouter.post("/deleteIssue/:issueID", async (req, res) => {
   try {
     const { issueID } = req.params;
 
     const issue = await Issue.findOneAndDelete({ _id: issueID });
 
     if (!issue) {
-      return res.status(404).json({ error: "Issue not found." });
+      return res.status(404).json({ success: false, message: "Issue not found." });
     }
 
-    await Resident.updateOne(
-      { raisedIssues: issue._id },
-      { $pull: { raisedIssues: issue._id } }
-    );
+    const resident = await Resident.findById(req.user.id);
+    if (!resident) {
+      return res.status(404).json({ success: false, message: "Resident not found." });
+    }
 
-    res.json({ message: "Issue deleted successfully." });
+    resident.raisedIssues = resident.raisedIssues.filter((id) => id.toString() !== issueID);
+
+    await resident.save();
+
+    res.json({success: true, message: "Issue deleted successfully." });
   } catch (error) {
     console.error("Error deleting issue:", error);
     res.status(500).json({ error: "Internal server error." });
@@ -538,6 +542,49 @@ residentRouter.get("/getIssueData/:issueID", async (req, res) => {
   } catch (error) {
     console.error("Error fetching issue data:", error);
     res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+residentRouter.post("/submitFeedback", async (req, res) => {
+    const { id, feedback, rating } = req.body;
+    console.log("Feedback Data Received:", req.body);
+
+    try{
+      const issue = await Issue.findById(id).populate("community","communityManager");
+      console.log(issue);
+      
+      if (!issue) {
+        return res.status(404).json({ success: false, message: "Issue not found." });
+      }
+
+      const payment = await Payment.create({
+        title: `Payment for Issue ${issue.issueID}`,
+        sender: issue.resident,
+        receiver: issue.community.communityManager,
+        amount: 2000,
+        status: "Pending",
+        community: issue.community,
+        belongTo: "Issue",
+        belongToId: issue._id,
+        paymentDeadline: new Date(Date.now() + 7*24*60*60*1000),
+      });
+
+      const uniqueId = generateCustomID(issue._id.toString(), "PY", null);
+      payment.ID = uniqueId;
+      await payment.save();
+
+      issue.payment = payment._id;
+      issue.feedback = feedback;
+      issue.rating = Number(rating);
+      issue.status = "Payment Pending";
+
+      await issue.save();
+
+
+    return res.status(201).json({ success: true, message: "Feedback submitted successfully." });
+  } catch (error) {
+    console.error("Error submitting feedback:", error);
+    return res.status(500).json({ success: false, message: "Internal server error." });
   }
 });
 

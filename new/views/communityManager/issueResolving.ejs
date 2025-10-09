@@ -162,8 +162,8 @@
       }
 
       .issue-list-cards {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 20px;
       }
 
@@ -220,20 +220,20 @@
       }
 
       .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-    color: var(--text-light);
-    transition: 0.3s ease-in-out;
-    padding: 25px;
-}
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 22px;
+        font-weight: bold;
+        cursor: pointer;
+        color: var(--text-light);
+        transition: 0.3s ease-in-out;
+        padding: 25px;
+      }
 
-.close-btn:hover {
-    color: var(--primary-color);
-}
+      .close-btn:hover {
+        color: var(--primary-color);
+      }
 
       .issues-table td {
         padding: 15px;
@@ -294,7 +294,7 @@
 
       .booking-header {
         background: linear-gradient(90deg, var(--primary), var(--secondary));
-        
+
         color: white;
         padding: 25px;
         position: relative;
@@ -502,7 +502,7 @@
 
       .status-PaymentPending {
         background-color: #fff4e6;
-        color: 	#d9480f;
+        color: #d9480f;
         padding: 6px 12px;
         border-radius: 20px;
         font-size: 0.85rem;
@@ -587,12 +587,7 @@
         font-size: 0.875rem;
       }
 
-      /* Layout */
-      .issues-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px;
-      }
+      
 
       /* Responsive Styles */
       @media (max-width: 992px) {
@@ -699,7 +694,8 @@
       <!-- AD SECTION -->
       <div class="adCon d-flex justify-content-center align-items-center">
         <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length > 0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
+          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length >
+          0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
           <img
             src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
             class="ad-slide"
@@ -755,7 +751,8 @@
                   <div class="issue-card-content">
                     <h4 class="issue-card-title"><%= i.title %></h4>
                     <p class="issue-card-reporter">
-                      Reported by: <%= i.resident.residentFirstname %> <%= i.resident.residentLastname %> 
+                      Reported by: <%= i.resident?.residentFirstname %> <%=
+                      i.resident?.residentLastname %>
                     </p>
                   </div>
                   <div class="issue-card-actions">
@@ -777,72 +774,85 @@
               </div>
             </div>
 
-            <div>
-              <h3 class="card-title">Assign Issue</h3>
-              <form
-                id="issueAssignForm"
-                action="/manager/issue/assign"
-                method="POST"
-              >
-                <input type="text" id="idIssue" name="id" hidden />
-                <div class="form-group">
-                  <label for="issueID">Issue ID</label>
-                  <input
-                    type="text"
-                    id="issueID"
-                    class="form-control"
-                    name="issueID"
-                    readonly
-                  />
-                </div>
+            <!-- Assign Issue Popup -->
+            <div id="assignPopup" class="popup" style="display: none">
+              <div class="popup-content">
+                <button
+                  class="close-btn"
+                  onclick="closeForm('assign')"
+                  aria-label="Close"
+                >
+                  <i class="bi bi-x-lg"></i>
+                </button>
+                <h3 class="card-title">Assign Issue</h3>
+                <form
+                  id="issueAssignForm"
+                  action="/manager/issue/assign"
+                  method="POST"
+                >
+                  <input type="text" id="idIssue" name="id" hidden />
 
-                <div class="form-group">
-                  <label for="workerAssigned">Assign to Worker</label>
-                  <select
-                    id="workerAssigned"
-                    class="form-control"
-                    name="worker"
-                    required
-                  >
-                    <option value="" disabled selected>Select a Worker</option>
-                    <% if (locals.workers) { %> <% workers.forEach(w => { %>
-                    <option value="<%= w._id %>">
-                      <%= w.name %> - <%= w.jobRole %>
-                    </option>
-                    <% }) %> <% } %>
-                  </select>
-                </div>
+                  <div class="form-group">
+                    <label for="issueID">Issue ID</label>
+                    <input
+                      type="text"
+                      id="issueID"
+                      class="form-control"
+                      name="issueID"
+                      readonly
+                    />
+                  </div>
 
-                <div class="form-group">
-                  <label for="deadline">Deadline</label>
-                  <input
-                    type="date"
-                    id="deadline"
-                    class="form-control"
-                    name="deadline"
-                  />
-                </div>
+                  <div class="form-group">
+                    <label for="workerAssigned">Assign to Worker</label>
+                    <select
+                      id="workerAssigned"
+                      class="form-control"
+                      name="worker"
+                      required
+                    >
+                      <option value="" disabled selected>
+                        Select a Worker
+                      </option>
+                      <% if (locals.workers) { %> <% workers.forEach(w => { %>
+                      <option value="<%= w._id %>">
+                        <%= w.name %> - <%= w.jobRole %>
+                      </option>
+                      <% }) %> <% } %>
+                    </select>
+                  </div>
 
-                <div class="form-group">
-                  <label for="remarks">Remarks</label>
-                  <textarea
-                    id="remarks"
-                    class="form-control"
-                    rows="3"
-                    name="remarks"
-                    required
-                  ></textarea>
-                </div>
+                  <div class="form-group">
+                    <label for="deadline">Deadline</label>
+                    <input
+                      type="date"
+                      id="deadline"
+                      class="form-control"
+                      name="deadline"
+                    />
+                  </div>
 
-                <div class="action-buttons">
-                  <button type="reset" class="btn btn-secondary">
-                    <i class="bi bi-x-circle"></i> Reset
-                  </button>
-                  <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-send-check"></i> Assign Task
-                  </button>
-                </div>
-              </form>
+                  <div class="form-group">
+                    <label for="remarks">Remarks</label>
+                    <textarea
+                      id="remarks"
+                      class="form-control"
+                      rows="3"
+                      name="remarks"
+                      required
+                    ></textarea>
+                  </div>
+
+                  <div class="action-buttons">
+                    <span id="cancelAssign" class="btn btn-secondary">
+                      <i class="bi bi-x-circle"></i> Cancel
+                    </span>
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-send-check"></i> Assign Task
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>
@@ -852,11 +862,14 @@
           <div class="card-title">Assigned Issues History</div>
           <div class="issue-list-cards" id="history-cards-container">
             <% if (locals.issues) { %> <% issues.forEach((i) => { %> <% if
-            (i.status === "Resolved" || i.status === "Assigned" || i.status === "Payment Pending" ) { %>
+            (i.status === "Resolved" || i.status === "Assigned" || i.status ===
+            "Payment Pending" ) { %>
             <div class="issue-card">
               <div class="issue-card-header">
                 <span class="issue-card-id">Issue ID: <%= i.issueID %></span>
-                <span class="status-<%= i.status.replace(/\s+/g, '') %>"><%= i.status %></span>
+                <span class="status-<%= i.status.replace(/\s+/g, '') %>"
+                  ><%= i.status %></span
+                >
               </div>
               <div class="issue-card-content">
                 <h4 class="issue-card-title"><%= i.title %></h4>
