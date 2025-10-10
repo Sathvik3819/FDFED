@@ -8,723 +8,38 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/notyf/notyf.min.css">
     <link rel="stylesheet" href="../../css/nav.css" />
+    <link rel="stylesheet" href="../../css/resident/issueRaising.css" />
 
-    <style>
-       
 
-        @keyframes shine {
-            0% {
-                left: -100%;
-            }
-
-            20% {
-                left: 100%;
-            }
-
-            100% {
-                left: 100%;
-            }
-        }
-
-  
-        .section-title {
-            position: relative;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-            font-weight: 600;
-            color: var(--primary);
-            font-size: 1.5rem;
-        }
-
-        .section-title::after {
-            content: "";
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 120px;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .section-title:hover::after {
-            width: 150px;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            box-shadow: var(--shadow);
-            text-align: center;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-            border-left: 6px solid;
-        }
-
-        .stat-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.8));
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
-        }
-
-        .card-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 10px 0;
-            letter-spacing: -1px;
-            background: linear-gradient(135deg, var(--dark), var(--gray));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .stat-card:nth-child(1) .card-value {
-            color: var(--warning);
-        }
-
-        .stat-card:nth-child(2) .card-value {
-            color: var(--info);
-        }
-
-        .stat-card:nth-child(3) .card-value {
-            color: var(--success);
-        }
-
-        .card-label {
-            color: var(--gray);
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        /* Issues Grid (replacing table) */
-        .issues-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 2rem;
-        }
-
-        .issue-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            transition: var(--transition);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .issue-card:hover {
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            transform: translateY(-3px);
-        }
-
-        .issue-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .issue-card-header h5 {
-            margin: 0;
-            font-weight: 600;
-            color: var(--primary);
-            font-size: 1.1rem;
-        }
-
-        .issue-card-body p {
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-            color: var(--dark);
-        }
-
-        .issue-card-body p strong {
-            color: var(--gray);
-            font-weight: 500;
-            margin-right: 5px;
-        }
-
-        .issue-card-actions {
-            margin-top: 15px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        /* Status Badges */
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            display: inline-block;
-            min-width: 100px;
-            text-align: center;
-            text-transform: capitalize;
-        }
-
-        .status-Pending {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .status-Assigned {
-            background-color: #e4455d38;
-            color: #f10327db;
-        }
-
-        .review {
-            background-color: #1009e041;
-            color: #1f12d7;
-        }
-
-        .status-Resolved {
-            background-color: rgba(0, 173, 0, 0.183);
-            color: green;
-        }
-
-        .paymentPending {
-            background-color: #de743f44;
-            color: #ff5500f4;
-        }
-
-        /* Action Buttons */
-        .action-btn {
-            padding: 8px 15px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .action-btn i {
-            font-size: 0.9rem;
-        }
-
-        .action-btn.view {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .action-btn.resolve {
-            background-color: var(--success);
-            color: white;
-        }
-
-        .action-btn.delete {
-            background-color: var(--danger);
-            color: white;
-        }
-
-        .action-btn.review-btn {
-            background-color: #075edf;
-            color: white;
-        }
-
-        .action-btn.pay-btn {
-            background-color: #00af55;
-            color: white;
-        }
-
-        .action-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Popup Styles */
-        .popup {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            backdrop-filter: blur(5px);
-            background-color: rgba(0, 0, 0, 0.4);
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .popup-content {
-            background: white;
-            padding: 30px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            border-radius: var(--border-radius);
-            position: relative;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            animation: popupFadeIn 0.3s ease-out;
-
-        }
-
-        @keyframes popupFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--dark);
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
-            font-size: 15px;
-            transition: var(--transition);
-            background-color: #f9f9f9;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
-            background-color: white;
-        }
-
-        .form-button {
-            background: #0D6EFD;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            cursor: pointer;
-            border-radius: var(--border-radius);
-            font-size: 16px;
-            font-weight: 500;
-            transition: var(--transition);
-            width: 100%;
-            margin-top: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
-        }
-
-        .form-button:hover {
-            background-color: #0c63e5;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(13, 110, 253, 0.4);
-        }
-
-      .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-    color: var(--text-light);
-    transition: 0.3s ease-in-out;
-    padding: 25px;
-}
-
-.close-btn:hover {
-    color: var(--primary-color);
-}
-
-        .form-title {
-            text-align: center;
-            margin-bottom: 25px;
-            color: var(--primary);
-            font-weight: 600;
-            position: relative;
-            padding-bottom: 15px;
-            font-size: 1.5rem;
-        }
-
-        .form-title::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 4px;
-        }
-
-        /* Issue Details Styles */
-        .issue-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .issue-details-con,
-        .worker-details,
-        .payment-details {
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-left: 4px solid var(--primary);
-            border-radius: var(--border-radius);
-            transition: var(--transition);
-        }
-
-        .payment-details {
-            grid-column-start: 1;
-            grid-column-end: 3;
-        }
-
-        .worker-details {
-            border-left-color: var(--info);
-        }
-
-        .payment-details {
-            border-left-color: var(--success);
-        }
-
-        .issue-details-con:hover,
-        .worker-details:hover,
-        .payment-details:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .issue-details h3,
-        .worker-details h4,
-        .payment-details h4 {
-            color: var(--primary);
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e9ecef;
-            font-size: 1.3rem;
-        }
-
-        .worker-details h4 {
-            color: var(--info);
-        }
-
-        .payment-details h4 {
-            color: var(--success);
-        }
-
-        .detail-row {
-            display: flex;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            width: 150px;
-            color: var(--gray);
-            font-size: 0.95rem;
-        }
-
-        .detail-value {
-            flex: 1;
-            color: var(--dark);
-            font-size: 0.95rem;
-            min-width: 100px;
-        }
-
-        /* Action Buttons Container */
-        .action-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: var(--transition);
-            cursor: pointer;
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-cancel {
-            background: linear-gradient(135deg, var(--danger), #c82333);
-            color: white;
-        }
-
-        .btn-cancel:hover {
-            background: linear-gradient(135deg, #c82333, var(--danger));
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
-        }
-
-        .btn-close {
-            background: linear-gradient(135deg, var(--gray), #5a6268);
-            color: white;
-        }
-
-        .btn-close:hover {
-            background: linear-gradient(135deg, #5a6268, var(--gray));
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3);
-        }
-
-        /* Feedback Form Styles */
-        .feedback-form-card {
-
-            width: 100%;
-            max-width: 600px;
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            margin: 20px auto;
-            box-shadow: var(--shadow);
-            border-top: 4px solid var(--primary);
-            transition: var(--transition);
-        }
-
-        .feedback-form-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .rating-input {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-            direction: rtl;
-        }
-
-        .rating-input input {
-            display: none;
-        }
-
-        .rating-input label {
-            color: #ddd;
-            font-size: 2.2rem;
-            padding: 0 8px;
-            cursor: pointer;
-            transition: var(--transition);
-            position: relative;
-        }
-
-        .rating-input label:hover,
-        .rating-input label:hover~label,
-        .rating-input input:checked~label {
-            color: #ffc107;
-            transform: scale(1.1);
-        }
-
-        .rating-input input:checked+label {
-            color: #ffc107;
-            animation: bounce 0.5s;
-        }
-
-        @keyframes bounce {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.3);
-            }
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .cancel-feedback {
-            background: linear-gradient(135deg, var(--gray), #5a6268);
-            color: white;
-        }
-
-        .submit-feedback {
-            background: orangered;
-            color: white;
-        }
-
-        .no-bookings {
-        width: 100%;
-        padding-top: 10%;
-       
-        text-align: center;
-        box-shadow: var(--shadow);
-      }
-
-      .no-bookings {
-         grid-column-start: 1;
-        grid-column-end: 4;
-        background: white;
-        border-radius: 12px;
-        padding: 1rem;
-        text-align: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        margin: 1rem auto;
-        font-weight: 600;
-        border: 1px solid #f0f0f0;
-        color: #303031;
-        font-size: 1.5rem;
-      }
-
-      .no-bookings p {
-        
-        margin-top: 1rem;
-      }
-
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-
-            .section-title {
-                font-size: 1.3rem;
-            }
-
-            .popup-content {
-                padding: 20px;
-                width: 95%;
-            }
-
-            .issue-details {
-                grid-template-columns: 1fr;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .issues-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .rating-input label {
-                font-size: 1.8rem;
-            }
-
-            .form-actions {
-                flex-direction: column;
-            }
-
-            .cancel-feedback,
-            .submit-feedback {
-                width: 100%;
-            }
-
-            .ad-text {
-                font-size: 1.5rem;
-            }
-        }
-    </style>
 </head>
 
 <body>
     <%- include('../../partials/residentNav.ejs') %>
 
         <div class="bodyContainer">
-           <div class="adCon d-flex justify-content-center align-items-center">
-        <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length > 0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
-          <img
-            src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
-            class="ad-slide"
-            alt="Ad"
-            height="100px"
-            width="200px"
-          />
-          <% }) %> <% } else { %>
-          <div
-            class="d-flex justify-content-center align-items-center"
-            style="
+            <div class="adCon d-flex justify-content-center align-items-center">
+                <div class="advertisement" id="ad-slider">
+                    <% if (locals.ads && ads.filter(ad=> ad.status==="Active").length > 0) { %> <% ads.filter(ad=>
+                            ad.status==="Active").forEach(ad => { %>
+                            <img src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>" class="ad-slide"
+                                alt="Ad" height="100px" width="200px" />
+                            <% }) %>
+                                <% } else { %>
+                                    <div class="d-flex justify-content-center align-items-center" style="
               background-color: rgba(158, 207, 250, 0.539);
               border-radius: 8px;
               color: rgb(0, 80, 193);
               border: 3px dotted blue;
               height: 100%;
               width: 100%;
-            "
-          >
-            <p class="ad-text fs-4" style="font-weight: 600">Advertisement</p>
-          </div>
-          <% } %>
-        </div>
-      </div>
+            ">
+                                        <p class="ad-text fs-4" style="font-weight: 600">Advertisement</p>
+                                    </div>
+                                    <% } %>
+                </div>
+            </div>
 
             <div class="contentCon">
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -737,15 +52,21 @@
                 <div class="stats-grid mb-4">
                     <div class="stat-card" style="border-left: 6px solid var(--warning)">
                         <p class="card-label">Pending Issues</p>
-                        <h2 class="card-value text-warning"><%= issueCounts.pending %></h2>
+                        <h2 class="card-value text-warning">
+                            <%= issueCounts.pending %>
+                        </h2>
                     </div>
                     <div class="stat-card" style="border-left: 6px solid var(--info)">
-                        <p class="card-label">In-Progress Issues</p>
-                        <h2 class="card-value text-info"><%= issueCounts.inProgress %></h2>
+                        <p class="card-label">Assigned Issues</p>
+                        <h2 class="card-value text-info">
+                            <%= issueCounts.inProgress %>
+                        </h2>
                     </div>
                     <div class="stat-card" style="border-left: 6px solid var(--success)">
                         <p class="card-label">Resolved</p>
-                        <h2 class="card-value text-success"><%= issueCounts.resolved %></h2>
+                        <h2 class="card-value text-success">
+                            <%= issueCounts.resolved %>
+                        </h2>
                     </div>
                 </div>
 
@@ -755,47 +76,56 @@
                     </div>
                     <div class="issues-grid">
                         <% if (locals.i && i.length>0 ) { %>
-                        <% i.forEach(is=> { %>
-                        <div class="issue-card" data-id="<%= is._id %>">
-                            <div class="issue-card-header">
-                                <h5><%= is.title %></h5>
-                                <span
-                                    class="status-badge status-<%= is.status %> <%= is.status===" Review Pending" ? "review"
-                                    : "" %>
-                                    <%= is.status==="Payment Pending" ? "paymentPending" : "" %>">
-                                    <%= is.status %>
-                                </span>
-                            </div>
-                            <div class="issue-card-body">
-                                <p><strong>Tracking ID:</strong> <%= is.issueID %></p>
-                                <p><strong>Category:</strong> <%= is.title %></p>
-                                <p><strong>Worker Assigned:</strong> <%= is.workerAssigned ? is.workerAssigned.name : "-" %>
-                                </p>
-                            </div>
-                            <div class="issue-card-actions">
-                                <% if (is.status==="Pending" ) { %>
-                                <button class="action-btn delete">
-                                    <i class="bi bi-trash"></i>Cancel
-                                </button>
-                                <% } else if(is.status==="Review Pending" ) { %>
-                                <button class="action-btn review-btn" data-id="<%= is._id %>">
-                                    Review
-                                </button>
-                                <% } else if(is.status==="Payment Pending" ) { %>
-                                <button class="action-btn pay-btn" data-id="<%= is._id %>">
-                                    Pay
-                                </button>
-                                <% } else { %>
-                                <button class="action-btn view" data-id="<%= is._id %>">
-                                    <i class="bi bi-eye"></i>View
-                                </button>
-                                <% } %>
-                            </div>
-                        </div>
-                        <% }) %>
-                        <% } else { %>
-                        <div class="no-bookings d-flex gap-3 justify-content-center align-items-center text-muted "><i class="bi bi-tools"></i>  <p>No issues found</p></div>
-                        <% } %>
+                            <% i.forEach(is=> { %>
+                                <div class="issue-card" data-id="<%= is._id %>">
+                                    <div class="issue-card-header">
+                                        <h5>
+                                            <%= is.title %>
+                                        </h5>
+                                        <span class="status-badge status-<%= is.status %> <%= is.status === "Review Pending" ? "review" : "" %>
+                                            <%= is.status==="Payment Pending" ? "paymentPending" : "" %>">
+                                                <%= is.status %>
+                                        </span>
+                                    </div>
+                                    <div class="issue-card-body">
+                                        <p><strong>Tracking ID:</strong>
+                                            <%= is.issueID %>
+                                        </p>
+                                        <p><strong>Category:</strong>
+                                            <%= is.title %>
+                                        </p>
+                                        <p><strong>Worker Assigned:</strong>
+                                            <%= is.workerAssigned ? is.workerAssigned.name : "-" %>
+                                        </p>
+                                    </div>
+                                    <div class="issue-card-actions">
+                                        <% if (is.status==="Pending" ) { %>
+                                            <button class="action-btn delete">
+                                                <i class="bi bi-trash"></i>Cancel
+                                            </button>
+                                            <% } else if(is.status==="Review Pending" ) { %>
+                                                <button class="action-btn review-btn" data-id="<%= is._id %>">
+                                                    Review
+                                                </button>
+                                                <% } else if(is.status==="Payment Pending" ) { %>
+                                                    <button class="action-btn pay-btn" data-id="<%= is._id %>">
+                                                        Pay
+                                                    </button>
+                                                    <% } else { %>
+                                                        <button class="action-btn view" data-id="<%= is._id %>">
+                                                            <i class="bi bi-eye"></i>View
+                                                        </button>
+                                                        <% } %>
+                                    </div>
+                                </div>
+                                <% }) %>
+                                    <% } else { %>
+                                        <div
+                                            class="no-bookings d-flex gap-3 justify-content-center align-items-center text-muted ">
+                                            <i class="bi bi-tools"></i>
+                                            <p>No issues found</p>
+                                        </div>
+                                        <% } %>
                     </div>
                 </div>
             </div>
@@ -805,7 +135,7 @@
             <div class="popup-content">
                 <span class="close-btn" onclick="closeForm('issue')">&times;</span>
                 <h3 class="form-title">Raise an Issue</h3>
-                <form id="issueForm" action="issueRaising" method="POST">
+                <form id="issueForm">
                     <div class="form-group">
                         <label for="issueCategory">Category:</label>
                         <select id="issueCategory" name="category" required>
@@ -831,33 +161,70 @@
             </div>
         </div>
 
+
         <div class="popup" id="issuePopup" style="display: none;">
             <div class="popup-content">
-                <div style="width: 100%; height: 40px;"><span class="close-btn" onclick="closePopup()">&times;</span>
+                <div class="popup-header">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <div>
+                            <h4 class="popup-main-title">Issue Details</h4>
+                            <p class="popup-tracking-id">Tracking ID: <span id="popupTrackingId"></span></p>
+                        </div>
+                        <div class="w-25" style="height: 100%;">
+                            <span class="status-badge text-center" id="popupStatus">Resolved</span>
+                        </div>
+                    </div>
+                    <span class="close-btn" onclick="closePopup()">&times;</span>
+
                 </div>
                 <div class="issue-details">
 
-                    <div class="issue-details-con">
-                        <h3>Issue Details</h3>
-                        <div class="detail-row">
-                            <div class="detail-label">Tracking ID:</div>
-                            <div class="detail-value" id="popupTrackingId">UE-63179893</div>
+                    <div class="status-progress position-relative d-flex justify-content-between w-100 align-items-start p-3 my-4">
+                        <div class="progress-line">
+                            <div class="progress-indicator"></div>
                         </div>
+                        <div class="position-absolute d-flex justify-content-between align-items-center w-75" style="left: 12%; top: 5px;">
+                            <div class="step">
+                                    <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon step-icon-completed"><i class="bi bi-check" ></i></div>
+                                <span class="step-label">Pending</span>
+                            </div>
+
+                            <div class="step">
+                                    <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon step-icon-completed"><i class="bi bi-check" ></i></div>
+                                <span class="step-label">Assigned</span>
+                            </div>
+
+                            <div class="step">
+                                <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"><i class="bi bi-check" ></i></div>
+                                <span class="step-label">In Progress</span>
+                            </div>
+
+                            <div class="step">
+                                <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"><i class="bi bi-check" ></i></div>
+                                <span class="step-label">Review Pending</span>
+                            </div>
+
+                            <div class="step">                                
+                                <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"><i class="bi bi-check" ></i></div>
+
+                                <span class="step-label">Payment pending</span>
+                            </div>
+                            <div class="step">
+                                <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"><i class="bi bi-check" ></i></div>
+                                <span class="step-label">Paid</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="issue-details-con">
+
                         <div class="detail-row">
-                            <div class="detail-label">Title:</div>
+                            <div class="detail-label">Category:</div>
                             <div class="detail-value" id="popupTitle">
                                 Emergency Plumbing Issue
                             </div>
                         </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Category:</div>
-                            <div class="detail-value" id="popupCategory">Emergency</div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label" style="width: 140px;">Status:</div>
-                            <span class="status-badge text-center" id="popupStatus"
-                                style="background-color: #00af5551;color: #00793a;">Resolved</span>
-                        </div>
+
                         <div class="detail-row">
                             <div class="detail-label">Description:</div>
                             <div class="detail-value" id="popupDescription">
@@ -869,6 +236,10 @@
                         <div class="detail-row">
                             <div class="detail-label">Date Reported:</div>
                             <div class="detail-value" id="popupDate">2023-06-15</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Deadline:</div>
+                            <div class="detail-value" id="popupDeadline">2023-06-15</div>
                         </div>
                     </div>
 
@@ -964,6 +335,8 @@
             </div>
         </div>
 
+
+        <script src="/notyf/notyf.min.js"></script>
         <script src="./../js/resident/issueRaising.js"></script>
         <script src="../../js/sidebar.js"></script>
 

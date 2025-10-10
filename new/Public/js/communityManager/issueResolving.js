@@ -24,18 +24,46 @@ document.addEventListener("DOMContentLoaded", () => {
   const issueIDInput = document.getElementById("issueID");
   const id = document.getElementById("idIssue");
 
+  const assignPopup = document.getElementById("assignPopup");
+
+  document.getElementById("cancelAssign").addEventListener("click", () => {
+    console.log("Cancel button clicked");
+    
+    closeForm("assign");
+  });
+
   assignButtons.forEach((button) => {
     button.addEventListener("click", (event) => {
       const Id = button.getAttribute("data-id");
       const issueCard = event.target.closest(".issue-card");
+
       if (issueCard) {
         const displayedIssueID = issueCard
           .querySelector(".issue-card-id")
           .textContent.replace("Issue ID: ", "");
         issueIDInput.value = displayedIssueID;
         id.value = Id;
+
+        // Show popup
+        assignPopup.style.display = "flex";
       }
     });
+  });
+
+  // Close popup function
+  window.closeForm = (type) => {
+    if (type === "details") {
+      bookingDetailsPopup.style.display = "none";
+    } else if (type === "assign") {
+      assignPopup.style.display = "none";
+    }
+  };
+
+  // Close if user clicks outside popup
+  assignPopup.addEventListener("click", (event) => {
+    if (event.target === assignPopup) {
+      closeForm("assign");
+    }
   });
 
   // Issue Details Popup functionality
@@ -59,8 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const i = await response.json();
-        const issue = i.issue
-        
+        const issue = i.issue;
 
         // Set Issue ID
         document.getElementById("detail-id").textContent = issue.issueID || "-";
@@ -127,6 +154,8 @@ document.addEventListener("DOMContentLoaded", () => {
   window.closeForm = (type) => {
     if (type === "details") {
       bookingDetailsPopup.style.display = "none";
+    }else if (type === "assign") {
+      assignPopup.style.display = "none";
     }
   };
 

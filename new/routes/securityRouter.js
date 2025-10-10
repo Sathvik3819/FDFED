@@ -255,7 +255,8 @@ securityRouter.post("/profile", upload.single("image"), async (req, res) => {
 
   await r.save();
 
-  res.redirect("/security/profile");
+  return res.json({success:true,message:"Profile updated successfully",r});
+  
 });
 
 securityRouter.post("/change-password", async (req, res) => {

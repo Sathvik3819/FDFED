@@ -70,8 +70,8 @@ managerRouter.get("/commonSpace", async (req, res) => {
 managerRouter.get("/commonSpace/details/:id", async (req, res) => {
   try {
     const booking = await CommonSpaces.findById(req.params.id)
-      .populate("bookedBy", "name email") // fetch resident info
-      .populate("payment", "amount status method") // fetch payment info
+      .populate("bookedBy", "residentFirstname residentLastname email") // fetch resident info
+      .populate("payment") // fetch payment info
       .populate("community", "name"); // fetch community info
 
     if (!booking) {
@@ -91,9 +91,10 @@ managerRouter.get("/commonSpace/details/:id", async (req, res) => {
       paymentStatus: booking.paymentStatus,
       payment: booking.payment || null,
       availability: booking.availability,
+      ID:booking.ID,
       bookedBy: booking.bookedBy
         ? {
-            name: booking.bookedBy.name,
+            name: booking.bookedBy.residentFirstname + " " + booking.bookedBy.residentLastname ,
             email: booking.bookedBy.email,
           }
         : null,
@@ -333,7 +334,7 @@ managerRouter.post("/spaces", async (req, res) => {
 
     // Check for duplicate space names
     const existingSpace = community.commonSpaces.find(
-      (space) => space.name.toLowerCase() === name.toLowerCase()
+      (space) => space.name.toLowerCase() === spaceName.toLowerCase()
     );
     if (existingSpace) {
       return res.status(400).json({
@@ -1539,34 +1540,31 @@ managerRouter.get("/dashboard", async (req, res) => {
     status: "Active",
   });
 
-  const issues = await Issue.find({ community: req.user.community });
+  const issues = await Issue.find({ community: req.user.community,status:"Pending" }).populate("resident", "residentFirstname residentLastname");
   const residents = await Resident.find({ community: req.user.community });
-  const workers = await Worker.find({ community: req.user.community });
-  const security = await Security.find({ community: req.user.community });
   const commonSpacesBookings = await CommonSpaces.find({
     community: req.user.community,
-  });
+    status:"Pending"
+  }).populate("bookedBy", "residentFirstname residentLastname");
   const payments = await Payment.find({ community: req.user.community });
   const visitors = await visitor.find({ community: req.user.community });
 
-  const totalIssues = issues.length;
   const totalResidents = residents.length;
-  const totalWorkers = workers.length;
-  const totalSecurity = security.length;
   const totalCommonSpacesBookings = commonSpacesBookings.length;
   const totalPayments = payments.length;
+
+  let Iactions = [...issues];
+  let Cactions = [...commonSpacesBookings]
+
+  Iactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  Cactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  
 
   const pendingIssues = issues.filter(
     (issue) => issue.status === "Pending" || issue.status === "Assigned"
   ).length;
-  const resolvedIssues = issues.filter(
-    (issue) => issue.status === "Resolved"
-  ).length;
   const pendingCommonSpacesBookings = commonSpacesBookings.filter(
     (booking) => booking.status === "Pending"
-  ).length;
-  const approvedCommonSpacesBookings = commonSpacesBookings.filter(
-    (booking) => booking.status === "Booked"
   ).length;
   const pendingPayments = payments.filter(
     (payment) => payment.status === "Pending"
@@ -1578,19 +1576,16 @@ managerRouter.get("/dashboard", async (req, res) => {
   res.render("communityManager/dashboard", {
     path: "d",
     ads,
-    totalIssues,
     totalResidents,
-    totalWorkers,
-    totalSecurity,
     totalCommonSpacesBookings,
     totalPayments,
     pendingIssues,
-    resolvedIssues,
     pendingCommonSpacesBookings,
-    approvedCommonSpacesBookings,
     pendingPayments,
     completedPayments,
     visitors,
+    Iactions,
+    Cactions
   });
 });
 
@@ -1766,7 +1761,7 @@ managerRouter.get("/profile", async (req, res) => {
 managerRouter.post("/profile", upload.single("image"), async (req, res) => {
   const { name, email, contact } = req.body;
 
-  const image = "";
+  let image = "";
 
   const r = await CommunityManager.findById(req.user.id);
   if (req.file) {
@@ -1779,9 +1774,8 @@ managerRouter.post("/profile", upload.single("image"), async (req, res) => {
   r.image = image;
 
   await r.save();
-  req.flash("alert-msg", "profile updated");
 
-  res.redirect("/manager/profile");
+  res.json({ success: true, r, message: "Profile updated" });
 });
 
 managerRouter.post("/profile/changePassword", async (req, res) => {

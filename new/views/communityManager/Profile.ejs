@@ -17,6 +17,8 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../../css/nav.css" />
+    <link rel="stylesheet" href="/notyf/notyf.min.css" />
+
 
     <style>
       .section-title {
@@ -246,7 +248,8 @@
       <!-- AD SECTION -->
       <div class="adCon d-flex justify-content-center align-items-center">
         <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length > 0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
+          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length >
+          0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
           <img
             src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
             class="ad-slide"
@@ -297,87 +300,77 @@
 
           <!-- Profile Section -->
           <div id="profileSection" class="form-section">
-           <form action="/manager/profile" method="POST" enctype="multipart/form-data">
-  <div class="profile-image-container" style="object-fit: contain">
-    <% if (r.image) { %>
-      <img
-        src="http://localhost:3000/<%= r.image.replace(/\\/g, '/') %>"
-        alt=""
-        height="200px"
-        width="200px"
-      />
-    <% } else { %>
-      <img
-        src="../uploads/1752475929798.png"
-        alt=""
-        height="200px"
-        width="200px"
-      />
-    <% } %>
-    <div class="upload-btn" title="Upload Photo">
-      <label for="image"><i class="bi bi-camera"> </i></label>
-      <input
-        type="file"
-        name="image"
-        id="image"
-        hidden
-      />
-    </div>
-  </div>
+            <form id="profileForm" type="manager" enctype="multipart/form-data" >
+              <div class="profile-image-container" style="object-fit: contain">
+                <% if (r.image) { %>
+                <img
+                  src="http://localhost:3000/<%= r.image.replace(/\\/g, '/') %>"
+                  alt=""
+                  height="200px"
+                  width="200px"
+                />
+                <% } else { %>
+                <img
+                  src="../uploads/1752475929798.png"
+                  alt=""
+                  height="200px"
+                  width="200px"
+                />
+                <% } %>
+                <div class="upload-btn" title="Upload Photo">
+                  <label for="image"><i class="bi bi-camera"> </i></label>
+                  <input type="file" name="image" id="image" hidden />
+                </div>
+              </div>
 
-  <div class="row">
-    <div class="col-md-12">
-      <div class="form-group">
-        <label for="firstName">First Name</label>
-        <input
-          type="text"
-          class="form-control"
-          id="firstName"
-          value="<%= r.name %>"
-          name="name"
-        />
-      </div>
-    </div>
-  </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="firstName"
+                      value="<%= r.name %>"
+                      name="name"
+                    />
+                  </div>
+                </div>
+              </div>
 
-  <div class="form-group">
-    <label for="email">Email Address</label>
-    <input
-      type="email"
-      class="form-control"
-      id="email"
-      value="<%= r.email %>"
-      name="email"
-    />
-  </div>
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  value="<%= r.email %>"
+                  name="email"
+                />
+              </div>
 
-  <div class="form-group">
-    <label for="phone">Phone Number</label>
-    <input
-      type="text"
-      class="form-control"
-      id="phone"
-      value="<%= r.contact %>"
-      name="contact"
-    />
-  </div>
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="phone"
+                  value="<%= r.contact %>"
+                  name="contact"
+                />
+              </div>
 
-  <div class="d-flex justify-content-end mt-4">
-    <button type="submit" class="btn-submit">
-      <i class="bi bi-save me-2"></i>Save Changes
-    </button>
-  </div>
-</form>
-
+              <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn-submit">
+                  <i class="bi bi-save me-2"></i>Save Changes
+                </button>
+              </div>
+            </form>
           </div>
 
           <!-- Password Section -->
           <div id="passwordSection" class="form-section d-none">
-            <form
-              action="/manager/profile/changePassword"
-              method="POST"
-              id="passwordForm"
-            >
+            <form id="passwordForm">
               <div class="form-group">
                 <label for="currentPassword">Current Password</label>
                 <input
@@ -431,70 +424,10 @@
       </div>
     </div>
 
-    <script>
-      function showSection(sectionId, activeTabId) {
-        // Hide all sections
-        document.querySelectorAll(".form-section").forEach((section) => {
-          section.classList.add("d-none");
-        });
 
-        // Show selected section
-        document.getElementById(sectionId).classList.remove("d-none");
-
-        // Remove active class from all tabs
-        document.querySelectorAll(".toggle-tab").forEach((tab) => {
-          tab.classList.remove("active");
-        });
-
-        // Add active class to clicked tab
-        document.getElementById(activeTabId).classList.add("active");
-      }
-
-      // Initialize the page with profile section visible
-      document.addEventListener("DOMContentLoaded", () => {
-        showSection("profileSection", "profileTab");
-
-        // Add animation to form sections
-        const sections = document.querySelectorAll(".form-section");
-        sections.forEach((section, index) => {
-          section.style.opacity = "0";
-          section.style.transform = "translateY(20px)";
-
-          setTimeout(() => {
-            section.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-            section.style.opacity = "1";
-            section.style.transform = "translateY(0)";
-          }, index * 100);
-        });
-
-        document
-          .getElementById("passwordForm")
-          .addEventListener("submit", async function (e) {
-            e.preventDefault();
-
-            const cp = document.getElementById("currentPassword").value;
-            const np = document.getElementById("newPassword").value;
-            const cnp = document.getElementById("confirmPassword").value;
-
-            if (np !== cnp) {
-              alert("New Password and Confirm Password do not match.");
-              return;
-            }
-
-            const response = await fetch("/manager/profile/changePassword", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ cp, np, cnp }),
-            });
-
-            const result = await response.json();
-            alert(result.message);
-            window.location.href = "/manager/profile";
-          });
-      });
-    </script>
+    
+    <script src="/notyf/notyf.min.js"></script>
+    <script src="../../js/profile.js" ></script>
     <script src="../../js/sidebar.js"></script>
   </body>
 </html>

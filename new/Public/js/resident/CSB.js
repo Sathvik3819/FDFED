@@ -1,11 +1,18 @@
-// Updated CSB.js - Frontend JavaScript with API-based Facility Data Fetching
-// Store facility data globally
+const notyf = new Notyf({
+  duration: 3000,
+  position: { x: "center", y: "top" },
+  types: [
+    { type: "warning", background: "orange", icon: false },
+    { type: "info", background: "blue", icon: false },
+  ],
+});
+
 let facilityData = {};
-// Function to open a popup
+
 function openForm(type) {
   document.getElementById(type + "FormPopup").style.display = "flex";
 }
-// Function to close a popup
+
 function closeForm(type) {
   if (type === "details") {
     document.getElementById("bookingDetailsPopup").style.display = "none";
@@ -13,450 +20,409 @@ function closeForm(type) {
     document.getElementById(type + "FormPopup").style.display = "none";
   }
 }
-function bookingRules() {
-  const facility = document.getElementById("facility").value;
-  
-  console.log('Selected facility:', facility); // Debug log
-  
-  if (!facility) {
-    return "Select a facility to view booking rules...";
-  }
-  
-  // Get facility-specific data from the fetched facilityData
-  const facilityInfo = facilityData[facility];
-  
-  console.log('Facility Info:', facilityInfo); // Debug log
-  console.log('Available keys in facilityInfo:', facilityInfo ? Object.keys(facilityInfo) : 'No facility info'); // Debug log
-  
-  if (facilityInfo) {
-    // Try multiple possible field names for booking rules
-    const rules = facilityInfo.bookingRules || 
-                 facilityInfo.rules || 
-                 facilityInfo.booking_rules || 
-                 facilityInfo.bookingRule;
-    
-    console.log('Found booking rules:', rules); // Debug log
-    
-    if (rules) {
-      return rules;
-    }
-  }
-  
-  // Fallback if no rules in database
-  console.log('No booking rules found for facility'); // Debug log
-  return "No specific rules available for this facility. Please contact management for details.";
-}
-// Fetch facility data from API
-// Update the fetchFacilityData function in your CSB.js
+
 async function fetchFacilityData() {
   try {
-    const response = await fetch('/resident/api/facilities', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    const response = await fetch("/resident/api/facilities");
     const data = await response.json();
-    
-    console.log('Raw API Response:', data); // Debug log
-    
-    // Handle different response formats
-    let facilities;
-    if (Array.isArray(data)) {
-      facilities = data;
-    } else if (data.success && data.facilities) {
-      facilities = data.facilities;
-    } else if (data.facilities) {
-      facilities = data.facilities;
-    } else {
-      throw new Error('Invalid response format');
-    }
-    
-    if (facilities && Array.isArray(facilities)) {
-      // Convert array to object for easy lookup
-      facilityData = {};
-      facilities.forEach(facility => {
-        // Use the exact field names from your database
-        facilityData[facility.name] = {
-          maxBookingDurationHours: facility.maxBookingDurationHours,
-          bookingRules: facility.bookingRules, // This should match your DB field exactly
-          id: facility._id,
-          type: facility.type,
-          rent: facility.rent,
-          bookable: facility.bookable,
-         
-        };
-      });
-      console.log('Final Facility Data Object:', facilityData); // Debug log
-      return true;
-    } else {
-      throw new Error('No facilities found in response');
-    }
-  } catch (error) {
-    console.error('Error fetching facility data:', error);
-    return false;
+    const facilities = data.facilities || data;
+    facilityData = {};
+    facilities.forEach((f) => {
+      facilityData[f.name] = {
+        maxBookingDurationHours: f.maxBookingDurationHours,
+        bookingRules: f.bookingRules,
+        id: f._id,
+        rent: f.rent,
+      };
+    });
+  } catch (err) {
+    console.error("Error fetching facilities:", err);
   }
 }
-// Handle facility change
+
 function handleFacilityChange() {
   const facility = document.getElementById("facility").value;
   const maxHoursDisplay = document.getElementById("maxHoursDisplay");
-  if (facility) {
-    // Reset date and time selections when facility changes
-    document.getElementById("bookingDate").value = "";
-    resetTimeSlots();
-    // Find facility data and display max hours
-    const selectedFacility = facilityData[facility];
-    if (selectedFacility && selectedFacility.maxBookingDurationHours) {
-      maxHoursDisplay.textContent = `Maximum booking duration: ${selectedFacility.maxBookingDurationHours} hour(s)`;
-      maxHoursDisplay.style.color = "#007bff";
-    }
-  } else {
-    maxHoursDisplay.textContent = "";
-  }
+  document.getElementById("bookingDate").value = "";
+  resetTimeSlots();
+  const selected = facilityData[facility];
+  maxHoursDisplay.textContent = selected
+    ? `Maximum booking duration: ${selected.maxBookingDurationHours} hour(s)`
+    : "";
+  maxHoursDisplay.style.color = "#007bff";
 }
-// Handle date change
+
 function handleDateChange() {
-  const date = document.getElementById("bookingDate").value;
-  if (date) {
-    // Reset time selections when date changes
-    resetTimeSlots();
-    // TODO: Here you could fetch available slots for the selected date and facility
-    // fetchAvailableSlots(facility, date);
-  }
+  document.getElementById("bookingDate").value && resetTimeSlots();
 }
-// Reset time slots
+
 function resetTimeSlots() {
-  const checkboxes = document.querySelectorAll('input[name="timeSlots"]');
-  checkboxes.forEach(checkbox => {
-    checkbox.checked = false;
-    checkbox.parentElement.classList.remove('selected');
+  document.querySelectorAll('input[name="timeSlots"]').forEach((c) => {
+    c.checked = false;
+    c.parentElement.classList.remove("selected");
   });
   updateSelectedTimeDisplay();
 }
-// Get maximum hours for selected facility
+
 function getMaxHoursForFacility() {
-  const facility = document.getElementById("facility").value;
-  if (facility && facilityData[facility] && facilityData[facility].maxBookingDurationHours) {
-    return facilityData[facility].maxBookingDurationHours;
-  }
-  // Return default max hours if facility data is not available
-  return 4;
+  const f = document.getElementById("facility").value;
+  return facilityData[f]?.maxBookingDurationHours || 4;
 }
-// Fetch specific facility data (alternative method)
-async function fetchSpecificFacilityData(facilityName) {
-  try {
-    const response = await fetch(`/resident/commonSpace/api/facilities/${encodeURIComponent(facilityName)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    if (data.success && data.facility) {
-      // Update facility data for this specific facility
-      facilityData[facilityName] = {
-        maxBookingDurationHours: data.facility.maxBookingDurationHours,
-        id: data.facility.id,
-       
-      };
-      return facilityData[facilityName];
-    }
-  } catch (error) {
-    console.error(`Error fetching data for facility ${facilityName}:`, error);
-    return null;
-  }
-}
-// Update selected time display and hidden inputs
+
 function updateSelectedTimeDisplay() {
-  const selectedSlots = Array.from(document.querySelectorAll('input[name="timeSlots"]:checked'))
-    .map(cb => cb.value)
+  const selected = Array.from(
+    document.querySelectorAll('input[name="timeSlots"]:checked')
+  )
+    .map((cb) => cb.value)
     .sort();
-  const selectedTimeText = document.getElementById("selectedTimeText");
-  const hiddenFromTime = document.getElementById("hiddenFromTime");
-  const hiddenToTime = document.getElementById("hiddenToTime");
-  if (selectedSlots.length === 0) {
-    selectedTimeText.textContent = "No time slots selected";
-    selectedTimeText.className = "no-selection";
-    hiddenFromTime.value = "";
-    hiddenToTime.value = "";
+  const txt = document.getElementById("selectedTimeText");
+  const from = document.getElementById("hiddenFromTime");
+  const to = document.getElementById("hiddenToTime");
+  if (!selected.length) {
+    txt.textContent = "No time slots selected";
+    txt.className = "no-selection";
+    from.value = to.value = "";
     return;
   }
-  // Calculate start and end times
-  const startTime = selectedSlots[0];
-  const lastSlotHour = parseInt(selectedSlots[selectedSlots.length - 1].split(':')[0]);
-  const endTime = String(lastSlotHour + 1).padStart(2, '0') + ':00';
-  // Format display time
-  const formatTime = (time24) => {
-    const [hour, minute] = time24.split(':');
-    const hourNum = parseInt(hour);
-    const ampm = hourNum >= 12 ? 'PM' : 'AM';
-    const displayHour = hourNum > 12 ? hourNum - 12 : (hourNum === 0 ? 12 : hourNum);
-    return `${displayHour}:${minute} ${ampm}`;
+  const start = selected[0];
+  const end =
+    String(parseInt(selected[selected.length - 1].split(":")[0]) + 1).padStart(
+      2,
+      "0"
+    ) + ":00";
+  const format = (t) => {
+    const [h, m] = t.split(":");
+    const n = parseInt(h);
+    const ampm = n >= 12 ? "PM" : "AM";
+    const disp = n > 12 ? n - 12 : n === 0 ? 12 : n;
+    return `${disp}:${m} ${ampm}`;
   };
-  selectedTimeText.textContent = `${formatTime(startTime)} - ${formatTime(endTime)}`;
-  selectedTimeText.className = "time-selected";
-  // Update hidden inputs
-  hiddenFromTime.value = startTime;
-  hiddenToTime.value = endTime;
+  txt.textContent = `${format(start)} - ${format(end)}`;
+  txt.className = "time-selected";
+  from.value = start;
+  to.value = end;
 }
-// Check if slots are continuous
+
 function areSlotsContinuous(slots) {
   if (slots.length <= 1) return true;
-  const hours = slots.map(slot => parseInt(slot.split(':')[0])).sort((a, b) => a - b);
-  for (let i = 1; i < hours.length; i++) {
-    if (hours[i] - hours[i - 1] !== 1) {
-      return false;
-    }
-  }
-  return true;
+  const hours = slots
+    .map((s) => parseInt(s.split(":")[0]))
+    .sort((a, b) => a - b);
+  return hours.every((h, i) => i === 0 || h - hours[i - 1] === 1);
 }
-// Handle time slot checkbox change with facility-specific max hours
-function handleTimeSlotChange(checkbox) {
-  const maxBookingDurationHours = getMaxHoursForFacility();
-  // If checking a new slot, check limits first
-  if (checkbox.checked) {
-    const currentlySelected = document.querySelectorAll('input[name="timeSlots"]:checked').length;
-    // Check if trying to select more than facility's max hours
-    if (currentlySelected > maxBookingDurationHours) {
-      checkbox.checked = false;
-      alert(`You can select a maximum of ${maxBookingDurationHours} consecutive time slots for this facility.`);
+
+function handleTimeSlotChange(cb) {
+  const max = getMaxHoursForFacility();
+  if (cb.checked) {
+    const count = document.querySelectorAll(
+      'input[name="timeSlots"]:checked'
+    ).length;
+    if (count > max) {
+      cb.checked = false;
+      alert(`Max ${max} continuous slots allowed.`);
       return;
     }
   }
-  const selectedSlots = Array.from(document.querySelectorAll('input[name="timeSlots"]:checked'))
-    .map(cb => cb.value);
-  // Check if slots are continuous
-  if (!areSlotsContinuous(selectedSlots)) {
-    // Uncheck this slot and show warning
-    checkbox.checked = false;
+  const slots = Array.from(
+    document.querySelectorAll('input[name="timeSlots"]:checked')
+  ).map((s) => s.value);
+  if (!areSlotsContinuous(slots)) {
+    cb.checked = false;
     alert("Please select continuous time slots only.");
     return;
   }
-  // Update visual selection
-  if (checkbox.checked) {
-    checkbox.parentElement.classList.add('selected');
-  } else {
-    checkbox.parentElement.classList.remove('selected');
-  }
+  cb.parentElement.classList.toggle("selected", cb.checked);
   updateSelectedTimeDisplay();
 }
-// Show loading state
-function showLoading(button) {
-  const originalText = button.innerHTML;
-  button.innerHTML = '<i class="bi bi-spinner bi-spin"></i> Loading...';
-  button.disabled = true;
-  return originalText;
+
+function showLoading(btn) {
+  const txt = btn.innerHTML;
+  btn.innerHTML = '<i class="bi bi-spinner bi-spin"></i> Loading...';
+  btn.disabled = true;
+  return txt;
 }
-// Hide loading state
-function hideLoading(button, originalText) {
-  button.innerHTML = originalText;
-  button.disabled = false;
+
+function hideLoading(btn, txt) {
+  btn.innerHTML = txt;
+  btn.disabled = false;
 }
-// Wait for DOM to fully load
+
 document.addEventListener("DOMContentLoaded", async () => {
-  // Fetch facility data from API first
-  const dataLoaded = await fetchFacilityData();
-  // Open booking form
-  document.getElementById("bookFacilityBtn")?.addEventListener("click", () => {
-    openForm("booking");
-  });
-  // Handle time slot selection - direct event listeners on checkboxes
-  document.querySelectorAll('input[name="timeSlots"]').forEach(checkbox => {
-    checkbox.addEventListener('change', function () {
-      handleTimeSlotChange(this);
-    });
-    // Also handle click events on labels for better UX
-    const label = checkbox.nextElementSibling;
-    if (label && label.tagName === 'LABEL') {
-      label.addEventListener('click', function (e) {
-        // Prevent default to handle manually
-        e.preventDefault();
-        checkbox.checked = !checkbox.checked;
-        handleTimeSlotChange(checkbox);
-      });
-    }
-  });
-  // Handle clicks on time slot containers
-  document.querySelectorAll('.time-slot').forEach(timeSlot => {
-    timeSlot.addEventListener('click', function (e) {
-      // Only handle if clicked on the container, not the checkbox or label
-      if (e.target === this) {
-        const checkbox = this.querySelector('input[type="checkbox"]');
-        if (checkbox) {
-          checkbox.checked = !checkbox.checked;
-          handleTimeSlotChange(checkbox);
-        }
-      }
-    });
-  });
-  // Animate cards
-  const cards = document.querySelectorAll(".stat-card, .table-container");
-  cards.forEach((card, index) => {
-    card.style.opacity = "0";
-    card.style.transform = "translateY(20px)";
-    setTimeout(() => {
-      card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-      card.style.opacity = "1";
-      card.style.transform = "translateY(0)";
-    }, 200 + index * 100);
-  });
-  // Cancel button handling
-  document.querySelectorAll(".action-btn.cancel").forEach((button) => {
-    button.addEventListener("click", async (e) => {
+  await fetchFacilityData();
+  const bookingGrid = document.querySelector(".bookings-grid");
+  const bookingForm = document.getElementById("bookingForm");
+  const showPopup = (id) =>
+    (document.getElementById(id).style.display = "flex");
+  const hidePopup = (id) =>
+    (document.getElementById(id).style.display = "none");
+  const updateText = (id, val) =>
+    (document.getElementById(id).textContent = val || "-");
+  const toggleSection = (id, s) =>
+    (document.getElementById(id).style.display = s ? "block" : "none");
+
+  document
+    .getElementById("bookFacilityBtn")
+    ?.addEventListener("click", () => openForm("booking"));
+
+  document.querySelectorAll('input[name="timeSlots"]').forEach((cb) => {
+    const fn = () => handleTimeSlotChange(cb);
+    cb.addEventListener("change", fn);
+    cb.nextElementSibling?.addEventListener("click", (e) => {
       e.preventDefault();
-      const bookingId = button.getAttribute("data-id");
-      const originalText = showLoading(button);
-      // Confirm cancellation
-      if (!confirm("Are you sure you want to cancel this booking?")) {
-        hideLoading(button, originalText);
-        return;
-      }
-      try {
-        const res = await fetch(`/resident/commonSpace/cancelled/${bookingId}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
-        const result = await res.json();
-        if (res.ok) {
-          alert("Booking cancelled successfully.");
-          window.location.reload();
-        } else {
-          throw new Error(result.error || "Failed to cancel booking");
-        }
-      } catch (error) {
-        console.error("Cancellation error:", error);
-        alert("Could not cancel the booking. Please try again.");
-        hideLoading(button, originalText);
-      }
+      cb.checked = !cb.checked;
+      fn();
     });
   });
-  // View button handling — opens Booking Details popup
-  document.querySelectorAll(".action-btn.view").forEach((button) => {
-    button.addEventListener("click", async (e) => {
+
+  bookingGrid?.addEventListener("click", async (e) => {
+    const viewBtn = e.target.closest(".action-btn.view");
+    const cancelBtn = e.target.closest(".action-btn.cancel");
+
+    if (viewBtn) {
       e.preventDefault();
-      const bookingId = button.getAttribute("data-id");
-      const originalText = showLoading(button);
+      const bookingId = viewBtn.dataset.id;
+      const orig = showLoading(viewBtn);
       try {
-        const response = await fetch(`/resident/commonSpace/${bookingId}`, {
+        const res = await fetch(`/resident/commonSpace/${bookingId}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ bookingId }),
         });
-        if (!response.ok) {
-          throw new Error("Failed to fetch booking details");
+        const { commonspace: b } = await res.json();
+
+        updateText("detail-id", b._id ? b.ID : "-");
+        document.getElementById(
+          "detail-status"
+        ).innerHTML = `<span class="status-badge status-${
+          b.status || "unknown"
+        }">${b.status || "Unknown"}</span>`;
+        updateText("detail-facility", b.name);
+        updateText("detail-date", b.Date || b.date);
+        updateText("detail-time", `${b.from || "-"} - ${b.to || "-"}`);
+        updateText(
+          "detail-created",
+          b.createdAt ? new Date(b.createdAt).toLocaleString() : "-"
+        );
+        updateText("detail-purpose", b.description || b.purpose);
+
+        const isCancelled = !!(b.feedback || b.rating);
+        const isPayment =
+          b.status === "Pending Payment" || b.status === "Booked";
+
+        toggleSection("cancellation-section", isCancelled);
+        toggleSection("payment-section", isPayment);
+
+        if (isCancelled) {
+          updateText("detail-cancellation-reason", b.feedback);
+          updateText("detail-cancelled-by", b.cancelledBy);
+          updateText(
+            "detail-cancelled-at",
+            b.cancelledAt ? new Date(b.cancelledAt).toLocaleString() : "-"
+          );
         }
-        const data = await response.json();
-        const b = data.commonspace;
-        // Populate popup fields with safe fallbacks
-        document.getElementById("detail-id").textContent = b._id ? b._id.toString().slice(-6) : "-";
-        // Status with proper styling
-        const statusElement = document.getElementById("detail-status");
-        statusElement.innerHTML = `<span class="status-badge status-${b.status?.toLowerCase() || 'unknown'}">${b.status || 'Unknown'}</span>`;
-        document.getElementById("detail-facility").textContent = b.name || "-";
-        document.getElementById("detail-date").textContent = b.Date || b.date || "-";
-        document.getElementById("detail-time").textContent = `${b.from || b.startTime || "-"} - ${b.to || b.endTime || "-"}`;
-        // Format created date
-        if (b.createdAt) {
-          const createdAt = new Date(b.createdAt);
-          document.getElementById("detail-created").textContent = createdAt.toLocaleString();
-        } else {
-          document.getElementById("detail-created").textContent = "-";
-        }
-        document.getElementById("detail-purpose").textContent = b.description || b.purpose || "No purpose specified";
-        // Cancellation section
-        if (b.status === "Cancelled" || b.cancellationReason) {
-          document.getElementById("cancellation-section").style.display = "block";
-          document.getElementById("detail-cancellation-reason").textContent = b.cancellationReason || "No reason provided";
-          document.getElementById("detail-cancelled-by").textContent = b.cancelledBy || "System";
-          if (b.cancelledAt) {
-            const cancelledAt = new Date(b.cancelledAt);
-            document.getElementById("detail-cancelled-at").textContent = cancelledAt.toLocaleString();
-          } else {
-            document.getElementById("detail-cancelled-at").textContent = "-";
+
+        if (isPayment && b.payment) {
+          const paymentSection = document.getElementById("payment-section");
+          paymentSection.innerHTML = `
+            <h4>Payment Details</h4>
+            <div class="row">
+              <div class="col">
+                <div class="detail-item">
+                  <span class="detail-label">Amount:</span> 
+                  <span class="detail-value">${b.payment.amount || "-"}
+                  </span>
+                </div>
+              </div>
+              <div class="col">
+                    <div class="detail-item">
+                      <span class="detail-label">Status:</span> <span class="status-badge status-${
+                        b.payment.status
+                      }">${b.payment.status}</span>
+                    </div>
+              </div>
+            </div>
+            
+          `;
+
+          if (b.payment.status === "Pending") {
+            paymentSection.insertAdjacentHTML(
+              "beforeend",
+              `<div class="detail-item"><span class="detail-label">Payment Deadline:</span> <span class="detail-value">${
+                new Date(b.payment.paymentDeadline).toLocaleString("en-US", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }) || "-"
+              }</span></div>
+               `
+            );
+          } else if (b.payment.status === "Completed") {
+            paymentSection.insertAdjacentHTML(
+              "beforeend",
+              `
+              <div class="row">
+                <div class="col" >
+                  <div class="detail-item">
+                    <span class="detail-label">Paid On:</span> 
+                    <span class="detail-value">
+                      ${new Date(b.payment.paymentDate).toLocaleString(
+                        "en-US",
+                        {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        }
+                      )}
+                    </span>
+                  </div>
+                  
+                </div>
+                <div class="col">
+                  <div class="detail-item">
+                    <span class="detail-label">Transaction ID:</span> 
+                    <span class="detail-value">${b.payment._id}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                      <div class="detail-item">
+                        <span class="detail-label">Method:</span> 
+                        <span class="detail-value">${
+                          b.payment.paymentMethod || "-"
+                        }</span>
+                      </div>
+                </div>
+              </div>
+              
+              `
+            );
           }
-        } else {
-          document.getElementById("cancellation-section").style.display = "none";
         }
-        // Manager comment section
-        if (b.managerComment) {
-          document.getElementById("manager-comment-section").style.display = "block";
-          document.getElementById("detail-manager-comment").textContent = b.managerComment;
-        } else {
-          document.getElementById("manager-comment-section").style.display = "none";
-        }
-        // Feedback section
-        if (b.feedback || b.rating) {
-          document.getElementById("feedback-section").style.display = "block";
-          document.getElementById("detail-feedback").textContent = b.feedback || "-";
-          document.getElementById("detail-rating").textContent = b.rating || "-";
-        } else {
-          document.getElementById("feedback-section").style.display = "none";
-        }
-        // Show popup
-        document.getElementById("bookingDetailsPopup").style.display = "flex";
-      } catch (err) {
-        console.error("Error fetching booking details:", err);
-        alert("Failed to load booking details. Please try again.");
+
+        showPopup("bookingDetailsPopup");
+      } catch {
+        notyf.error("Failed to load booking details");
       } finally {
-        hideLoading(button, originalText);
+        hideLoading(viewBtn, orig);
       }
-    });
-  });
-  // Click outside to close any popup
-  document.querySelectorAll(".popup").forEach((popup) => {
-    popup.addEventListener("click", (e) => {
-      if (e.target === popup) {
-        popup.style.display = "none";
+    }
+
+    if (cancelBtn) {
+      e.preventDefault();
+      const bookingId = cancelBtn.dataset.id;
+      const card = cancelBtn.closest(".booking-card");
+      const pendingNo = document.getElementById("pendingCount");
+      const orig = showLoading(cancelBtn);
+
+      if (!confirm("Are you sure you want to cancel this booking?")) {
+        hideLoading(cancelBtn, orig);
+        return;
       }
-    });
+
+      try {
+        const res = await fetch(`/resident/commonSpace/cancelled/${bookingId}`);
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error);
+
+        notyf.success("Booking cancelled successfully");
+        card.classList.add("cancelled");
+        const badge = card.querySelector(".status-badge");
+        if (badge) {
+          badge.className = "status-badge status-cancelled";
+          badge.textContent = "Cancelled";
+        }
+        if (pendingNo)
+          pendingNo.textContent = Math.max(
+            0,
+            parseInt(pendingNo.textContent) - 1
+          );
+        cancelBtn.remove();
+      } catch {
+        notyf.error("Failed to cancel booking");
+      } finally {
+        hideLoading(cancelBtn, orig);
+      }
+    }
   });
-  // Form submission handling
-  document.getElementById("bookingForm")?.addEventListener("submit", function (e) {
-    const selectedSlots = document.querySelectorAll('input[name="timeSlots"]:checked');
-    const maxBookingDurationHours = getMaxHoursForFacility();
-    if (selectedSlots.length === 0) {
-      e.preventDefault();
-      alert("Please select at least one time slot.");
-      return;
+
+  document.querySelectorAll(".popup").forEach((p) =>
+    p.addEventListener("click", (e) => {
+      if (e.target === p) hidePopup(p.id);
+    })
+  );
+
+  bookingForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const slots = Array.from(
+      document.querySelectorAll('input[name="timeSlots"]:checked')
+    );
+    const f = document.getElementById("facility").value;
+    const d = document.getElementById("bookingDate").value;
+    const from = document.getElementById("hiddenFromTime").value;
+    const to = document.getElementById("hiddenToTime").value;
+    if (!f || !d || !from || !to || !slots.length)
+      return alert("Please complete all booking details.");
+    if (slots.length > getMaxHoursForFacility())
+      return alert("Exceeded max booking duration.");
+    const btn = bookingForm.querySelector('button[type="submit"]');
+    const orig = showLoading(btn);
+    try {
+      const res = await fetch("/resident/commonSpace", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from,
+          to,
+          facility: f,
+          date: d,
+          purpose: document.getElementById("purpose").value,
+          timeSlots: slots.map((s) => s.value),
+        }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.message);
+      notyf.success("Booking successful!");
+      document.querySelector(".no-bookings")?.remove();
+      const newCard = `
+        <div class="booking-card ${result.space.status || "pending"}">
+          <div class="booking-card-header">
+            <span class="booking-id">#${result.space._id.slice(-6)}</span>
+            <span class="status-badge status-${result.space.status}">${
+        result.space.status
+      }</span>
+          </div>
+          <div class="booking-details">
+            <div class="booking-detail"><span class="detail-label">Facility:</span> <span class="detail-value">${
+              result.space.name
+            }</span></div>
+            <div class="booking-detail"><span class="detail-label">Date:</span> <span class="detail-value">${
+              result.space.Date
+            }</span></div>
+            <div class="booking-detail"><span class="detail-label">Time:</span> <span class="detail-value">${
+              result.space.from
+            } - ${result.space.to}</span></div>
+            ${
+              result.space.purpose
+                ? `<div class="booking-detail"><span class="detail-label">Purpose:</span><span class="detail-value">${result.space.purpose}</span></div>`
+                : ""
+            }
+          </div>
+          <div class="booking-actions">
+            <button class="action-btn view" data-id="${
+              result.space._id
+            }"><i class="bi bi-eye"></i> View Details</button>
+            ${
+              result.space.status === "Pending"
+                ? `<button class="action-btn cancel" data-id="${result.space._id}"><i class="bi bi-x-circle"></i> Cancel</button>`
+                : ""
+            }
+          </div>
+        </div>`;
+      bookingGrid.insertAdjacentHTML("afterbegin", newCard);
+      closeForm("booking");
+    } catch (err) {
+      notyf.error(err.message || "Booking failed.");
+    } finally {
+      hideLoading(btn, orig);
     }
-    if (selectedSlots.length > maxBookingDurationHours) {
-      e.preventDefault();
-      alert(`You can select a maximum of ${maxBookingDurationHours} time slots for this facility.`);
-      return;
-    }
-    const fromTime = document.getElementById("hiddenFromTime").value;
-    const toTime = document.getElementById("hiddenToTime").value;
-    const facility = document.getElementById("facility").value;
-    const date = document.getElementById("bookingDate").value;
-    if (!fromTime || !toTime) {
-      e.preventDefault();
-      alert("Please select valid time slots.");
-      return;
-    }
-    if (!facility) {
-      e.preventDefault();
-      alert("Please select a facility.");
-      return;
-    }
-    if (!date) {
-      e.preventDefault();
-      alert("Please select a date.");
-      return;
-    }
-    // Remove timeSlots checkboxes from form submission to avoid confusion
-    const timeSlotsCheckboxes = document.querySelectorAll('input[name="timeSlots"]');
-    timeSlotsCheckboxes.forEach(checkbox => {
-      checkbox.disabled = true;
-    });
-    // Show loading state on submit button
-    const submitButton = this.querySelector('button[type="submit"]');
-    showLoading(submitButton);
   });
 });

@@ -108,6 +108,8 @@ async function setPenalties(overdues){
 
 
 function generateCustomID(userEmail, facility, countOrRandom = null) {
+  console.log("userEmail:", userEmail);
+  
   const emailPrefix = userEmail.toUpperCase().slice(-4);
 
   const facilityCode = facility.toUpperCase().slice(0, 2);
@@ -153,7 +155,6 @@ function getTimeAgo(date) {
 
 residentRouter.get("/payment/community", async (req, res) => {
    try {
-           
         
             const user = await Community.findById(req.user.community)
             
@@ -167,6 +168,8 @@ residentRouter.get("/payment/community", async (req, res) => {
             return res.status(500).json({ message: 'Error fetching user data', error: error.message });
         }
 });
+
+
 residentRouter.get("/ad", async (req, res) => {
   const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
 
@@ -179,12 +182,11 @@ residentRouter.post("/commonSpace/:id", async (req, res) => {
   try {
     const bookingId = req.params.id;
 
-    const commonspace = await CommonSpaces.findById(bookingId);
+    const commonspace = await CommonSpaces.findById(bookingId).populate("payment");
     if (!commonspace) {
       return res.status(404).json({ error: "Booking not found" });
     }
 
-    // Verify that this booking belongs to the current user
     if (commonspace.bookedBy.toString() !== req.user.id) {
       return res.status(403).json({ error: "Unauthorized access" });
     }
@@ -211,8 +213,7 @@ residentRouter.post("/commonSpace", async (req, res) => {
 
     // Validation
     if (!facility || !date || !from || !to) {
-      req.flash("message", "Facility, date, and time are required fields.");
-      return res.redirect("/resident/commonSpace");
+      return res.json({ success: false, message: "Facility, date, and time are required fields." });
     }
 
     // Validate date is not in the past
@@ -221,15 +222,13 @@ residentRouter.post("/commonSpace", async (req, res) => {
     today.setHours(0, 0, 0, 0);
 
     if (bookingDate < today) {
-      req.flash("message", "Cannot book for past dates.");
-      return res.redirect("/resident/commonSpace");
+      return res.json({ success: false, message: "Cannot book for past dates." });
     }
 
     // Validate time format and logic
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (!timeRegex.test(from) || !timeRegex.test(to)) {
-      req.flash("message", "Invalid time format.");
-      return res.redirect("/resident/commonSpace");
+      return res.json({ success: false, message: "Invalid time format." });
     }
 
     // Check if end time is after start time
@@ -252,7 +251,7 @@ residentRouter.post("/commonSpace", async (req, res) => {
     });
 
     // Generate unique ID
-    const uniqueId = generateCustomID(req.user.id, "CS", null);
+    const uniqueId = generateCustomID(space._id.toString(), "CS", null);
     space.ID = uniqueId;
     await space.save();
 
@@ -265,12 +264,10 @@ residentRouter.post("/commonSpace", async (req, res) => {
       await user.save();
     }
 
-    req.flash("message", "Booking request submitted successfully!");
-    return res.redirect("/resident/commonSpace");
+    return res.json({ success: true, message: "Booking request submitted successfully!",space });
   } catch (error) {
     console.error("Error creating booking:", error);
-    req.flash("message", "Something went wrong. Please try again.");
-    res.redirect("/resident/commonSpace");
+    res.json({ success: false, message: "Something went wrong. Please try again." });
   }
 });
 
@@ -311,6 +308,8 @@ residentRouter.get("/commonSpace/cancelled/:id", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
+
 residentRouter.get("/api/facilities", async (req, res) => {
   try {
     // Fetch facilities from your database
@@ -351,6 +350,8 @@ residentRouter.get("/api/facilities", async (req, res) => {
     });
   }
 });
+
+
 const formatDate = (rawDate) => {
   return new Date(rawDate).toLocaleDateString("en-IN", {
     day: "2-digit",
@@ -491,30 +492,34 @@ residentRouter.post("/issueRaising", async (req, res) => {
     await resident.save();
     console.log("Resident's raisedIssues updated:", resident.raisedIssues);
 
-    return res.redirect("issueRaising");
+    return res.json({ success: true, message: "Issue raised successfully!", issue: newIssue });
   } catch (error) {
     console.error("Error raising issue:", error);
     req.flash("message", "Something went wrong.");
-    return res.redirect("issueRaising");
+    return res.json({ success: false, message: "Something went wrong." });
   }
 });
 
-residentRouter.delete("/deleteIssue/:issueID", async (req, res) => {
+residentRouter.post("/deleteIssue/:issueID", async (req, res) => {
   try {
     const { issueID } = req.params;
 
     const issue = await Issue.findOneAndDelete({ _id: issueID });
 
     if (!issue) {
-      return res.status(404).json({ error: "Issue not found." });
+      return res.status(404).json({ success: false, message: "Issue not found." });
     }
 
-    await Resident.updateOne(
-      { raisedIssues: issue._id },
-      { $pull: { raisedIssues: issue._id } }
-    );
+    const resident = await Resident.findById(req.user.id);
+    if (!resident) {
+      return res.status(404).json({ success: false, message: "Resident not found." });
+    }
 
-    res.json({ message: "Issue deleted successfully." });
+    resident.raisedIssues = resident.raisedIssues.filter((id) => id.toString() !== issueID);
+
+    await resident.save();
+
+    res.json({success: true, message: "Issue deleted successfully." });
   } catch (error) {
     console.error("Error deleting issue:", error);
     res.status(500).json({ error: "Internal server error." });
@@ -537,6 +542,49 @@ residentRouter.get("/getIssueData/:issueID", async (req, res) => {
   } catch (error) {
     console.error("Error fetching issue data:", error);
     res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+residentRouter.post("/submitFeedback", async (req, res) => {
+    const { id, feedback, rating } = req.body;
+    console.log("Feedback Data Received:", req.body);
+
+    try{
+      const issue = await Issue.findById(id).populate("community","communityManager");
+      console.log(issue);
+      
+      if (!issue) {
+        return res.status(404).json({ success: false, message: "Issue not found." });
+      }
+
+      const payment = await Payment.create({
+        title: `Payment for Issue ${issue.issueID}`,
+        sender: issue.resident,
+        receiver: issue.community.communityManager,
+        amount: 2000,
+        status: "Pending",
+        community: issue.community,
+        belongTo: "Issue",
+        belongToId: issue._id,
+        paymentDeadline: new Date(Date.now() + 7*24*60*60*1000),
+      });
+
+      const uniqueId = generateCustomID(issue._id.toString(), "PY", null);
+      payment.ID = uniqueId;
+      await payment.save();
+
+      issue.payment = payment._id;
+      issue.feedback = feedback;
+      issue.rating = Number(rating);
+      issue.status = "Payment Pending";
+
+      await issue.save();
+
+
+    return res.status(201).json({ success: true, message: "Feedback submitted successfully." });
+  } catch (error) {
+    console.error("Error submitting feedback:", error);
+    return res.status(500).json({ success: false, message: "Internal server error." });
   }
 });
 
@@ -796,9 +844,12 @@ residentRouter.get("/profile", async (req, res) => {
 residentRouter.post("/profile", upload.single("image"), async (req, res) => {
   const { firstName, lastName, contact, email, address } = req.body;
 
+  console.log("Profile update data:", req.body);
+  
+
   const r = await Resident.findById(req.user.id);
 
-  const image = req.file.path;
+  const image = req.file?.path;
 
   r.residentFirstname = firstName;
   r.residentLastname = lastName;
@@ -816,7 +867,7 @@ residentRouter.post("/profile", upload.single("image"), async (req, res) => {
 
   await r.save();
 
-  res.redirect("/resident/Profile");
+  return res.json({success:true,message:"Profile updated successfully",r});
 });
 
 residentRouter.post("/change-password", async (req, res) => {

@@ -1,58 +1,139 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // Tabs and content sections
-    const tabs = document.querySelectorAll('.tab');
-    const profileContent = document.getElementById('profileContent');
-    const passwordContent = document.getElementById('passwordContent');
-    const accountContent = document.getElementById('accountContent'); // Might not exist in current HTML
+const notyf = new Notyf({
+  duration: 3000,
+  position: { x: "center", y: "top" },
+  types: [
+    { type: "warning", background: "orange", icon: false },
+    { type: "info", background: "blue", icon: false },
+  ],
+});
 
-    // Set default visible content
-    if (profileContent) profileContent.style.display = 'block';
-    if (passwordContent) passwordContent.style.display = 'none';
-    if (accountContent) accountContent.style.display = 'none';
+function showSection(sectionId, activeTabId) {
+  // Hide all sections
+  document.querySelectorAll(".form-section").forEach((section) => {
+    section.classList.add("d-none");
+  });
 
-    // Handle tab switching
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function () {
-            // Remove active class from all
-            tabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
+  // Show selected section
+  document.getElementById(sectionId).classList.remove("d-none");
 
-            // Show corresponding tab content
-            const selectedTab = this.getAttribute('data-tab');
-            if (profileContent) profileContent.style.display = (selectedTab === 'profile') ? 'block' : 'none';
-            if (passwordContent) passwordContent.style.display = (selectedTab === 'password') ? 'block' : 'none';
-            if (accountContent) accountContent.style.display = (selectedTab === 'account') ? 'block' : 'none';
-        });
+  // Remove active class from all tabs
+  document.querySelectorAll(".toggle-tab").forEach((tab) => {
+    tab.classList.remove("active");
+  });
+
+  // Add active class to clicked tab
+  document.getElementById(activeTabId).classList.add("active");
+}
+
+// Initialize the page with profile section visible
+document.addEventListener("DOMContentLoaded", () => {
+  showSection("profileSection", "profileTab");
+
+  // Add animation to form sections
+  const sections = document.querySelectorAll(".form-section");
+  sections.forEach((section, index) => {
+    section.style.opacity = "0";
+    section.style.transform = "translateY(20px)";
+
+    setTimeout(() => {
+      section.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+      section.style.opacity = "1";
+      section.style.transform = "translateY(0)";
+    }, index * 100);
+  });
+
+  document
+    .getElementById("passwordForm")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const type = document
+        .querySelector("#passwordForm")
+        .getAttribute("type");
+
+      const cp = document.getElementById("currentPassword").value;
+      const np = document.getElementById("newPassword").value;
+      const cnp = document.getElementById("confirmPassword").value;
+
+      if (np !== cnp) {
+        alert("New Password and Confirm Password do not match.");
+        return;
+      }
+
+      const response = await fetch(`/${type}/change-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ cp, np, cnp }),
+      });
+
+      const result = await response.json();
+      if (result.success){
+        notyf.success(result.message);
+        document.getElementById("passwordForm").reset();
+      }else{
+        notyf.error(result.message);
+      }
     });
 
-    
+  document
+    .getElementById("profileForm")
+    ?.addEventListener("submit", async function (e) {
+      e.preventDefault();
 
-    // Profile picture upload preview
-    const uploadInput = document.getElementById('upload');
-    const profileIcon = document.querySelector('.profile-icon');
+      const formData = new FormData(this);
+      
 
-    if (uploadInput && profileIcon) {
-        uploadInput.addEventListener('change', function () {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    profileIcon.style.backgroundImage = `url(${e.target.result})`;
-                    profileIcon.style.backgroundSize = 'cover';
-                    profileIcon.textContent = ''; // Remove icon emoji
-                };
-                reader.readAsDataURL(file);
-            }
+      const type = document.querySelector("#profileForm").getAttribute("type");
+      const url = `/${type}/profile`;
+      const imageInput = document.getElementById("image");
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          body: formData,
         });
-    }
 
-    // Sidebar toggle (for mobile)
-    const menuToggle = document.querySelector('.menu-toggle');
-    const sidebar = document.querySelector('.sidebar'); // Make sure sidebar has class="sidebar"
+        const result = await response.json();
+        console.log("Profile update result:", result);
 
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('open');
-        });
-    }
+        if (result.success) {
+          if (type === "resident") {
+            document.getElementById("firstName").value =
+              result.r.residentFirstname;
+            document.getElementById("lastName").value =
+              result.r.residentLastname;
+            document.getElementById("email").value = result.r.email;
+            document.getElementById("phone").value = result.r.contact;
+            document.getElementById(
+              "address"
+            ).value = `${result.r.uCode}`;
+          } else {
+            document.getElementById("firstName").value = result.r.name;
+            document.getElementById("email").value = result.r.email;
+            document.getElementById("phone").value = result.r.contact;
+          }
+
+          const profileImg = document.querySelector(
+            ".profile-image-container img"
+          );
+          if (result.r.image) {
+            profileImg.src = `http://localhost:3000/${result.r.image.replace(
+              /\\/g,
+              "/"
+            )}`;
+          } else if (imageInput?.files[0]) {
+            profileImg.src = URL.createObjectURL(imageInput?.files[0]);
+          }
+
+          notyf.success(result.message);
+        } else {
+          notyf.error(result.message);
+        }
+      } catch (err) {
+        console.error("Profile update error:", err);
+        notyf.error("Something went wrong while saving your profile.");
+      }
+    });
 });
