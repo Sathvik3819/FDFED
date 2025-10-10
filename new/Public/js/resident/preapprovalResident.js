@@ -86,7 +86,7 @@ async function submitPreapprovalForm(event) {
       date: result.preapproval.dateOfVisit,
       time: result.preapproval.timeOfVisit,
       purpose: result.preapproval.purpose,
-      status: 'approved'
+      status: 'Approved'
     });
     
     closeForm('preapproval');
@@ -109,13 +109,19 @@ async function viewQRCode(requestId) {
     const card = document.querySelector(`.request-card [data-id="${requestId}"]`)?.closest('.request-card');
     if (!card) throw new Error('Card not found');
     
+    const visitorName = card.querySelector('.visitor-name')?.textContent.trim();
+    const dateElements = card.querySelectorAll('.detail-value');
+    const visitDate = dateElements[1]?.textContent.trim();
+    const visitTime = dateElements[2]?.textContent.trim();
+    const purpose = dateElements[3]?.textContent.trim();
+
     const qrData = {
       id: requestId,
       visitorName: card.querySelector('.visitor-name')?.textContent.trim(),
       date: card.querySelectorAll('.detail-value')[1]?.textContent.trim(),
       time: card.querySelectorAll('.detail-value')[2]?.textContent.trim(),
       purpose: card.querySelectorAll('.detail-value')[3]?.textContent.trim(),
-      status: 'approved'
+      status: 'Approved'
     };
     
     generateQRCode(qrData);
@@ -139,8 +145,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // QR code buttons
-  document.querySelectorAll(".view-qr-btn").forEach(btn => {
-    btn.addEventListener("click", () => viewQRCode(btn.dataset.id));
+    document.querySelectorAll(".view-qr-btn").forEach(btn => {
+    console.log("QR button found:", btn.dataset.id);
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      viewQRCode(btn.dataset.id);
+    });
   });
 
   // Status update buttons

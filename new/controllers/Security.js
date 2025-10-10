@@ -46,6 +46,7 @@ const getDashboardInfo = async (req, res) => {
       community : req.user.community,
       status : "Approved",
       isCheckedIn : true,
+      scheduledAt: { $gte: startOfDay, $lte: endOfDay }
       // add today conditon
     })
     
