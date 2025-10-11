@@ -260,7 +260,9 @@ body {
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
 }
-
+.filters-section .search-box {
+    grid-column: 1 / -1; /* span all columns */
+}
 .search-box {
     position: relative;
 }

@@ -1,9 +1,8 @@
-
 // Global variables
 let currentPage = 1;
 let currentFilters = {};
 let allTransactions = [];
-let revenueChart, paymentMethodChart;
+let revenueChart, paymentsPieChart;
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -15,8 +14,8 @@ document.addEventListener('DOMContentLoaded', function() {
 async function initializeDashboard() {
     try {
         showLoading();
-        await loadDashboardData();
         await loadTransactions();
+        await initializeCharts();
         hideLoading();
     } catch (error) {
         console.error('Error initializing dashboard:', error);
@@ -30,9 +29,22 @@ function setupEventListeners() {
     const searchInput = document.getElementById('searchInput');
     searchInput.addEventListener('input', debounce(handleSearch, 300));
 
-    // Filter selects
-    ['statusFilter', 'planFilter', 'dateFilter'].forEach(filterId => {
-        document.getElementById(filterId).addEventListener('change', handleFilterChange);
+    // Status filter tabs
+    document.querySelectorAll('#statusTabs .tab-btn').forEach(btn => {
+        btn.addEventListener('click', handleStatusTabClick);
+    });
+
+    // Date filter tabs
+    document.querySelectorAll('#dateTabs .tab-btn').forEach(btn => {
+        btn.addEventListener('click', handleDateTabClick);
+    });
+
+    // Plan filter dropdown
+    document.getElementById('planFilter').addEventListener('change', handlePlanFilterChange);
+
+    // Time period tabs for revenue chart
+    document.querySelectorAll('.chart-card .tab-btn').forEach(btn => {
+        btn.addEventListener('click', handleChartTabClick);
     });
 
     // Modal close on backdrop click
@@ -50,22 +62,82 @@ function setupEventListeners() {
     });
 }
 
-// Load dashboard statistics and charts
-async function loadDashboardData() {
-    try {
-        const response = await fetch('/admin/payments');
-        if (!response.ok) throw new Error('Failed to fetch dashboard data');
-        
-        // Since we're getting HTML, we need to extract data from the rendered page
-        // In a real scenario, you'd want a separate API endpoint for JSON data
-        // For now, we'll use the transactions API to build statistics
-        await loadTransactions();
-        updateStatistics();
-        initializeCharts();
-    } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        throw error;
+// Handle status tab click
+function handleStatusTabClick(event) {
+    const clickedTab = event.target;
+    const status = clickedTab.getAttribute('data-status');
+    
+    // Remove active class from all status tabs
+    document.querySelectorAll('#statusTabs .tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Add active class to clicked tab
+    clickedTab.classList.add('active');
+    
+    // Update filter
+    if (status) {
+        currentFilters.status = status;
+    } else {
+        delete currentFilters.status;
     }
+    
+    currentPage = 1;
+    loadTransactions(currentPage);
+}
+
+// Handle date tab click
+function handleDateTabClick(event) {
+    const clickedTab = event.target;
+    const period = clickedTab.getAttribute('data-period');
+    
+    // Remove active class from all date tabs
+    document.querySelectorAll('#dateTabs .tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Add active class to clicked tab
+    clickedTab.classList.add('active');
+    
+    // Update filter
+    setDateFilter(period);
+    
+    currentPage = 1;
+    loadTransactions(currentPage);
+}
+
+// Handle plan filter change
+function handlePlanFilterChange(event) {
+    const value = event.target.value;
+    
+    if (value) {
+        currentFilters.planType = value;
+    } else {
+        delete currentFilters.planType;
+    }
+    
+    currentPage = 1;
+    loadTransactions(currentPage);
+}
+
+// Handle chart tab click
+function handleChartTabClick(event) {
+    const clickedTab = event.target;
+    const timePeriod = clickedTab.getAttribute('data-period');
+    
+    // Get parent chart card to update only its tabs
+    const chartCard = clickedTab.closest('.chart-card');
+    
+    // Remove active class from tabs in this chart only
+    chartCard.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Add active class to clicked tab
+    clickedTab.classList.add('active');
+    
+    // Update revenue chart
+    updateRevenueChart(timePeriod);
 }
 
 // Load transactions with filters
@@ -158,19 +230,17 @@ function createTransactionRow(transaction) {
             </code>
         </td>
         <td>
-            <span class="plan-badge ${planClass}">${transaction.planType}</span>
+            <span class="status-badge plan-${transaction.planType}">${transaction.planType}</span>
         </td>
         <td style="font-weight: 600;">₹${formatCurrency(transaction.amount)}</td>
         <td>${transaction.paymentMethod || 'N/A'}</td>
         <td>${formatDate(transaction.paymentDate)}</td>
         <td>
-            <span class="table-status ${statusClass}">${transaction.status}</span>
+            <span class="status-badge ${statusClass}">${transaction.status}</span>
         </td>
         <td>
             <div class="table-actions">
-                <button class="btn btn-sm btn-secondary" onclick="viewPaymentDetails('${transaction.communityId}', '${transaction._id}')">
-                    View
-                </button>
+                
                 ${transaction.status !== 'completed' ? `
                     <button class="btn btn-sm" onclick="updatePaymentStatus('${transaction.communityId}', '${transaction._id}', 'completed')">
                         Complete
@@ -234,13 +304,13 @@ function showPaymentModal(community, transaction, fullData) {
             <div class="detail-row">
                 <span class="detail-label">Current Plan:</span>
                 <span class="detail-value">
-                    <span class="plan-badge plan-${community.subscriptionPlan}">${community.subscriptionPlan}</span>
+                    <span class="status-badge plan-${community.subscriptionPlan}">${community.subscriptionPlan}</span>
                 </span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Plan Status:</span>
                 <span class="detail-value">
-                    <span class="table-status status-${community.subscriptionStatus}">${community.subscriptionStatus}</span>
+                    <span class="status-badge status-${community.subscriptionStatus}">${community.subscriptionStatus}</span>
                 </span>
             </div>
         </div>
@@ -262,7 +332,7 @@ function showPaymentModal(community, transaction, fullData) {
             <div class="detail-row">
                 <span class="detail-label">Plan Type:</span>
                 <span class="detail-value">
-                    <span class="plan-badge plan-${transaction.planType}">${transaction.planType}</span>
+                    <span class="status-badge plan-${transaction.planType}">${transaction.planType}</span>
                 </span>
             </div>
             <div class="detail-row">
@@ -276,7 +346,7 @@ function showPaymentModal(community, transaction, fullData) {
             <div class="detail-row">
                 <span class="detail-label">Status:</span>
                 <span class="detail-value">
-                    <span class="table-status status-${transaction.status}">${transaction.status}</span>
+                    <span class="status-badge status-${transaction.status}">${transaction.status}</span>
                 </span>
             </div>
             <div class="detail-row">
@@ -356,28 +426,11 @@ async function updatePaymentStatus(communityId, transactionId, status) {
 // Handle search
 function handleSearch() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    currentFilters.search = searchTerm;
-    currentPage = 1;
-    loadTransactions(currentPage);
-}
-
-// Handle filter changes
-function handleFilterChange(event) {
-    const filterId = event.target.id;
-    const value = event.target.value;
-    
-    switch(filterId) {
-        case 'statusFilter':
-            currentFilters.status = value;
-            break;
-        case 'planFilter':
-            currentFilters.planType = value;
-            break;
-        case 'dateFilter':
-            setDateFilter(value);
-            break;
+    if (searchTerm) {
+        currentFilters.search = searchTerm;
+    } else {
+        delete currentFilters.search;
     }
-    
     currentPage = 1;
     loadTransactions(currentPage);
 }
@@ -408,6 +461,38 @@ function setDateFilter(period) {
     
     currentFilters.startDate = startDate.toISOString().split('T')[0];
     currentFilters.endDate = now.toISOString().split('T')[0];
+}
+
+// Update revenue chart with new time period
+async function updateRevenueChart(timePeriod) {
+    if (revenueChart) {
+        const chartData = await fetchRevenueData(timePeriod);
+        
+        revenueChart.data.labels = chartData.labels;
+        revenueChart.data.datasets[0].data = chartData.data;
+        
+        revenueChart.update();
+    }
+}
+
+// Fetch revenue data from API
+async function fetchRevenueData(timePeriod) {
+    try {
+        const response = await fetch(`/admin/api/payments/revenue-chart?timePeriod=${timePeriod}`);
+        if (!response.ok) throw new Error('Failed to fetch revenue data');
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            return data.data;
+        } else {
+            throw new Error(data.error || 'Failed to load revenue data');
+        }
+    } catch (error) {
+        console.error('Error fetching revenue data:', error);
+        // Fallback to local data generation
+        return generateRevenueData(timePeriod);
+    }
 }
 
 // Update pagination
@@ -456,46 +541,69 @@ function changePage(page) {
 }
 
 // Initialize charts
-function initializeCharts() {
-    initializeRevenueChart();
-    initializePaymentMethodChart();
+async function initializeCharts() {
+    await initializeRevenueChart();
+    await initializePaymentsPieChart();
 }
 
 // Initialize revenue chart
-function initializeRevenueChart() {
+async function initializeRevenueChart() {
     const ctx = document.getElementById('revenueChart').getContext('2d');
     
-    // Generate sample data based on transactions
-    const monthlyData = generateMonthlyRevenueData();
+    // Get data from API based on current active tab
+    const activeTab = document.querySelector('.chart-card .tab-btn.active');
+    const timePeriod = activeTab ? activeTab.getAttribute('data-period') : 'monthly';
+    const chartData = await fetchRevenueData(timePeriod);
     
     revenueChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: monthlyData.labels,
+            labels: chartData.labels,
             datasets: [{
                 label: 'Revenue (₹)',
-                data: monthlyData.data,
-                borderColor: '#3b71ca',
-                backgroundColor: 'rgba(59, 113, 202, 0.1)',
-                borderWidth: 2,
+                data: chartData.data,
+                borderColor: '#151A2D',
+                backgroundColor: 'rgba(21, 26, 45, 0.1)',
+                borderWidth: 3,
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                pointBackgroundColor: '#151A2D',
+                pointBorderColor: '#151A2D',
+                pointRadius: 5,
+                pointHoverRadius: 7
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
+                x: {
+                    grid: {
+                        display: true,
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
                 y: {
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
                             return '₹' + value.toLocaleString();
                         }
+                    },
+                    grid: {
+                        display: true,
+                        color: 'rgba(0, 0, 0, 0.1)'
                     }
                 }
             },
             plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
@@ -508,27 +616,31 @@ function initializeRevenueChart() {
     });
 }
 
-// Initialize payment method chart
-function initializePaymentMethodChart() {
-    const ctx = document.getElementById('paymentMethodChart').getContext('2d');
+// Initialize payments pie chart
+async function initializePaymentsPieChart() {
+    const ctx = document.getElementById('paymentsPieChart').getContext('2d');
     
-    // Generate sample data based on payment methods
-    const methodData = generatePaymentMethodData();
+    // Get payment status data
+    const pieData = generatePaymentsPieData();
     
-    paymentMethodChart = new Chart(ctx, {
+    paymentsPieChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: methodData.labels,
+            labels: pieData.labels,
             datasets: [{
-                data: methodData.data,
+                data: pieData.data,
                 backgroundColor: [
-                    '#3b71ca',
-                    '#4caf50',
-                    '#ff9800',
-                    '#e91e63',
-                    '#9c27b0'
+                    '#16a34a',
+                    '#f59e0b',
+                    '#dc2626'
                 ],
-                borderWidth: 0
+                borderColor: [
+                    '#16a34a',
+                    '#f59e0b',
+                    '#dc2626'
+                ],
+                borderWidth: 2,
+                hoverOffset: 4
             }]
         },
         options: {
@@ -536,53 +648,101 @@ function initializePaymentMethodChart() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
+                    }
                 }
             }
         }
     });
 }
 
-// Generate monthly revenue data
-function generateMonthlyRevenueData() {
-    const months = [];
-    const data = [];
+// Generate revenue data based on time period
+function generateRevenueData(timePeriod) {
     const now = new Date();
+    let labels = [];
+    let data = [];
     
-    for (let i = 11; i >= 0; i--) {
-        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        months.push(date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
-        
-        // Calculate revenue for this month from transactions
-        const monthRevenue = allTransactions
-            .filter(t => {
-                const tDate = new Date(t.paymentDate);
-                return tDate.getFullYear() === date.getFullYear() && 
-                       tDate.getMonth() === date.getMonth() &&
-                       t.status === 'completed';
-            })
-            .reduce((sum, t) => sum + t.amount, 0);
-        
-        data.push(monthRevenue);
+    switch(timePeriod) {
+        case 'weekly':
+            // Last 7 days
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                labels.push(dayName);
+                
+                const dayRevenue = allTransactions
+                    .filter(t => {
+                        const tDate = new Date(t.paymentDate);
+                        return tDate.toDateString() === date.toDateString() && t.status === 'completed';
+                    })
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                data.push(dayRevenue);
+            }
+            break;
+            
+        case 'monthly':
+            // Last 12 months
+            for (let i = 11; i >= 0; i--) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+                labels.push(monthName);
+                
+                const monthRevenue = allTransactions
+                    .filter(t => {
+                        const tDate = new Date(t.paymentDate);
+                        return tDate.getFullYear() === date.getFullYear() && 
+                               tDate.getMonth() === date.getMonth() &&
+                               t.status === 'completed';
+                    })
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                data.push(monthRevenue);
+            }
+            break;
+            
+        case 'yearly':
+            // Last 5 years
+            for (let i = 4; i >= 0; i--) {
+                const year = now.getFullYear() - i;
+                labels.push(year.toString());
+                
+                const yearRevenue = allTransactions
+                    .filter(t => {
+                        const tDate = new Date(t.paymentDate);
+                        return tDate.getFullYear() === year && t.status === 'completed';
+                    })
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                data.push(yearRevenue);
+            }
+            break;
     }
     
-    return { labels: months, data };
+    return { labels, data };
 }
 
-// Generate payment method data
-function generatePaymentMethodData() {
-    const methods = {};
-    
-    allTransactions
-        .filter(t => t.status === 'completed')
-        .forEach(t => {
-            const method = t.paymentMethod || 'Other';
-            methods[method] = (methods[method] || 0) + 1;
-        });
+// Generate payments pie chart data
+function generatePaymentsPieData() {
+    const completed = allTransactions.filter(t => t.status === 'completed').length;
+    const pending = allTransactions.filter(t => t.status === 'pending').length;
+    const failed = allTransactions.filter(t => t.status === 'failed').length;
     
     return {
-        labels: Object.keys(methods),
-        data: Object.values(methods)
+        labels: ['Completed', 'Pending', 'Failed'],
+        data: [completed, pending, failed]
     };
 }
 
@@ -598,11 +758,38 @@ async function refreshData() {
     
     // Reset filters
     document.getElementById('searchInput').value = '';
-    document.getElementById('statusFilter').value = '';
     document.getElementById('planFilter').value = '';
-    document.getElementById('dateFilter').value = '';
+    
+    // Reset status tabs
+    document.querySelectorAll('#statusTabs .tab-btn').forEach((btn, index) => {
+        if (index === 0) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Reset date tabs
+    document.querySelectorAll('#dateTabs .tab-btn').forEach((btn, index) => {
+        if (index === 0) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
     
     await loadTransactions(1);
+    
+    // Refresh charts
+    if (revenueChart) {
+        revenueChart.destroy();
+        await initializeRevenueChart();
+    }
+    if (paymentsPieChart) {
+        paymentsPieChart.destroy();
+        await initializePaymentsPieChart();
+    }
+    
     showSuccess('Data refreshed successfully');
 }
 
@@ -695,7 +882,6 @@ function debounce(func, wait) {
 }
 
 function showLoading() {
-    // Create loading overlay if it doesn't exist
     let loader = document.getElementById('loadingOverlay');
     if (!loader) {
         loader = document.createElement('div');
@@ -736,7 +922,6 @@ function showError(message) {
 }
 
 function showNotification(message, type = 'info') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -753,7 +938,6 @@ function showNotification(message, type = 'info') {
         max-width: 300px;
     `;
     
-    // Set background color based on type
     switch(type) {
         case 'success':
             notification.style.backgroundColor = '#4caf50';
@@ -768,13 +952,11 @@ function showNotification(message, type = 'info') {
     notification.textContent = message;
     document.body.appendChild(notification);
     
-    // Animate in
     setTimeout(() => {
         notification.style.opacity = '1';
         notification.style.transform = 'translateX(0)';
     }, 100);
     
-    // Remove after 3 seconds
     setTimeout(() => {
         notification.style.opacity = '0';
         notification.style.transform = 'translateX(100%)';

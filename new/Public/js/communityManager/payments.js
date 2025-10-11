@@ -19,6 +19,14 @@ const closeSubscriptionModalBtn = document.querySelector('.close-subscription');
 const cancelSubscriptionPaymentBtn = document.getElementById('cancelSubscriptionPayment');
 const subscriptionPaymentForm = document.getElementById('subscriptionPaymentForm');
 
+// Plan Change Elements
+const changePlanBtn = document.getElementById('changePlanBtn');
+const planChangeModal = document.getElementById('planChangeModal');
+const closePlanChangeModalBtn = document.querySelector('.close-plan-change');
+const cancelPlanChangeBtn = document.getElementById('cancelPlanChange');
+const confirmPlanChangeBtn = document.getElementById('confirmPlanChange');
+const newPlanSelect = document.getElementById('newPlanSelect');
+
 // Pagination settings
 let currentPage = 1;
 const rowsPerPage = 10;
@@ -192,6 +200,12 @@ function setupEventListeners() {
     // Form submission
     bulkPaymentForm?.addEventListener('submit', handleBulkPaymentSubmit);
 
+    // Plan change functionality
+    changePlanBtn?.addEventListener('click', openPlanChangeModal);
+    closePlanChangeModalBtn?.addEventListener('click', closePlanChangeModal);
+    cancelPlanChangeBtn?.addEventListener('click', closePlanChangeModal);
+    confirmPlanChangeBtn?.addEventListener('click', handlePlanChangeSubmit);
+
     // Close modal on outside click
     window.addEventListener('click', (event) => {
         if (event.target === bulkPaymentModal) {
@@ -199,6 +213,9 @@ function setupEventListeners() {
         }
         if (event.target === subscriptionPaymentModal) {
             closeSubscriptionPaymentModal();
+        }
+        if (event.target === planChangeModal) {
+            closePlanChangeModal();
         }
     });
 }
@@ -213,6 +230,22 @@ function setupSubscriptionEventListeners() {
     const planSelect = document.getElementById('subscriptionPlan');
     if (planSelect) {
         planSelect.addEventListener('change', handlePlanSelectionChange);
+    }
+
+    // Add new plan selection change listener for plan change modal
+    if (newPlanSelect) {
+        newPlanSelect.addEventListener('change', handleNewPlanSelectionChange);
+    }
+
+    // Add change option radio button listeners
+    const immediateChangeRadio = document.getElementById('immediateChange');
+    const nextCycleChangeRadio = document.getElementById('nextCycleChange');
+    
+    if (immediateChangeRadio) {
+        immediateChangeRadio.addEventListener('change', handleChangeOptionChange);
+    }
+    if (nextCycleChangeRadio) {
+        nextCycleChangeRadio.addEventListener('change', handleChangeOptionChange);
     }
 }
 
@@ -782,6 +815,488 @@ function populateSubscriptionDetails() {
             planSelect.dispatchEvent(changeEvent);
         }
     }
+}
+
+// Plan Change Modal Functions
+function openPlanChangeModal() {
+    if (planChangeModal) {
+        planChangeModal.style.display = 'block';
+        
+        // Populate current plan info
+        populateCurrentPlanInfo();
+        
+        // Reset form
+        resetPlanChangeForm();
+        
+        // Add a class to body to prevent scrolling
+        document.body.classList.add('modal-open');
+    }
+}
+
+function closePlanChangeModal() {
+    if (planChangeModal) {
+        planChangeModal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+    }
+}
+
+function populateCurrentPlanInfo() {
+    const currentPlanDetails = document.getElementById('currentPlanDetails');
+    
+    if (currentPlanDetails && subscriptionStatus.community) {
+        const currentPlan = subscriptionStatus.community.subscriptionPlan || 'basic';
+        const plan = availablePlans[currentPlan] || subscriptionPlans[currentPlan];
+        
+        if (plan) {
+            currentPlanDetails.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h5 style="margin: 0; color: #007bff;">${plan.name}</h5>
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem;">
+                            ₹${plan.price.toLocaleString()}/month
+                        </p>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.8rem; color: #666;">
+                            ${subscriptionStatus.community.planEndDate ? 
+                                `Expires: ${formatDate(subscriptionStatus.community.planEndDate)}` : 
+                                'No expiry date'
+                            }
+                        </div>
+                        <div style="font-size: 0.8rem; color: #666;">
+                            Status: <span style="color: ${getSubscriptionStatusColor(subscriptionStatus.community.subscriptionStatus)}">
+                                ${subscriptionStatus.community.subscriptionStatus || 'Unknown'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
+function resetPlanChangeForm() {
+    // Reset new plan selection
+    if (newPlanSelect) {
+        newPlanSelect.value = '';
+    }
+    
+    // Hide new plan details
+    const newPlanDetails = document.getElementById('newPlanDetails');
+    if (newPlanDetails) {
+        newPlanDetails.style.display = 'none';
+    }
+    
+    // Hide change options
+    const changeOptions = document.getElementById('changeOptions');
+    if (changeOptions) {
+        changeOptions.style.display = 'none';
+    }
+    
+    // Hide confirm button
+    if (confirmPlanChangeBtn) {
+        confirmPlanChangeBtn.style.display = 'none';
+    }
+    
+    // Reset radio buttons
+    const immediateChange = document.getElementById('immediateChange');
+    const nextCycleChange = document.getElementById('nextCycleChange');
+    if (immediateChange) immediateChange.checked = false;
+    if (nextCycleChange) nextCycleChange.checked = false;
+}
+
+function handleNewPlanSelectionChange(event) {
+    const selectedPlanKey = event.target.value;
+    
+    if (selectedPlanKey && availablePlans[selectedPlanKey]) {
+        const selectedPlan = availablePlans[selectedPlanKey];
+        
+        // Show new plan details
+        const newPlanDetails = document.getElementById('newPlanDetails');
+        const newPlanName = document.getElementById('newPlanName');
+        const newPlanPrice = document.getElementById('newPlanPrice');
+        
+        if (newPlanDetails) {
+            newPlanDetails.style.display = 'block';
+        }
+        
+        if (newPlanName) {
+            newPlanName.textContent = selectedPlan.name;
+        }
+        
+        if (newPlanPrice) {
+            newPlanPrice.textContent = `Price: ₹${selectedPlan.price.toLocaleString()}`;
+        }
+        
+        // Show change options
+        const changeOptions = document.getElementById('changeOptions');
+        if (changeOptions) {
+            changeOptions.style.display = 'block';
+        }
+        
+        // Update cost calculations
+        updatePlanChangeCosts(selectedPlanKey, selectedPlan);
+    } else {
+        // Hide sections if no plan selected
+        const newPlanDetails = document.getElementById('newPlanDetails');
+        const changeOptions = document.getElementById('changeOptions');
+        
+        if (newPlanDetails) {
+            newPlanDetails.style.display = 'none';
+        }
+        if (changeOptions) {
+            changeOptions.style.display = 'none';
+        }
+        if (confirmPlanChangeBtn) {
+            confirmPlanChangeBtn.style.display = 'none';
+        }
+    }
+}
+
+function updatePlanChangeCosts(newPlanKey, newPlan) {
+    const currentPlan = subscriptionStatus.community?.subscriptionPlan || 'basic';
+    const currentPlanData = availablePlans[currentPlan] || subscriptionPlans[currentPlan];
+    
+    if (!currentPlanData) return;
+    
+    const currentPrice = currentPlanData.price;
+    const newPrice = newPlan.price;
+    const priceDifference = newPrice - currentPrice;
+    
+    // Update immediate change cost
+    const immediateCost = document.getElementById('immediateCost');
+    if (immediateCost) {
+        if (priceDifference > 0) {
+            immediateCost.innerHTML = `
+                <div style="color: #dc3545; font-weight: bold;">
+                    Additional Cost: ₹${priceDifference.toLocaleString()}
+                </div>
+                <div style="font-size: 0.8rem; color: #666;">
+                    You will be charged the difference immediately
+                </div>
+            `;
+        } else if (priceDifference < 0) {
+            immediateCost.innerHTML = `
+                <div style="color: #28a745; font-weight: bold;">
+                    No additional cost (Downgrade)
+                </div>
+                <div style="font-size: 0.8rem; color: #666;">
+                    You will not be charged for downgrading
+                </div>
+            `;
+        } else {
+            immediateCost.innerHTML = `
+                <div style="color: #6c757d; font-weight: bold;">
+                    Same price - No cost difference
+                </div>
+            `;
+        }
+    }
+    
+    // Update next cycle info
+    const nextCycleInfo = document.getElementById('nextCycleInfo');
+    if (nextCycleInfo) {
+        const nextCycleDate = subscriptionStatus.community?.planEndDate ? 
+            formatDate(subscriptionStatus.community.planEndDate) : 
+            'Next billing cycle';
+            
+        nextCycleInfo.innerHTML = `
+            <div style="color: #28a745; font-weight: bold;">
+                Effective Date: ${nextCycleDate}
+            </div>
+            <div style="font-size: 0.8rem; color: #666;">
+                New plan will start from the next billing cycle
+            </div>
+        `;
+    }
+}
+
+function handleChangeOptionChange(event) {
+    const selectedOption = event.target.value;
+    
+    if (selectedOption && confirmPlanChangeBtn) {
+        confirmPlanChangeBtn.style.display = 'block';
+        
+        // Update button text based on selection
+        if (selectedOption === 'immediate') {
+            confirmPlanChangeBtn.textContent = 'Change Plan Now';
+            confirmPlanChangeBtn.style.background = '#dc3545';
+        } else if (selectedOption === 'nextCycle') {
+            confirmPlanChangeBtn.textContent = 'Schedule Plan Change';
+            confirmPlanChangeBtn.style.background = '#28a745';
+        }
+    }
+}
+
+async function handlePlanChangeSubmit() {
+    const newPlanKey = newPlanSelect?.value;
+    const changeOption = document.querySelector('input[name="changeOption"]:checked')?.value;
+    
+    if (!newPlanKey || !changeOption) {
+        ErrorHandler.show('Please select a new plan and change option', 'error');
+        return;
+    }
+    
+    const newPlan = availablePlans[newPlanKey] || subscriptionPlans[newPlanKey];
+    const currentPlan = subscriptionStatus.community?.subscriptionPlan || 'basic';
+    const currentPlanData = availablePlans[currentPlan] || subscriptionPlans[currentPlan];
+    
+    if (!newPlan || !currentPlanData) {
+        ErrorHandler.show('Invalid plan configuration', 'error');
+        return;
+    }
+    
+    // Show confirmation dialog with caution warnings
+    const confirmed = await showPlanChangeConfirmation(newPlan, currentPlanData, changeOption);
+    
+    if (!confirmed) {
+        return;
+    }
+    
+    // Show loading state
+    LoadingManager.show(confirmPlanChangeBtn, 'Processing...');
+    
+    try {
+        const paymentData = {
+            newPlan: newPlanKey,
+            changeOption: changeOption
+        };
+        
+        // Add payment method for immediate changes that require payment
+        if (changeOption === 'immediate') {
+            const priceDifference = newPlan.price - currentPlanData.price;
+            if (priceDifference > 0) {
+                // For immediate upgrades, we need payment method
+                const paymentMethod = await showPaymentMethodDialog();
+                if (!paymentMethod) {
+                    LoadingManager.hide(confirmPlanChangeBtn);
+                    return;
+                }
+                paymentData.paymentMethod = paymentMethod;
+            }
+        }
+        
+        const result = await ApiClient.post('/manager/change-plan', paymentData);
+        
+        if (result.success) {
+            const successMessage = changeOption === 'immediate' 
+                ? `Plan changed successfully! Your ${newPlan.name} is now active.`
+                : `Plan change scheduled! Your ${newPlan.name} will be active from ${formatDate(result.effectiveDate)}.`;
+                
+            ErrorHandler.show(successMessage, 'success');
+            closePlanChangeModal();
+            
+            // Refresh data
+            await Promise.all([fetchCommunityData(), fetchSubscriptionStatus()]);
+            
+        } else {
+            throw new Error(result.message || 'Failed to change plan');
+        }
+        
+    } catch (error) {
+        console.error('Plan change error:', error);
+        ErrorHandler.show(error.message || 'Failed to change plan. Please try again.', 'error');
+    } finally {
+        LoadingManager.hide(confirmPlanChangeBtn);
+    }
+}
+
+async function showPlanChangeConfirmation(newPlan, currentPlan, changeOption) {
+    return new Promise((resolve) => {
+        const confirmationDiv = document.createElement('div');
+        confirmationDiv.className = 'plan-change-confirmation-modal';
+        confirmationDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1002;
+        `;
+        
+        const priceDifference = newPlan.price - currentPlan.price;
+        const isUpgrade = priceDifference > 0;
+        const isDowngrade = priceDifference < 0;
+        
+        let warningMessage = '';
+        let confirmButtonColor = '#28a745';
+        
+        if (changeOption === 'immediate') {
+            if (isUpgrade) {
+                warningMessage = `
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                        <h4 style="color: #856404; margin: 0 0 10px;">⚠️ Immediate Upgrade Warning</h4>
+                        <ul style="color: #856404; margin: 0; padding-left: 20px;">
+                            <li>You will be charged ₹${priceDifference.toLocaleString()} immediately</li>
+                            <li>Any unused time from your current plan will be forfeited</li>
+                            <li>Your new plan will be active immediately</li>
+                            <li>This action cannot be undone</li>
+                        </ul>
+                    </div>
+                `;
+                confirmButtonColor = '#dc3545';
+            } else if (isDowngrade) {
+                warningMessage = `
+                    <div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                        <h4 style="color: #0c5460; margin: 0 0 10px;">ℹ️ Immediate Downgrade</h4>
+                        <ul style="color: #0c5460; margin: 0; padding-left: 20px;">
+                            <li>No additional charges (you're downgrading)</li>
+                            <li>Your new plan will be active immediately</li>
+                            <li>Some features may be limited</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        } else {
+            warningMessage = `
+                <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                    <h4 style="color: #155724; margin: 0 0 10px;">✅ Scheduled Change</h4>
+                    <ul style="color: #155724; margin: 0; padding-left: 20px;">
+                        <li>Your current plan remains active until the next billing cycle</li>
+                        <li>No immediate charges</li>
+                        <li>You can cancel this change before it takes effect</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        confirmationDiv.innerHTML = `
+            <div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                <h3 style="margin: 0 0 20px; color: #333; text-align: center;">Confirm Plan Change</h3>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span><strong>From:</strong> ${currentPlan.name}</span>
+                        <span>₹${currentPlan.price.toLocaleString()}/month</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><strong>To:</strong> ${newPlan.name}</span>
+                        <span>₹${newPlan.price.toLocaleString()}/month</span>
+                    </div>
+                    ${priceDifference !== 0 ? `
+                        <div style="text-align: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid #dee2e6;">
+                            <strong style="color: ${isUpgrade ? '#dc3545' : '#28a745'};">
+                                ${isUpgrade ? '+' : ''}₹${priceDifference.toLocaleString()} ${isUpgrade ? 'additional' : 'savings'} per month
+                            </strong>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                ${warningMessage}
+                
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button id="confirmChange" 
+                            style="flex: 1; background: ${confirmButtonColor}; color: white; padding: 12px; 
+                                   border-radius: 8px; font-size: 1rem; border: none; cursor: pointer;">
+                        ${changeOption === 'immediate' ? 'Change Now' : 'Schedule Change'}
+                    </button>
+                    <button id="cancelChange" 
+                            style="flex: 1; background: #6c757d; color: white; padding: 12px; 
+                                   border-radius: 8px; font-size: 1rem; border: none; cursor: pointer;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(confirmationDiv);
+        
+        // Add event listeners
+        document.getElementById('confirmChange').addEventListener('click', () => {
+            document.body.removeChild(confirmationDiv);
+            resolve(true);
+        });
+        
+        document.getElementById('cancelChange').addEventListener('click', () => {
+            document.body.removeChild(confirmationDiv);
+            resolve(false);
+        });
+        
+        // Close on outside click
+        confirmationDiv.addEventListener('click', (e) => {
+            if (e.target === confirmationDiv) {
+                document.body.removeChild(confirmationDiv);
+                resolve(false);
+            }
+        });
+    });
+}
+
+async function showPaymentMethodDialog() {
+    return new Promise((resolve) => {
+        const paymentDiv = document.createElement('div');
+        paymentDiv.className = 'payment-method-dialog';
+        paymentDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1003;
+        `;
+        
+        paymentDiv.innerHTML = `
+            <div style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%;">
+                <h3 style="margin: 0 0 20px; color: #333; text-align: center;">Select Payment Method</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 8px;">Payment Method</label>
+                    <select id="paymentMethodSelect" 
+                            style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                        <option value="">Select payment method</option>
+                        <option value="credit_card">💳 Credit Card</option>
+                        <option value="debit_card">🏦 Debit Card</option>
+                        <option value="net_banking">💻 Net Banking</option>
+                        <option value="upi">📱 UPI</option>
+                        <option value="wallet">💼 Digital Wallet</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button id="confirmPayment" 
+                            style="flex: 1; background: #007bff; color: white; padding: 12px; 
+                                   border-radius: 8px; font-size: 1rem; border: none; cursor: pointer;">
+                        Confirm
+                    </button>
+                    <button id="cancelPayment" 
+                            style="flex: 1; background: #6c757d; color: white; padding: 12px; 
+                                   border-radius: 8px; font-size: 1rem; border: none; cursor: pointer;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(paymentDiv);
+        
+        // Add event listeners
+        document.getElementById('confirmPayment').addEventListener('click', () => {
+            const selectedMethod = document.getElementById('paymentMethodSelect').value;
+            document.body.removeChild(paymentDiv);
+            resolve(selectedMethod || null);
+        });
+        
+        document.getElementById('cancelPayment').addEventListener('click', () => {
+            document.body.removeChild(paymentDiv);
+            resolve(null);
+        });
+        
+        // Close on outside click
+        paymentDiv.addEventListener('click', (e) => {
+            if (e.target === paymentDiv) {
+                document.body.removeChild(paymentDiv);
+                resolve(null);
+            }
+        });
+    });
 }
 
 function closeSubscriptionPaymentModal() {

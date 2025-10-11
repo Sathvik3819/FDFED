@@ -1784,6 +1784,206 @@ managerRouter.get("/subscription-plans", async (req, res) => {
   }
 });
 
+// Handle plan change request
+managerRouter.post("/change-plan", async (req, res) => {
+  try {
+    const { newPlan, changeOption, paymentMethod } = req.body;
+
+    // Validate required fields
+    if (!newPlan || !changeOption) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: newPlan and changeOption"
+      });
+    }
+
+    // Get manager and community info
+    const managerId = req.user.id;
+    const manager = await CommunityManager.findById(managerId);
+
+    if (!manager) {
+      return res.status(404).json({
+        success: false,
+        message: "Community manager not found"
+      });
+    }
+
+    const community = await Community.findById(manager.assignedCommunity);
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        message: "Community not found"
+      });
+    }
+
+    // Plan pricing
+    const planPrices = {
+      basic: 999,
+      standard: 1999,
+      premium: 3999,
+    };
+
+    const currentPlan = community.subscriptionPlan || "basic";
+    const currentPrice = planPrices[currentPlan];
+    const newPrice = planPrices[newPlan];
+
+    if (!newPrice) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid plan selected"
+      });
+    }
+
+    if (currentPlan === newPlan) {
+      return res.status(400).json({
+        success: false,
+        message: "You are already on this plan"
+      });
+    }
+
+    const now = new Date();
+    const planEndDate = new Date(community.planEndDate);
+    const isExpired = planEndDate < now;
+
+    if (changeOption === "immediate") {
+      // Immediate change - charge difference and update immediately
+      const priceDifference = newPrice - currentPrice;
+      
+      if (paymentMethod && priceDifference > 0) {
+        // Process payment for the difference
+        const transactionId = `PLAN_CHANGE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Create payment record for the difference
+        const paymentRecord = {
+          transactionId,
+          planName: `${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)} Plan (Upgrade)`,
+          planType: newPlan,
+          amount: priceDifference,
+          paymentMethod,
+          paymentDate: now,
+          planStartDate: now,
+          planEndDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+          duration: "monthly",
+          status: "completed",
+          isRenewal: false,
+          isPlanChange: true,
+          changeType: "immediate",
+          previousPlan: currentPlan,
+          processedBy: managerId,
+          metadata: {
+            userAgent: req.get("User-Agent"),
+            ipAddress: req.ip || req.connection.remoteAddress,
+          },
+        };
+
+        // Update community subscription
+        community.subscriptionPlan = newPlan;
+        community.subscriptionStatus = "active";
+        community.planStartDate = now;
+        community.planEndDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+        // Add to subscription history
+        if (!community.subscriptionHistory) {
+          community.subscriptionHistory = [];
+        }
+        community.subscriptionHistory.push(paymentRecord);
+
+        await community.save();
+
+        res.json({
+          success: true,
+          message: "Plan changed successfully! Your new plan is now active.",
+          transactionId,
+          newPlan,
+          amountCharged: priceDifference,
+          planEndDate: community.planEndDate
+        });
+
+      } else if (priceDifference <= 0) {
+        // Downgrade - no payment needed, just update plan
+        community.subscriptionPlan = newPlan;
+        community.planStartDate = now;
+        community.planEndDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+        // Add change record to history
+        if (!community.subscriptionHistory) {
+          community.subscriptionHistory = [];
+        }
+        community.subscriptionHistory.push({
+          transactionId: `PLAN_CHANGE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          planName: `${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)} Plan (Downgrade)`,
+          planType: newPlan,
+          amount: 0,
+          paymentMethod: "No Payment Required",
+          paymentDate: now,
+          planStartDate: now,
+          planEndDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+          duration: "monthly",
+          status: "completed",
+          isRenewal: false,
+          isPlanChange: true,
+          changeType: "immediate",
+          previousPlan: currentPlan,
+          processedBy: managerId,
+        });
+
+        await community.save();
+
+        res.json({
+          success: true,
+          message: "Plan changed successfully! Your new plan is now active.",
+          newPlan,
+          amountCharged: 0,
+          planEndDate: community.planEndDate
+        });
+
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "Payment method required for plan upgrade"
+        });
+      }
+
+    } else if (changeOption === "nextCycle") {
+      // Schedule change for next billing cycle
+      const nextCycleDate = isExpired ? now : planEndDate;
+      
+      // Store pending plan change
+      community.pendingPlanChange = {
+        newPlan,
+        effectiveDate: nextCycleDate,
+        requestedDate: now,
+        requestedBy: managerId,
+        status: "pending"
+      };
+
+      await community.save();
+
+      res.json({
+        success: true,
+        message: `Plan change scheduled for ${nextCycleDate.toLocaleDateString()}. Your current plan will remain active until then.`,
+        newPlan,
+        effectiveDate: nextCycleDate,
+        currentPlanEndDate: community.planEndDate
+      });
+
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid change option"
+      });
+    }
+
+  } catch (error) {
+    console.error("Plan change error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to process plan change",
+      error: error.message
+    });
+  }
+});
+
 managerRouter.get("/ad", async (req, res) => {
   const ads = await Ad.find({
     community: req.user.community,

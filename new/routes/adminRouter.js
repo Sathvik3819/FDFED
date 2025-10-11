@@ -5,6 +5,8 @@ import Resident from "../models/resident.js";
 import Security from "../models/security.js";
 import Worker from "../models/workers.js";
 import Application from "../models/interestForm.js";
+import Admin from "../models/admin.js";
+
 
 const AdminRouter = express.Router();
 import bcrypt from 'bcrypt';
@@ -184,117 +186,14 @@ AdminRouter.get("/api/dashboard/charts", async (req, res) => {
   res.json({ success: true, data: chartData });
 });
 
-// --- Notifications ---
-// --- Notifications (Hardcoded) ---
-AdminRouter.get("/api/notifications", (req, res) => {
-  try {
-    const systemAlerts = [
-      {
-        id: 1,
-        type: "alert",
-        category: "systemAlerts",
-        icon: "⚠️",
-        message: "Server maintenance scheduled for tonight.",
-        priority: "high",
-        priorityLabel: "High",
-        time: "2h ago"
-      },
-      {
-        id: 2,
-        type: "info",
-        category: "systemAlerts",
-        icon: "ℹ️",
-        message: "New feature rollout in progress.",
-        priority: "medium",
-        priorityLabel: "Medium",
-        time: "5h ago"
-      }
-    ];
-
-    const actionRequired = [
-      {
-        id: 3,
-        type: "task",
-        category: "actionRequired",
-        icon: "📝",
-        message: "3 pending applications need review.",
-        priority: "high",
-        priorityLabel: "High",
-        time: "1h ago"
-      },
-      {
-        id: 4,
-        type: "task",
-        category: "actionRequired",
-        icon: "👤",
-        message: "2 residents reported issues in billing.",
-        priority: "low",
-        priorityLabel: "Low",
-        time: "30m ago"
-      }
-    ];
-
-    res.json({
-      success: true,
-      data: {
-        total: systemAlerts.length + actionRequired.length,
-        systemAlerts,
-        actionRequired
-      }
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-// Optional: If you don’t need POST anymore, remove it
-// Or keep a dummy POST to simulate adding (but won’t save anywhere)
-AdminRouter.post("/api/notifications", (req, res) => {
-  try {
-    const { type, category, icon, message, priority, priorityLabel } = req.body;
-
-    const newNotification = {
-      id: Date.now(),
-      type,
-      category,
-      icon,
-      message,
-      priority,
-      priorityLabel,
-      time: "Just now"
-    };
-
-    // just return it back (not saving in DB)
-    res.json({ success: true, data: newNotification });
-  } catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
 
 
-// --- Community Performance ---
-AdminRouter.get("/api/communities/performance", async (req, res) => {
-  // Example: occupancy, collection, satisfaction from Community model
-  const communities = await Community.find().limit(5);
-  const performanceData = communities.map(c => ({
-    id: c._id,
-    name: c.name,
-    occupancy: c.occupancy,
-    collection: Math.floor(Math.random() * 20) + 80, // placeholder
-    satisfaction: (Math.random() * 2 + 3).toFixed(1) // placeholder
-  }));
 
-  res.json({ success: true, data: performanceData });
-});
 
-// --- Health Check ---
-AdminRouter.get("/api/health", (req, res) => {
-  res.json({
-    success: true,
-    message: "Server is running",
-    timestamp: new Date().toISOString()
-  });
-});
+
+
+
+
 
 // --- Render Dashboard Page ---
 AdminRouter.get(["/","/dashboard"], (req, res) => {
@@ -306,83 +205,231 @@ AdminRouter.get(["/","/dashboard"], (req, res) => {
 });
 
 
-AdminRouter.get(["/profile"], (req, res) => {
-  res.render("admin/profile");
+import multer from 'multer';
+import path from 'path';
+
+// Configure multer for image upload
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/uploads/admin/'); // Adjust path as needed
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'admin-' + uniqueSuffix + path.extname(file.originalname));
+  }
 });
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'));
+    }
+  }
+});
+
+// GET: Profile Page
+AdminRouter.get("/profile", async (req, res) => {
+  try {
+    const admin = await Admin.findOne();
+    if (!admin) return res.status(404).send("Admin not found");
+    res.render("admin/profile", { admin });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+});
+
+// POST: Update Profile
+AdminRouter.post("/profile/update", upload.single('image'), async (req, res) => {
+  try {
+    const { name, email, contact } = req.body;
+    
+    // Find admin
+    const admin = await Admin.findOne();
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    // Check if email is being changed and if it already exists
+    if (email !== admin.email) {
+      const existingAdmin = await Admin.findOne({ email, _id: { $ne: admin._id } });
+      if (existingAdmin) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+    }
+
+    // Update fields
+    admin.name = name || admin.name;
+    admin.email = email || admin.email;
+    admin.contact = contact || admin.contact;
+
+    // Update image if uploaded
+    if (req.file) {
+      admin.image = '/uploads/admin/' + req.file.filename;
+    }
+
+    await admin.save();
+
+    res.status(200).json({ 
+      message: "Profile updated successfully",
+      admin: {
+        name: admin.name,
+        email: admin.email,
+        contact: admin.contact,
+        image: admin.image
+      }
+    });
+
+  } catch (err) {
+    console.error('Profile update error:', err);
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+});
+
+// POST: Change Password
+AdminRouter.post("/profile/change-password", async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    // Validation
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Password strength validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\d!@#$%^&*(),.?":{}|<>]).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({ 
+        message: "Password must be at least 8 characters with uppercase, lowercase, and number/special character" 
+      });
+    }
+
+    // Find admin
+    const admin = await Admin.findOne();
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, admin.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    // Check if new password is same as current
+    const isSamePassword = await bcrypt.compare(newPassword, admin.password);
+    if (isSamePassword) {
+      return res.status(400).json({ message: "New password must be different from current password" });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password
+    admin.password = hashedPassword;
+    await admin.save();
+
+    res.status(200).json({ message: "Password changed successfully" });
+
+  } catch (err) {
+    console.error('Password change error:', err);
+    res.status(500).json({ message: "Failed to change password" });
+  }
+});
+
+
 AdminRouter.get(["/payments"], (req, res) => {
   res.render("admin/payments");
 });
-// Update the payments route in AdminRouter
+
 AdminRouter.get("/payments", async (req, res) => {
   try {
-    // Fetch all communities with subscription details and payment history
+    // Fetch all communities with manager + subscription data
     const communities = await Community.find()
       .populate("communityManager", "name email")
-      .sort({ updatedAt: -1 });
+      .sort({ updatedAt: -1 })
+      .lean(); // lean() = faster, returns plain JS objects
 
-    // Calculate payment statistics
-    const totalRevenue = communities.reduce((sum, community) => {
-      return sum + community.subscriptionHistory.reduce((historySum, payment) => {
-        return payment.status === 'completed' ? historySum + payment.amount : historySum;
-      }, 0);
-    }, 0);
+    // Aggregate payment statistics
+    let totalRevenue = 0,
+        totalTransactions = 0,
+        pendingPayments = 0;
 
-    const totalTransactions = communities.reduce((sum, community) => {
-      return sum + community.subscriptionHistory.filter(payment => payment.status === 'completed').length;
-    }, 0);
+    for (const c of communities) {
+      if (!Array.isArray(c.subscriptionHistory)) continue;
 
-    const pendingPayments = communities.reduce((sum, community) => {
-      return sum + community.subscriptionHistory.filter(payment => payment.status === 'pending').length;
-    }, 0);
+      for (const p of c.subscriptionHistory) {
+        if (p.status === "completed") {
+          totalRevenue += p.amount || 0;
+          totalTransactions++;
+        } else if (p.status === "pending") {
+          pendingPayments++;
+        }
+      }
+    }
 
-    const activeSubscriptions = communities.filter(c => c.subscriptionStatus === 'active').length;
-    const expiredSubscriptions = communities.filter(c => c.subscriptionStatus === 'expired').length;
+    const activeSubscriptions = communities.filter(c => c.subscriptionStatus === "active").length;
+    const expiredSubscriptions = communities.filter(c => c.subscriptionStatus === "expired").length;
 
-    // Get recent transactions (last 50)
-    const recentTransactions = communities
-      .flatMap(community => 
-        community.subscriptionHistory.map(payment => ({
-          ...payment.toObject(),
-          communityName: community.name,
-          communityId: community._id,
-          managerName: community.communityManager?.name || 'N/A'
-        }))
-      )
+    // Collect all payments for recent transaction view
+    const allPayments = [];
+    for (const c of communities) {
+      if (!Array.isArray(c.subscriptionHistory)) continue;
+      for (const p of c.subscriptionHistory) {
+        allPayments.push({
+          ...p,
+          communityName: c.name,
+          communityId: c._id,
+          managerName: c.communityManager?.name || "N/A"
+        });
+      }
+    }
+
+    const recentTransactions = allPayments
+      .filter(p => p.paymentDate)
       .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))
       .slice(0, 50);
 
-    // Monthly revenue data for charts (last 12 months)
     const monthlyRevenue = [];
-    const currentDate = new Date();
-    
+    const now = new Date();
+
     for (let i = 11; i >= 0; i--) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-      
-      const monthRevenue = communities.reduce((sum, community) => {
-        return sum + community.subscriptionHistory
-          .filter(payment => 
-            payment.status === 'completed' &&
-            new Date(payment.paymentDate) >= monthStart &&
-            new Date(payment.paymentDate) <= monthEnd
-          )
-          .reduce((monthSum, payment) => monthSum + payment.amount, 0);
+      const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+
+      const monthRevenue = allPayments.reduce((sum, p) => {
+        if (
+          p.status === "completed" &&
+          new Date(p.paymentDate) >= start &&
+          new Date(p.paymentDate) <= end
+        ) {
+          return sum + (p.amount || 0);
+        }
+        return sum;
       }, 0);
-      
+
       monthlyRevenue.push({
-        month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        month: start.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
         revenue: monthRevenue
       });
     }
 
-    // Plan distribution
     const planDistribution = {
-      basic: communities.filter(c => c.subscriptionPlan === 'basic').length,
-      standard: communities.filter(c => c.subscriptionPlan === 'standard').length,
-      premium: communities.filter(c => c.subscriptionPlan === 'premium').length
+      basic: communities.filter(c => c.subscriptionPlan === "basic").length,
+      standard: communities.filter(c => c.subscriptionPlan === "standard").length,
+      premium: communities.filter(c => c.subscriptionPlan === "premium").length
     };
 
+    // Render payments dashboard
     res.render("admin/payments", {
       communities,
       recentTransactions,
@@ -398,7 +445,354 @@ AdminRouter.get("/payments", async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching payment data:", error);
-    res.status(500).send("Server Error");
+    res.status(500).send("Internal Server Error");
+  }
+});
+// Add these API routes to your AdminRouter
+
+// API: Get transactions with filters
+AdminRouter.get("/api/payments/transactions", async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 50,
+      status,
+      planType,
+      startDate,
+      endDate,
+      search
+    } = req.query;
+
+    // Fetch all communities with subscription data
+    const communities = await Community.find()
+      .populate("communityManager", "name email")
+      .lean();
+
+    // Collect all transactions
+    let allTransactions = [];
+    for (const c of communities) {
+      if (!Array.isArray(c.subscriptionHistory)) continue;
+      
+      for (const payment of c.subscriptionHistory) {
+        allTransactions.push({
+          ...payment,
+          _id: payment._id.toString(),
+          communityName: c.name,
+          communityId: c._id.toString(),
+          managerName: c.communityManager?.name || "N/A"
+        });
+      }
+    }
+
+    // Apply filters
+    let filteredTransactions = allTransactions;
+
+    // Status filter
+    if (status) {
+      filteredTransactions = filteredTransactions.filter(t => t.status === status);
+    }
+
+    // Plan type filter
+    if (planType) {
+      filteredTransactions = filteredTransactions.filter(t => t.planType === planType);
+    }
+
+    // Date range filter
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+
+      filteredTransactions = filteredTransactions.filter(t => {
+        const paymentDate = new Date(t.paymentDate);
+        return paymentDate >= start && paymentDate <= end;
+      });
+    }
+
+    // Search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredTransactions = filteredTransactions.filter(t => {
+        return (
+          t.communityName?.toLowerCase().includes(searchLower) ||
+          t.managerName?.toLowerCase().includes(searchLower) ||
+          t.transactionId?.toLowerCase().includes(searchLower) ||
+          t._id?.toLowerCase().includes(searchLower)
+        );
+      });
+    }
+
+    // Sort by payment date (newest first)
+    filteredTransactions.sort((a, b) => {
+      return new Date(b.paymentDate) - new Date(a.paymentDate);
+    });
+
+    // Calculate summary statistics
+    const summary = {
+      totalAmount: filteredTransactions
+        .filter(t => t.status === "completed")
+        .reduce((sum, t) => sum + (t.amount || 0), 0),
+      completedCount: filteredTransactions.filter(t => t.status === "completed").length,
+      pendingCount: filteredTransactions.filter(t => t.status === "pending").length,
+      failedCount: filteredTransactions.filter(t => t.status === "failed").length
+    };
+
+    // Pagination
+    const totalTransactions = filteredTransactions.length;
+    const totalPages = Math.ceil(totalTransactions / limit);
+    const currentPage = Math.min(Math.max(1, parseInt(page)), totalPages || 1);
+    const startIndex = (currentPage - 1) * limit;
+    const endIndex = startIndex + parseInt(limit);
+    
+    const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
+
+    res.json({
+      success: true,
+      transactions: paginatedTransactions,
+      pagination: {
+        currentPage,
+        totalPages,
+        totalTransactions,
+        hasNext: currentPage < totalPages,
+        hasPrev: currentPage > 1
+      },
+      summary
+    });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch transactions"
+    });
+  }
+});
+
+// API: Get community payment details
+AdminRouter.get("/api/payments/community/:communityId", async (req, res) => {
+  try {
+    const { communityId } = req.params;
+
+    const community = await Community.findById(communityId)
+      .populate("communityManager", "name email")
+      .lean();
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        error: "Community not found"
+      });
+    }
+
+    const subscriptionHistory = community.subscriptionHistory || [];
+    const totalRevenue = subscriptionHistory
+      .filter(p => p.status === "completed")
+      .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+    res.json({
+      success: true,
+      community,
+      subscriptionHistory,
+      totalRevenue,
+      totalTransactions: subscriptionHistory.length
+    });
+  } catch (error) {
+    console.error("Error fetching community payment details:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch payment details"
+    });
+  }
+});
+
+// API: Update payment status
+AdminRouter.put("/api/payments/transaction/:communityId/:transactionId", async (req, res) => {
+  try {
+    const { communityId, transactionId } = req.params;
+    const { status, notes } = req.body;
+
+    if (!["completed", "pending", "failed"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid status"
+      });
+    }
+
+    const community = await Community.findById(communityId);
+
+    if (!community) {
+      return res.status(404).json({
+        success: false,
+        error: "Community not found"
+      });
+    }
+
+    const transaction = community.subscriptionHistory.id(transactionId);
+
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        error: "Transaction not found"
+      });
+    }
+
+    transaction.status = status;
+    if (notes) {
+      transaction.notes = notes;
+    }
+
+    await community.save();
+
+    res.json({
+      success: true,
+      message: "Payment status updated successfully",
+      transaction
+    });
+  } catch (error) {
+    console.error("Error updating payment status:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update payment status"
+    });
+  }
+});
+
+// API: Get revenue chart data
+AdminRouter.get("/api/payments/revenue-chart", async (req, res) => {
+  try {
+    const { timePeriod = "monthly" } = req.query;
+
+    const communities = await Community.find().lean();
+    
+    let allPayments = [];
+    for (const c of communities) {
+      if (!Array.isArray(c.subscriptionHistory)) continue;
+      allPayments.push(...c.subscriptionHistory);
+    }
+
+    const now = new Date();
+    let labels = [];
+    let data = [];
+
+    switch (timePeriod) {
+      case "weekly":
+        // Last 7 days
+        for (let i = 6; i >= 0; i--) {
+          const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+          const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+          labels.push(dayName);
+
+          const dayRevenue = allPayments
+            .filter(p => {
+              const pDate = new Date(p.paymentDate);
+              return (
+                pDate.toDateString() === date.toDateString() &&
+                p.status === "completed"
+              );
+            })
+            .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+          data.push(dayRevenue);
+        }
+        break;
+
+      case "monthly":
+        // Last 12 months
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const monthName = date.toLocaleDateString("en-US", { month: "short" });
+          labels.push(monthName);
+
+          const monthRevenue = allPayments
+            .filter(p => {
+              const pDate = new Date(p.paymentDate);
+              return (
+                pDate.getFullYear() === date.getFullYear() &&
+                pDate.getMonth() === date.getMonth() &&
+                p.status === "completed"
+              );
+            })
+            .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+          data.push(monthRevenue);
+        }
+        break;
+
+      case "yearly":
+        // Last 5 years
+        for (let i = 4; i >= 0; i--) {
+          const year = now.getFullYear() - i;
+          labels.push(year.toString());
+
+          const yearRevenue = allPayments
+            .filter(p => {
+              const pDate = new Date(p.paymentDate);
+              return pDate.getFullYear() === year && p.status === "completed";
+            })
+            .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+          data.push(yearRevenue);
+        }
+        break;
+    }
+
+    res.json({
+      success: true,
+      data: { labels, data }
+    });
+  } catch (error) {
+    console.error("Error fetching revenue chart data:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch chart data"
+    });
+  }
+});
+
+
+AdminRouter.get("/api/payments/community/:id", async (req, res) => {
+  try {
+    const community = await Community.findById(req.params.id)
+      .populate("communityManager", "name email contact")
+      .lean();
+
+    if (!community) {
+      return res.status(404).json({ success: false, error: "Community not found" });
+    }
+
+    const history = Array.isArray(community.subscriptionHistory)
+      ? [...community.subscriptionHistory].sort(
+          (a, b) => new Date(b.paymentDate) - new Date(a.paymentDate)
+        )
+      : [];
+
+    const totalRevenue = history
+      .filter(p => p.status === "completed")
+      .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+    const totalTransactions = history.filter(p => p.status === "completed").length;
+
+    res.json({
+      success: true,
+      community: {
+        _id: community._id,
+        name: community.name,
+        email: community.email,
+        subscriptionPlan: community.subscriptionPlan,
+        subscriptionStatus: community.subscriptionStatus,
+        planStartDate: community.planStartDate,
+        planEndDate: community.planEndDate,
+        communityManager: community.communityManager
+      },
+      subscriptionHistory: history,
+      totalRevenue,
+      totalTransactions
+    });
+  } catch (error) {
+    console.error("Error fetching community payment details:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch payment details"
+    });
   }
 });
 
@@ -524,6 +918,235 @@ AdminRouter.get("/api/payments/transactions", async (req, res) => {
     });
   }
 });
+
+// API route to get revenue chart data
+AdminRouter.get("/api/payments/revenue-chart", async (req, res) => {
+  try {
+    const { timePeriod = 'monthly' } = req.query;
+    
+    // Get all communities with subscription history
+    const communities = await Community.find()
+      .populate("communityManager", "name email")
+      .select("subscriptionHistory subscriptionPlan");
+    
+    // Flatten all subscription history
+    const allTransactions = [];
+    communities.forEach(community => {
+      community.subscriptionHistory.forEach(transaction => {
+        allTransactions.push({
+          ...transaction.toObject(),
+          communityName: community.name,
+          managerName: community.communityManager?.name || 'N/A',
+          planType: transaction.planType || community.subscriptionPlan
+        });
+      });
+    });
+    
+    // Generate revenue chart data based on time period
+    const chartData = generateRevenueChartData(allTransactions, timePeriod);
+    
+    res.json({
+      success: true,
+      data: chartData
+    });
+  } catch (error) {
+    console.error("Error fetching revenue chart data:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch revenue chart data"
+    });
+  }
+});
+
+// Helper function to generate revenue chart data
+function generateRevenueChartData(transactions, timePeriod) {
+  const now = new Date();
+  let labels = [];
+  let data = [];
+  
+  switch(timePeriod) {
+    case 'weekly':
+      // Last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+        labels.push(dayName);
+        
+        const dayRevenue = transactions
+          .filter(t => {
+            const paymentDate = new Date(t.paymentDate);
+            return paymentDate.toDateString() === date.toDateString() && t.status === 'completed';
+          })
+          .reduce((sum, t) => sum + t.amount, 0);
+        
+        data.push(dayRevenue);
+      }
+      break;
+      
+    case 'monthly':
+      // Last 12 months
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+        labels.push(monthName);
+        
+        const monthRevenue = transactions
+          .filter(t => {
+            const paymentDate = new Date(t.paymentDate);
+            return paymentDate.getFullYear() === date.getFullYear() && 
+                   paymentDate.getMonth() === date.getMonth() &&
+                   t.status === 'completed';
+          })
+          .reduce((sum, t) => sum + t.amount, 0);
+        
+        data.push(monthRevenue);
+      }
+      break;
+      
+    case 'yearly':
+      // Last 5 years
+      for (let i = 4; i >= 0; i--) {
+        const year = now.getFullYear() - i;
+        labels.push(year.toString());
+        
+        const yearRevenue = transactions
+          .filter(t => {
+            const paymentDate = new Date(t.paymentDate);
+            return paymentDate.getFullYear() === year && t.status === 'completed';
+          })
+          .reduce((sum, t) => sum + t.amount, 0);
+        
+        data.push(yearRevenue);
+      }
+      break;
+  }
+  
+  return { labels, data };
+}
+
+// API route to get extended payments chart data
+AdminRouter.get("/api/payments/extended-chart", async (req, res) => {
+  try {
+    const { timePeriod = 'monthly' } = req.query;
+    
+    // Get all communities with subscription history
+    const communities = await Community.find()
+      .populate("communityManager", "name email")
+      .select("subscriptionHistory subscriptionPlan");
+    
+    // Flatten all subscription history
+    const allTransactions = [];
+    communities.forEach(community => {
+      community.subscriptionHistory.forEach(transaction => {
+        allTransactions.push({
+          ...transaction.toObject(),
+          communityName: community.name,
+          managerName: community.communityManager?.name || 'N/A',
+          planType: transaction.planType || community.subscriptionPlan
+        });
+      });
+    });
+    
+    // Generate chart data based on time period
+    const chartData = generateExtendedPaymentsChartData(allTransactions, timePeriod);
+    
+    res.json({
+      success: true,
+      data: chartData
+    });
+  } catch (error) {
+    console.error("Error fetching extended payments chart data:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch extended payments chart data"
+    });
+  }
+});
+
+// Helper function to generate extended payments chart data
+function generateExtendedPaymentsChartData(transactions, timePeriod) {
+  const now = new Date();
+  let labels = [];
+  let completed = [];
+  let pending = [];
+  let failed = [];
+  
+  switch(timePeriod) {
+    case 'weekly':
+      // Last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+        labels.push(dayName);
+        
+        const dayData = getPaymentsForPeriod(transactions, date, 'day');
+        completed.push(dayData.completed);
+        pending.push(dayData.pending);
+        failed.push(dayData.failed);
+      }
+      break;
+      
+    case 'monthly':
+      // Last 12 months
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+        labels.push(monthName);
+        
+        const monthData = getPaymentsForPeriod(transactions, date, 'month');
+        completed.push(monthData.completed);
+        pending.push(monthData.pending);
+        failed.push(monthData.failed);
+      }
+      break;
+      
+    case 'yearly':
+      // Last 5 years
+      for (let i = 4; i >= 0; i--) {
+        const year = now.getFullYear() - i;
+        labels.push(year.toString());
+        
+        const yearData = getPaymentsForPeriod(transactions, new Date(year, 0, 1), 'year');
+        completed.push(yearData.completed);
+        pending.push(yearData.pending);
+        failed.push(yearData.failed);
+      }
+      break;
+  }
+  
+  return { labels, completed, pending, failed };
+}
+
+// Helper function to get payments for a specific period
+function getPaymentsForPeriod(transactions, date, period) {
+  let startDate, endDate;
+  
+  switch(period) {
+    case 'day':
+      startDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
+      break;
+    case 'month':
+      startDate = new Date(date.getFullYear(), date.getMonth(), 1);
+      endDate = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+      break;
+    case 'year':
+      startDate = new Date(date.getFullYear(), 0, 1);
+      endDate = new Date(date.getFullYear() + 1, 0, 1);
+      break;
+  }
+  
+  const periodTransactions = transactions.filter(t => {
+    const paymentDate = new Date(t.paymentDate);
+    return paymentDate >= startDate && paymentDate < endDate;
+  });
+  
+  return {
+    completed: periodTransactions.filter(t => t.status === 'completed').length,
+    pending: periodTransactions.filter(t => t.status === 'pending').length,
+    failed: periodTransactions.filter(t => t.status === 'failed').length
+  };
+}
 
 // API route to update payment status
 AdminRouter.put("/api/payments/transaction/:communityId/:transactionId", async (req, res) => {

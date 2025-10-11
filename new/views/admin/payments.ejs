@@ -4,17 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Payment Dashboard</title>
-    <!-- Light Mode Favicon -->
-<link rel="icon" href="/imgs/logo_.png" media="(prefers-color-scheme: light)" type="image/png">
-
-<!-- Dark Mode Favicon -->
-<link rel="icon" href="/imgs/logo_white.png" media="(prefers-color-scheme: dark)" type="image/png">
-
+    <link rel="icon" href="/imgs/logo_.png" media="(prefers-color-scheme: light)" type="image/png">
+    <link rel="icon" href="/imgs/logo_white.png" media="(prefers-color-scheme: dark)" type="image/png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-
     <link rel="stylesheet" href="/css/sidebar.css">
     <style>
-        /* Importing Google Fonts - Poppins */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
         * {
@@ -30,7 +24,6 @@
             color: #2c3e50;
         }
 
-        /* Container Layout */
         .container {
             margin-left: 286px;
             padding: 24px;
@@ -42,7 +35,6 @@
             margin-left: 101px;
         }
 
-        /* Header Section */
         .header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -102,6 +94,11 @@
             box-shadow: 0 8px 24px rgba(21, 26, 45, 0.3);
         }
 
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
         /* Stats Cards */
         .stats-grid {
             display: grid;
@@ -111,17 +108,36 @@
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 8px 32px rgba(21, 26, 45, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: transform 0.3s ease;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 28px 24px;
+            box-shadow: 0 12px 40px rgba(21, 26, 45, 0.12), 0 4px 16px rgba(21, 26, 45, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(21, 26, 45, 0.15), 0 8px 24px rgba(21, 26, 45, 0.1);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
         }
 
         .stat-card.success {
@@ -148,12 +164,24 @@
         }
 
         .stat-icon {
-            font-size: 24px;
-            padding: 12px;
-            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .stat-icon svg {
+            width: 28px;
+            height: 28px;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover .stat-icon svg {
+            transform: scale(1.1);
         }
 
         .stat-icon.success {
@@ -177,14 +205,22 @@
         }
 
         .stat-value {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 32px;
+            font-weight: 800;
             margin-bottom: 8px;
+            background: linear-gradient(135deg, #151A2D 0%, #4a5568 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
         }
 
         .stat-label {
             font-size: 14px;
-            color: #6b7280;
+            color: #64748b;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* Charts Section */
@@ -211,6 +247,52 @@
             color: #151A2D;
         }
 
+        .chart-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* Time Period Tabs */
+        .time-period-tabs {
+            display: flex;
+            background: rgba(21, 26, 45, 0.05);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 2px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            background: rgba(21, 26, 45, 0.1);
+            color: #151A2D;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #151A2D 0%, #2c3441 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(21, 26, 45, 0.3);
+        }
+
+        .tab-btn.active:hover {
+            background: linear-gradient(135deg, #151A2D 0%, #2c3441 100%);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(21, 26, 45, 0.4);
+        }
+
         /* Filters Section */
         .filters-section {
             background: rgba(255, 255, 255, 0.9);
@@ -218,9 +300,7 @@
             border-radius: 16px;
             padding: 20px;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
             gap: 20px;
-            align-items: center;
             margin-bottom: 24px;
             box-shadow: 0 4px 20px rgba(21, 26, 45, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -335,11 +415,12 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 500;
-            text-transform: uppercase;
+            text-transform: capitalize;
             letter-spacing: 0.5px;
         }
 
-        .status-completed {
+        .status-completed,
+        .status-active {
             background: rgba(34, 197, 94, 0.1);
             color: #16a34a;
         }
@@ -349,39 +430,32 @@
             color: #f59e0b;
         }
 
-        .status-failed {
+        .status-failed,
+        .status-expired {
             background: rgba(239, 68, 68, 0.1);
             color: #dc2626;
+        }
+
+        /* Plan Badges */
+        .plan-basic {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .plan-standard {
+            background: rgba(168, 85, 247, 0.1);
+            color: #a855f7;
+        }
+
+        .plan-premium {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
         }
 
         /* Action Buttons */
         .table-actions {
             display: flex;
             gap: 8px;
-        }
-
-        .btn-icon {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
-        .btn-view {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-        }
-
-        .btn-view:hover {
-            background: #3b82f6;
-            color: white;
-            transform: translateY(-2px);
         }
 
         /* Pagination */
@@ -412,13 +486,18 @@
             transition: all 0.3s ease;
         }
 
-        .page-btn:hover {
+        .page-btn:hover:not(.disabled) {
             background: rgba(21, 26, 45, 0.1);
         }
 
         .page-btn.active {
             background: #151A2D;
             color: white;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         /* Modal Styles */
@@ -443,7 +522,7 @@
         .modal {
             background: white;
             border-radius: 16px;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
@@ -457,10 +536,11 @@
         }
 
         .modal-header {
-            padding: 24px 32px 0;
+            padding: 24px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid #eee;
         }
 
         .modal-title {
@@ -490,6 +570,23 @@
             padding: 24px 32px;
         }
 
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .detail-value {
+            font-weight: 500;
+            color: #151A2D;
+        }
+
         /* Responsive Design */
         @media (max-width: 1200px) {
             .stats-grid {
@@ -498,10 +595,6 @@
             
             .charts-section {
                 grid-template-columns: 1fr;
-            }
-            
-            .filters-section {
-                grid-template-columns: 1fr 1fr;
             }
         }
 
@@ -519,10 +612,6 @@
                 grid-template-columns: 1fr;
             }
             
-            .filters-section {
-                grid-template-columns: 1fr;
-            }
-            
             .header {
                 flex-direction: column;
                 gap: 16px;
@@ -533,28 +622,14 @@
                 width: 100%;
                 justify-content: space-between;
             }
-        }
 
-        @media (max-width: 480px) {
-            .btn {
-                padding: 10px 16px;
-                font-size: 14px;
+            .time-period-tabs {
+                flex-wrap: wrap;
             }
-            
-            .table thead th,
-            .table tbody td {
-                padding: 8px 12px;
-                font-size: 13px;
-            }
-            
-            .table-actions {
-                flex-direction: column;
-                gap: 4px;
-            }
-            
-            .btn-icon {
-                width: 32px;
-                height: 32px;
+
+            .tab-btn {
+                padding: 6px 12px;
+                font-size: 12px;
             }
         }
     </style>
@@ -566,11 +641,12 @@
         <div class="header">
             <h1>Payment Dashboard</h1>
             <div class="header-actions">
-                <button class="btn btn-secondary" onclick="exportData()">
-                    📊 Export
-                </button>
+                
                 <button class="btn" onclick="refreshData()">
-                    🔄 Refresh
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z" fill="currentColor"/>
+                    </svg>
+                    Refresh
                 </button>
             </div>
         </div>
@@ -579,28 +655,44 @@
         <div class="stats-grid">
             <div class="stat-card success">
                 <div class="stat-card-header">
-                    <div class="stat-icon success">💰</div>
+                    <div class="stat-icon success">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11.8 10.9C9.53 10.31 8.8 9.7 8.8 8.75C8.8 7.66 9.81 6.9 11.5 6.9C13.28 6.9 13.94 7.75 14 9H16.21C16.14 7.28 15.09 5.7 13 5.19V3H10V5.16C8.06 5.58 6.5 6.84 6.5 8.77C6.5 11.08 8.41 12.23 11.2 12.9C13.7 13.5 14.2 14.38 14.2 15.31C14.2 16 13.71 17.1 11.5 17.1C9.44 17.1 8.63 16.18 8.52 15H6.32C6.44 17.19 8.08 18.42 10 18.83V21H13V18.85C14.95 18.48 16.5 17.35 16.5 15.3C16.5 12.46 14.07 11.49 11.8 10.9Z" fill="currentColor"/>
+                        </svg>
+                    </div>
                 </div>
                 <div class="stat-value" id="totalRevenue">₹0</div>
                 <div class="stat-label">Total Revenue</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card primary">
                 <div class="stat-card-header">
-                    <div class="stat-icon primary">📊</div>
+                    <div class="stat-icon primary">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 13H11V3H3V13ZM3 21H11V15H3V21ZM13 21H21V11H13V21ZM13 3V9H21V3H13Z" fill="currentColor"/>
+                        </svg>
+                    </div>
                 </div>
                 <div class="stat-value" id="totalTransactions">0</div>
                 <div class="stat-label">Total Transactions</div>
             </div>
             <div class="stat-card warning">
                 <div class="stat-card-header">
-                    <div class="stat-icon warning">⏳</div>
+                    <div class="stat-icon warning">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+                        </svg>
+                    </div>
                 </div>
                 <div class="stat-value" id="pendingPayments">0</div>
                 <div class="stat-label">Pending Payments</div>
             </div>
             <div class="stat-card danger">
                 <div class="stat-card-header">
-                    <div class="stat-icon danger">❌</div>
+                    <div class="stat-icon danger">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2ZM17 15.59L15.59 17L12 13.41L8.41 17L7 15.59L10.59 12L7 8.41L8.41 7L12 10.59L15.59 7L17 8.41L13.41 12L17 15.59Z" fill="currentColor"/>
+                        </svg>
+                    </div>
                 </div>
                 <div class="stat-value" id="failedPayments">0</div>
                 <div class="stat-label">Failed Payments</div>
@@ -610,37 +702,53 @@
         <!-- Charts Section -->
         <div class="charts-section">
             <div class="chart-card">
-                <h3 class="chart-title">Revenue Trend</h3>
-                <div style="height: 300px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 class="chart-title">Revenue Trend</h3>
+                    <div class="chart-controls">
+                        <div class="time-period-tabs">
+                            <button class="tab-btn active" data-period="weekly">Weekly</button>
+                            <button class="tab-btn" data-period="monthly">Monthly</button>
+                            <button class="tab-btn" data-period="yearly">Yearly</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="height: 250px;">
                     <canvas id="revenueChart"></canvas>
                 </div>
             </div>
             <div class="chart-card">
-                <h3 class="chart-title">Payment Methods</h3>
-                <div style="height: 300px;">
-                    <canvas id="paymentMethodChart"></canvas>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 class="chart-title">Payment Status Distribution</h3>
+                </div>
+                <div style="height: 250px;">
+                    <canvas id="paymentsPieChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Filters -->
-        <div class="filters-section">
+        <!-- Filters Section -->
+        <div class="filters-section" style="grid-template-columns: 2fr 1fr 1fr;">
+            <!-- Search -->
             <div class="search-box">
                 <label class="form-label">Search</label>
                 <div style="position: relative;">
-                    <input type="text" class="search-input" id="searchInput" placeholder="Search by community, transaction ID...">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search by community or transaction ID...">
                     <span class="search-icon">🔍</span>
                 </div>
             </div>
+
+            <!-- Status Filter (Tabs) -->
             <div class="filter-item">
                 <label class="form-label">Status</label>
-                <select class="form-select" id="statusFilter">
-                    <option value="">All Status</option>
-                    <option value="completed">Completed</option>
-                    <option value="pending">Pending</option>
-                    <option value="failed">Failed</option>
-                </select>
+                <div class="time-period-tabs" id="statusTabs">
+                    <button class="tab-btn active" data-status="">All</button>
+                    <button class="tab-btn" data-status="completed">Completed</button>
+                    <button class="tab-btn" data-status="pending">Pending</button>
+                    <button class="tab-btn" data-status="failed">Failed</button>
+                </div>
             </div>
+
+            <!-- Plan Type Dropdown -->
             <div class="filter-item">
                 <label class="form-label">Plan Type</label>
                 <select class="form-select" id="planFilter">
@@ -650,15 +758,17 @@
                     <option value="premium">Premium</option>
                 </select>
             </div>
-            <div class="filter-item">
+
+            <!-- Duration Filter (Tabs) -->
+            <div class="filter-item" style="grid-column: 1 / span 3;">
                 <label class="form-label">Date Range</label>
-                <select class="form-select" id="dateFilter">
-                    <option value="">All Time</option>
-                    <option value="today">Today</option>
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
-                    <option value="year">This Year</option>
-                </select>
+                <div class="time-period-tabs" id="dateTabs">
+                    <button class="tab-btn active" data-period="">All Time</button>
+                    <button class="tab-btn" data-period="today">Today</button>
+                    <button class="tab-btn" data-period="week">This Week</button>
+                    <button class="tab-btn" data-period="month">This Month</button>
+                    <button class="tab-btn" data-period="year">This Year</button>
+                </div>
             </div>
         </div>
 
@@ -675,20 +785,25 @@
                             <th>Payment Method</th>
                             <th>Date</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                           
                         </tr>
                     </thead>
                     <tbody id="paymentsTableBody">
-                        <!-- Dynamic content -->
+                        <!-- Dynamic content will be loaded here -->
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
+                                Loading transactions...
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
             <div class="pagination">
                 <div class="page-info" id="pageInfo">
-                    Showing 1-10 of 100 entries
+                    Showing 0-0 of 0 entries
                 </div>
                 <div class="page-buttons" id="pageButtons">
-                    <!-- Dynamic pagination buttons -->
+                    <!-- Dynamic pagination buttons will be loaded here -->
                 </div>
             </div>
         </div>
@@ -702,10 +817,11 @@
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
-                <!-- Dynamic content -->
+                <!-- Dynamic content will be loaded here -->
             </div>
         </div>
     </div>
+
     <script src="/js/admin/payment.js"></script>
 </body>
 </html>

@@ -427,6 +427,9 @@
           <button class="btn primary" id="subscriptionPayment">
             Subscription Payment
           </button>
+          <button class="btn primary" id="changePlanBtn" style="background-color: #28a745;">
+            Change Plan
+          </button>
         </div>
 
         <div class="search-bar">
@@ -623,6 +626,121 @@
 
   </div>
 </div>
+
+      <!-- Plan Change Modal -->
+      <div id="planChangeModal" class="modal">
+        <div class="modal-content" style="max-width: 700px; padding: 25px; border-radius: 12px; background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+          
+          <span class="close close-plan-change" style="float: right; font-size: 1.5rem; cursor: pointer;">&times;</span>
+          <h2 style="margin-bottom: 15px; font-size: 1.8rem; color: #333; text-align: center;">
+            Change Subscription Plan
+          </h2>
+
+          <!-- Current Plan Info -->
+          <div id="currentPlanInfo" 
+               style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+            <h4 style="margin: 0 0 10px; color: #333;">Current Plan</h4>
+            <div id="currentPlanDetails">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- New Plan Selection -->
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="newPlanSelect" 
+                   style="display: block; font-weight: bold; margin-bottom: 8px;">
+              Select New Plan
+            </label>
+            <select id="newPlanSelect" required 
+                    style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+              <option value="">Choose a new plan</option>
+              <% Object.keys(planPrices).forEach(planKey => { %>
+                <option value="<%= planKey %>" 
+                        data-price="<%= planPrices[planKey] %>"
+                        <%= plan === planKey ? 'disabled' : '' %>>
+                  <%= planKey.charAt(0).toUpperCase() + planKey.slice(1) %> Plan - ₹<%= planPrices[planKey] %>
+                  <%= plan === planKey ? ' (Current)' : '' %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <!-- New Plan Details -->
+          <div id="newPlanDetails" 
+               style="background: linear-gradient(135deg, #e8f5e8, #ffffff); 
+                      padding: 15px; 
+                      border-radius: 10px; 
+                      margin-bottom: 20px; 
+                      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                      display: none;">
+
+            <h3 id="newPlanName" style="margin: 0 0 5px; color: #28a745;">
+              <!-- Will be populated by JavaScript -->
+            </h3>
+            <p style="color: #555; font-size: 0.95rem; margin-bottom: 5px;">
+              Enjoy enhanced benefits and features for your community.
+            </p>
+            <strong id="newPlanPrice" style="color: #333; font-size: 1.1rem;">
+              <!-- Will be populated by JavaScript -->
+            </strong>
+          </div>
+
+          <!-- Change Options -->
+          <div id="changeOptions" style="display: none;">
+            <h4 style="margin-bottom: 15px; color: #333;">Choose Change Option:</h4>
+            
+            <!-- Immediate Change Option -->
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+              <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                <input type="radio" name="changeOption" value="immediate" id="immediateChange" style="margin-top: 3px;">
+                <div>
+                  <strong style="color: #856404;">Change Now (Immediate)</strong>
+                  <p style="margin: 5px 0; color: #856404; font-size: 0.9rem;">
+                    ⚠️ <strong>Caution:</strong> This will immediately change your plan and charge the difference. 
+                    Any unused time from your current plan will be forfeited.
+                  </p>
+                  <div id="immediateCost" style="font-weight: bold; color: #dc3545;">
+                    <!-- Will show cost difference -->
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            <!-- Next Cycle Change Option -->
+            <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px;">
+              <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                <input type="radio" name="changeOption" value="nextCycle" id="nextCycleChange" style="margin-top: 3px;">
+                <div>
+                  <strong style="color: #155724;">Change from Next Billing Cycle</strong>
+                  <p style="margin: 5px 0; color: #155724; font-size: 0.9rem;">
+                    ✅ <strong>Recommended:</strong> Your plan will change from the next billing cycle. 
+                    You'll continue using your current plan until then.
+                  </p>
+                  <div id="nextCycleInfo" style="font-weight: bold; color: #28a745;">
+                    <!-- Will show next cycle info -->
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions" 
+               style="display: flex; justify-content: space-between; gap: 10px; margin-top: 25px;">
+            <button type="button" id="confirmPlanChange" 
+                    style="flex: 1; background: #28a745; color: #fff; padding: 12px; 
+                           border-radius: 8px; font-size: 1rem; border: none; cursor: pointer; display: none;">
+              Confirm Plan Change
+            </button>
+            <button type="button" id="cancelPlanChange" 
+                    style="flex: 1; background: #ccc; color: #333; padding: 12px; 
+                           border-radius: 8px; font-size: 1rem; border: none; cursor: pointer;">
+              Cancel
+            </button>
+          </div>
+
+        </div>
+      </div>
 
     </div>
 
