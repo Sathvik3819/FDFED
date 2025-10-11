@@ -45,6 +45,7 @@ securityRouter.post("/addVisitor", async (req, res) => {
 
   try {
     const v = await visitor.create({
+      ID: req.user.id,
       name: fullName,
       contactNumber: contact,
       purpose: visitorType,
@@ -56,11 +57,12 @@ securityRouter.post("/addVisitor", async (req, res) => {
       community: req.user.community,
     });
     console.log("visitor entered");
+    return res.json({ success: true, message: "Visitor added successfully", visitor: v });
   } catch (err) {
     console.log(err);
   }
 
-  res.redirect("/security/visitorManagement");
+  
 });
 
 securityRouter.get("/dashboard", getDashboardInfo);
@@ -122,7 +124,7 @@ securityRouter.post("/preApproval/action", UpdatePreApprovalData);
 //     vis.vehicleNumber = vehicleNumber; 
 
 //     vis.approvedBy.notifications.push({
-//       n:`Pre approved Visitor ${vis.ID} is ${vis.status}`,
+//       n:Pre approved Visitor ${vis.ID} is ${vis.status},
 //       createdAt:new Date(Date.now()),
 //       belongs:"PA"
 //     });
@@ -152,7 +154,7 @@ securityRouter.post("/preApproval/action", UpdatePreApprovalData);
 
 //     res.status(200).json({
 //       success: true,
-//       message: `Visitor ${status.toLowerCase()} successfully`,
+//       message: Visitor ${status.toLowerCase()} successfully,
 //     });
 //   } catch (error) {
 //     console.error("Error updating visitor status:", error);
