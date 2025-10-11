@@ -1740,6 +1740,50 @@ managerRouter.get("/payments", async (req, res) => {
   }
 });
 
+// Get available subscription plans
+managerRouter.get("/subscription-plans", async (req, res) => {
+  try {
+    const planPrices = {
+      basic: 999,
+      standard: 1999,
+      premium: 3999,
+    };
+
+    const planDetails = {
+      basic: {
+        name: "Basic Plan",
+        price: 999,
+        features: ["Up to 50 residents", "Basic payment tracking", "Email support"],
+        duration: "monthly"
+      },
+      standard: {
+        name: "Standard Plan", 
+        price: 1999,
+        features: ["Up to 200 residents", "Advanced payment tracking", "SMS notifications", "Priority support"],
+        duration: "monthly"
+      },
+      premium: {
+        name: "Premium Plan",
+        price: 3999,
+        features: ["Unlimited residents", "Full payment suite", "SMS + Email notifications", "Dedicated support", "Analytics dashboard"],
+        duration: "monthly"
+      }
+    };
+
+    res.json({
+      success: true,
+      plans: planDetails,
+      planPrices
+    });
+  } catch (error) {
+    console.error("Error fetching subscription plans:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch subscription plans"
+    });
+  }
+});
+
 managerRouter.get("/ad", async (req, res) => {
   const ads = await Ad.find({
     community: req.user.community,

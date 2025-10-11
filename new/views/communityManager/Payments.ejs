@@ -539,6 +539,25 @@
 
     <form id="subscriptionPaymentForm">
 
+  <!-- Plan Selection -->
+  <div class="form-group" style="margin-bottom: 20px;">
+    <label for="subscriptionPlan" 
+           style="display: block; font-weight: bold; margin-bottom: 8px;">
+      Select Subscription Plan
+    </label>
+    <select id="subscriptionPlan" required 
+            style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+      <option value="">Choose a plan</option>
+      <% Object.keys(planPrices).forEach(planKey => { %>
+        <option value="<%= planKey %>" 
+                data-price="<%= planPrices[planKey] %>"
+                <%= plan === planKey ? 'selected' : '' %>>
+          <%= planKey.charAt(0).toUpperCase() + planKey.slice(1) %> Plan - ₹<%= planPrices[planKey] %>
+        </option>
+      <% }) %>
+    </select>
+  </div>
+
   <!-- Plan Details -->
   <div id="planDetails" 
        style="background: linear-gradient(135deg, #e0f7fa, #ffffff); 
@@ -547,13 +566,13 @@
               margin-bottom: 20px; 
               box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
 
-    <h3 style="margin: 0 0 5px; color: #00796b;">
+    <h3 id="selectedPlanName" style="margin: 0 0 5px; color: #00796b;">
       <%= plan.charAt(0).toUpperCase() + plan.slice(1) %> Plan
     </h3>
     <p style="color: #555; font-size: 0.95rem; margin-bottom: 5px;">
       Enjoy exclusive benefits and features tailored for your community.
     </p>
-    <strong style="color: #333; font-size: 1.1rem;">
+    <strong id="selectedPlanPrice" style="color: #333; font-size: 1.1rem;">
       Price: ₹<%= planPrices[plan] %>
     </strong>
   </div>
@@ -581,7 +600,7 @@
     <h4 style="margin-bottom: 10px; color: #333;">Payment Summary</h4>
     <div style="display: flex; justify-content: space-between; font-size: 1.1rem;">
       <span>Total Amount:</span>
-      <strong id="totalAmount">₹<%= planPrices[plan] %></strong>
+      <strong id="totalAmountDisplay">₹<%= planPrices[plan] %></strong>
     </div>
   </div>
 

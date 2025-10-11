@@ -30,6 +30,7 @@ let residents = [];
 let currentUser = {};
 let communityData = {};
 let subscriptionStatus = {};
+let availablePlans = {};
 
 // Subscription plans configuration
 const subscriptionPlans = {
@@ -171,7 +172,8 @@ async function initializeApp() {
         fetchResidentsData(),
         fetchCurrentUser(),
         fetchCommunityData(),
-        fetchSubscriptionStatus()
+        fetchSubscriptionStatus(),
+        fetchAvailablePlans()
     ];
 
     await Promise.allSettled(loadingPromises);
@@ -206,6 +208,12 @@ function setupSubscriptionEventListeners() {
     closeSubscriptionModalBtn?.addEventListener('click', closeSubscriptionPaymentModal);
     cancelSubscriptionPaymentBtn?.addEventListener('click', closeSubscriptionPaymentModal);
     subscriptionPaymentForm?.addEventListener('submit', handleSubscriptionPaymentSubmit);
+    
+    // Add plan selection change listener
+    const planSelect = document.getElementById('subscriptionPlan');
+    if (planSelect) {
+        planSelect.addEventListener('change', handlePlanSelectionChange);
+    }
 }
 
 // Handle subscription button click - show payment form only if expired
@@ -399,6 +407,29 @@ async function fetchSubscriptionStatus() {
             success: false,
             isExpired: true,
             isExpiringSoon: false
+        };
+    }
+}
+
+async function fetchAvailablePlans() {
+    try {
+        const response = await ApiClient.get('/manager/subscription-plans');
+        
+        if (response.success && response.plans) {
+            availablePlans = response.plans;
+            return response;
+        } else {
+            throw new Error('Invalid response format');
+        }
+    } catch (error) {
+        console.error('Failed to load available plans:', error);
+        ErrorHandler.show('Failed to load subscription plans. Using default plans.');
+        
+        // Fallback to hardcoded plans
+        availablePlans = subscriptionPlans;
+        return {
+            success: false,
+            plans: subscriptionPlans
         };
     }
 }
@@ -695,6 +726,64 @@ function openSubscriptionPaymentModal() {
     }
 }
 
+// Handle plan selection change
+function handlePlanSelectionChange(event) {
+    const selectedPlanKey = event.target.value;
+    const selectedOption = event.target.selectedOptions[0];
+    
+    if (selectedPlanKey && availablePlans[selectedPlanKey]) {
+        const selectedPlan = availablePlans[selectedPlanKey];
+        
+        // Update plan details display
+        updatePlanDetailsDisplay(selectedPlan);
+        
+        // Update payment summary
+        updatePaymentSummary(selectedPlan.price);
+    }
+}
+
+// Update plan details display
+function updatePlanDetailsDisplay(plan) {
+    const planNameElement = document.getElementById('selectedPlanName');
+    const planPriceElement = document.getElementById('selectedPlanPrice');
+    
+    if (planNameElement) {
+        planNameElement.textContent = plan.name;
+    }
+    
+    if (planPriceElement) {
+        planPriceElement.textContent = `Price: ₹${plan.price.toLocaleString()}`;
+    }
+}
+
+// Update payment summary
+function updatePaymentSummary(price) {
+    const totalAmountElement = document.getElementById('totalAmountDisplay');
+    
+    if (totalAmountElement) {
+        totalAmountElement.textContent = `₹${price.toLocaleString()}`;
+    }
+}
+
+// Populate subscription details when modal opens
+function populateSubscriptionDetails() {
+    const planSelect = document.getElementById('subscriptionPlan');
+    
+    if (planSelect && availablePlans) {
+        // Set default selection based on current plan or first available plan
+        const currentPlan = subscriptionStatus.community?.subscriptionPlan || 'basic';
+        const defaultPlan = availablePlans[currentPlan] ? currentPlan : Object.keys(availablePlans)[0];
+        
+        if (defaultPlan) {
+            planSelect.value = defaultPlan;
+            
+            // Trigger change event to update display
+            const changeEvent = new Event('change', { bubbles: true });
+            planSelect.dispatchEvent(changeEvent);
+        }
+    }
+}
+
 function closeSubscriptionPaymentModal() {
     if (subscriptionPaymentModal) {
         subscriptionPaymentModal.style.display = 'none';
@@ -782,18 +871,22 @@ async function handleSubscriptionPaymentSubmit(event) {
     
     try {
         const paymentMethod = document.getElementById('paymentMethod')?.value;
+        const selectedPlanKey = document.getElementById('subscriptionPlan')?.value;
         
         if (!paymentMethod) {
             throw new Error('Please select a payment method');
+        }
+        
+        if (!selectedPlanKey) {
+            throw new Error('Please select a subscription plan');
         }
         
         if (!subscriptionStatus.success || !subscriptionStatus.community) {
             throw new Error('Unable to load subscription details. Please refresh and try again.');
         }
         
-        // Use the current plan from subscription status
-        const selectedPlan = subscriptionStatus.community.subscriptionPlan || 'basic';
-        const plan = subscriptionPlans[selectedPlan];
+        // Use the selected plan from dropdown
+        const plan = availablePlans[selectedPlanKey] || subscriptionPlans[selectedPlanKey];
         
         if (!plan) {
             throw new Error('Invalid plan configuration');
@@ -805,7 +898,7 @@ async function handleSubscriptionPaymentSubmit(event) {
         
         const paymentData = {
             communityId: subscriptionStatus.community._id || communityData._id,
-            subscriptionPlan: selectedPlan,
+            subscriptionPlan: selectedPlanKey,
             amount: plan.price,
             paymentMethod,
             planDuration: plan.duration,
