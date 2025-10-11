@@ -157,33 +157,263 @@ AdminRouter.get("/api/dashboard/kpis", async (req, res) => {
 });
 
 // --- Charts ---
-AdminRouter.get("/api/dashboard/charts", async (req, res) => {
-  const { period } = req.query;
+// Update the dashboard endpoint to include proper revenue chart data
+AdminRouter.get("/api/dashboard", async (req, res) => {
+  try {
+    // KPIs
+    const totalCommunities = await Community.countDocuments();
+    const totalResidents = await Resident.countDocuments();
+    const pendingApplications = await Application.countDocuments({ status: "pending" });
 
-  let chartData;
-  if (period === "1Y") {
-    // Example: 12 months aggregation
-    chartData = await Payment.aggregate([
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+    const monthlyRevenueAgg = await Community.aggregate([
+      { $unwind: "$subscriptionHistory" },
+      {
+        $match: {
+          "subscriptionHistory.status": "completed",
+          "subscriptionHistory.paymentDate": { $gte: startOfMonth }
+        }
+      },
       {
         $group: {
-          _id: { $month: "$createdAt" },
-          revenue: { $sum: "$amount" }
+          _id: null,
+          total: { $sum: "$subscriptionHistory.amount" }
         }
       }
     ]);
-  } else if (period === "All") {
-    // Example: Yearly aggregation
-    chartData = await Payment.aggregate([
-      {
-        $group: {
-          _id: { $year: "$createdAt" },
-          revenue: { $sum: "$amount" }
+
+    const monthlyRevenue = monthlyRevenueAgg[0]?.total || 0;
+
+    // Get all communities with subscription history for revenue calculations
+    const communities = await Community.find().lean();
+    
+    // Flatten all subscription history
+    let allPayments = [];
+    for (const c of communities) {
+      if (!Array.isArray(c.subscriptionHistory)) continue;
+      allPayments.push(...c.subscriptionHistory);
+    }
+
+    // Generate revenue chart data (last 12 months)
+    const now = new Date();
+    const labels = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const revenueTrend = Array(12).fill(0);
+    const communityTrend = Array(12).fill(0);
+
+    // Calculate revenue for each month
+    for (let i = 0; i < 12; i++) {
+      const monthDate = new Date(now.getFullYear(), i, 1);
+      const nextMonthDate = new Date(now.getFullYear(), i + 1, 1);
+      
+      const monthRevenue = allPayments
+        .filter(p => {
+          const pDate = new Date(p.paymentDate);
+          return (
+            pDate >= monthDate &&
+            pDate < nextMonthDate &&
+            p.status === "completed"
+          );
+        })
+        .reduce((sum, p) => sum + (p.amount || 0), 0);
+      
+      const monthCommunities = allPayments
+        .filter(p => {
+          const pDate = new Date(p.paymentDate);
+          return (
+            pDate >= monthDate &&
+            pDate < nextMonthDate &&
+            p.status === "completed"
+          );
+        }).length;
+
+      revenueTrend[i] = monthRevenue;
+      communityTrend[i] = monthCommunities;
+    }
+
+    // Application breakdown
+    const appStatus = await Application.aggregate([
+      { $group: { _id: "$status", count: { $sum: 1 } } }
+    ]);
+    const appStatusMap = appStatus.reduce((acc, a) => {
+      acc[a._id] = a.count;
+      return acc;
+    }, {});
+
+    // Notifications
+    const systemAlerts = [
+      { id: 1, message: "System update scheduled for tonight", priority: "medium", time: "2h ago" },
+      { id: 2, message: "Backup completed successfully", priority: "low", time: "5h ago" }
+    ];
+
+    const actionRequired = [
+      { id: 1, message: `${pendingApplications} applications pending approval`, priority: "high", time: "1h ago" },
+      { id: 2, message: "2 payments overdue", priority: "high", time: "30m ago" }
+    ];
+
+    res.json({
+      success: true,
+      data: {
+        kpis: {
+          totalCommunities,
+          totalResidents,
+          pendingApplications,
+          monthlyRevenue
+        },
+        chartData: {
+          applicationsStatus: {
+            approved: appStatusMap.approved || 0,
+            pending: appStatusMap.pending || 0,
+            rejected: appStatusMap.rejected || 0
+          },
+          growthChart: {
+            labels,
+            communities: communityTrend,
+            revenue: revenueTrend
+          }
+        },
+        notifications: {
+          systemAlerts,
+          actionRequired
         }
       }
-    ]);
+    });
+
+  } catch (err) {
+    console.error("Dashboard fetch error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
+});
 
-  res.json({ success: true, data: chartData });
+// Add separate endpoint for dynamic chart filtering
+AdminRouter.get("/api/dashboard/charts", async (req, res) => {
+  try {
+    const { period = '6M' } = req.query;
+    
+    // Get all communities with subscription history
+    const communities = await Community.find().lean();
+    
+    // Flatten all payments
+    let allPayments = [];
+    for (const c of communities) {
+      if (!Array.isArray(c.subscriptionHistory)) continue;
+      allPayments.push(...c.subscriptionHistory);
+    }
+
+    const now = new Date();
+    let labels = [];
+    let revenueTrend = [];
+    let communityTrend = [];
+
+    switch(period) {
+      case '6M':
+        // Last 6 months
+        for (let i = 5; i >= 0; i--) {
+          const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+          labels.push(monthName);
+          
+          const monthRevenue = allPayments
+            .filter(p => {
+              const pDate = new Date(p.paymentDate);
+              return (
+                pDate.getFullYear() === date.getFullYear() && 
+                pDate.getMonth() === date.getMonth() &&
+                p.status === 'completed'
+              );
+            })
+            .reduce((sum, p) => sum + (p.amount || 0), 0);
+          
+          const monthCommunities = allPayments
+            .filter(p => {
+              const pDate = new Date(p.paymentDate);
+              return (
+                pDate.getFullYear() === date.getFullYear() && 
+                pDate.getMonth() === date.getMonth() &&
+                p.status === 'completed'
+              );
+            }).length;
+
+          revenueTrend.push(monthRevenue);
+          communityTrend.push(monthCommunities);
+        }
+        break;
+        
+      case '1Y':
+        // Last 12 months
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+          labels.push(monthName);
+          
+          const monthRevenue = allPayments
+            .filter(p => {
+              const pDate = new Date(p.paymentDate);
+              return (
+                pDate.getFullYear() === date.getFullYear() && 
+                pDate.getMonth() === date.getMonth() &&
+                p.status === 'completed'
+              );
+            })
+            .reduce((sum, p) => sum + (p.amount || 0), 0);
+          
+          const monthCommunities = allPayments
+            .filter(p => {
+              const pDate = new Date(p.paymentDate);
+              return (
+                pDate.getFullYear() === date.getFullYear() && 
+                pDate.getMonth() === date.getMonth() &&
+                p.status === 'completed'
+              );
+            }).length;
+
+          revenueTrend.push(monthRevenue);
+          communityTrend.push(monthCommunities);
+        }
+        break;
+        
+      case 'All':
+        // Yearly aggregation - last 5 years
+        for (let i = 4; i >= 0; i--) {
+          const year = now.getFullYear() - i;
+          labels.push(year.toString());
+          
+          const yearRevenue = allPayments
+            .filter(p => {
+              const pDate = new Date(p.paymentDate);
+              return pDate.getFullYear() === year && p.status === 'completed';
+            })
+            .reduce((sum, p) => sum + (p.amount || 0), 0);
+          
+          const yearCommunities = allPayments
+            .filter(p => {
+              const pDate = new Date(p.paymentDate);
+              return pDate.getFullYear() === year && p.status === 'completed';
+            }).length;
+
+          revenueTrend.push(yearRevenue);
+          communityTrend.push(yearCommunities);
+        }
+        break;
+    }
+
+    res.json({ 
+      success: true, 
+      data: {
+        growthChart: {
+          labels,
+          communities: communityTrend,
+          revenue: revenueTrend
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching chart data:", error);
+    res.status(500).json({ 
+      success: false, 
+      error: "Failed to fetch chart data" 
+    });
+  }
 });
 
 

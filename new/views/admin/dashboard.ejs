@@ -37,11 +37,8 @@
                     </div>
                     <div class="kpi-title">Total Communities</div>
                 </div>
-                <div class="kpi-value">42</div>
-                <div class="kpi-change positive">
-                    <span class="material-symbols-rounded">trending_up</span>
-                    +3 this month
-                </div>
+                <div class="kpi-value"></div>
+               
             </div>
 
             <div class="kpi-card residents">
@@ -51,11 +48,8 @@
                     </div>
                     <div class="kpi-title">Total Residents</div>
                 </div>
-                <div class="kpi-value">1,847</div>
-                <div class="kpi-change positive">
-                    <span class="material-symbols-rounded">trending_up</span>
-                    +12.5% vs last month
-                </div>
+                <div class="kpi-value"></div>
+               
             </div>
 
             <div class="kpi-card applications">
@@ -65,11 +59,8 @@
                     </div>
                     <div class="kpi-title">Pending Applications</div>
                 </div>
-                <div class="kpi-value">156</div>
-                <div class="kpi-change negative">
-                    <span class="material-symbols-rounded">trending_down</span>
-                    -12 this week
-                </div>
+                <div class="kpi-value"></div>
+               
             </div>
 
             <div class="kpi-card revenue">
@@ -79,11 +70,8 @@
                     </div>
                     <div class="kpi-title">Monthly Revenue</div>
                 </div>
-                <div class="kpi-value">₹24.8L</div>
-                <div class="kpi-change positive">
-                    <span class="material-symbols-rounded">trending_up</span>
-                    +18% vs last month
-                </div>
+                <div class="kpi-value"></div>
+              
             </div>
 
           
@@ -112,19 +100,19 @@
                 <div class="applications-overview">
                     <div class="applications-summary">
                         <div class="summary-item">
-                            <div class="summary-value">324</div>
+                            <div class="summary-value"></div>
                             <div class="summary-label">This Month</div>
                         </div>
                         <div class="summary-item">
-                            <div class="summary-value">156</div>
+                            <div class="summary-value"></div>
                             <div class="summary-label">Pending</div>
                         </div>
                         <div class="summary-item">
-                            <div class="summary-value">142</div>
+                            <div class="summary-value"></div>
                             <div class="summary-label">Approved</div>
                         </div>
                         <div class="summary-item">
-                            <div class="summary-value">26</div>
+                            <div class="summary-value"></div>
                             <div class="summary-label">Rejected</div>
                         </div>
                     </div>
@@ -143,21 +131,21 @@
                                         <div class="status-color" style="background: #10b981;"></div>
                                         Approved
                                     </div>
-                                    <div class="status-value">142</div>
+                                    <div class="status-value"></div>
                                 </div>
                                 <div class="status-item">
                                     <div class="status-label">
                                         <div class="status-color" style="background: #f59e0b;"></div>
                                         Pending
                                     </div>
-                                    <div class="status-value">156</div>
+                                    <div class="status-value"></div>
                                 </div>
                                 <div class="status-item">
                                     <div class="status-label">
                                         <div class="status-color" style="background: #ef4444;"></div>
                                         Rejected
                                     </div>
-                                    <div class="status-value">26</div>
+                                    <div class="status-value"></div>
                                 </div>
                             </div>
                         </div>
@@ -176,46 +164,9 @@ const API_BASE_URL = window.location.origin + '/admin/api';
 let growthChart;
 let applicationsStatusChart;
 
-// DOM elements
-const elements = {
-    // KPI Values
-    totalCommunities: document.querySelector('.kpi-card.communities .kpi-value'),
-    totalResidents: document.querySelector('.kpi-card.residents .kpi-value'),
-    pendingApplications: document.querySelector('.kpi-card.applications .kpi-value'),
-    monthlyRevenue: document.querySelector('.kpi-card.revenue .kpi-value'),
-    activeManagers: document.querySelector('.kpi-card.managers .kpi-value'),
-    
-    // KPI Changes
-    communitiesChange: document.querySelector('.kpi-card.communities .kpi-change'),
-    residentsChange: document.querySelector('.kpi-card.residents .kpi-change'),
-    applicationsChange: document.querySelector('.kpi-card.applications .kpi-change'),
-    revenueChange: document.querySelector('.kpi-card.revenue .kpi-change'),
-    managersChange: document.querySelector('.kpi-card.managers .kpi-change'),
-    
-    // Application Summary
-    monthlyApplications: document.querySelectorAll('.summary-item .summary-value')[0],
-    pendingCount: document.querySelectorAll('.summary-item .summary-value')[1],
-    approvedCount: document.querySelectorAll('.summary-item .summary-value')[2],
-    rejectedCount: document.querySelectorAll('.summary-item .summary-value')[3],
- 
-};
-
 // Utility functions
 function formatCurrency(value) {
-    return `₹${value}`;
-}
-
-function formatChange(change, type, period) {
-    const prefix = change > 0 ? '+' : '';
-    const suffix = type.includes('percentage') ? '%' : '';
-    const icon = change > 0 ? 'trending_up' : 'trending_down';
-    const className = change > 0 ? 'positive' : 'negative';
-    
-    return {
-        text: `${prefix}${change}${suffix} ${type.includes('percentage') ? 'vs' : 'this'} ${period}`,
-        icon: icon,
-        className: className
-    };
+    return `₹${value.toLocaleString()}`;
 }
 
 function showLoading() {
@@ -228,7 +179,6 @@ function hideLoading() {
 
 function showError(message) {
     console.error('Dashboard Error:', message);
-   
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
     errorDiv.textContent = `Error: ${message}`;
@@ -272,49 +222,33 @@ async function fetchChartData(period = '6M') {
     }
 }
 
-
-// Update functions
+// Update KPIs
 function updateKPIs(data) {
-    const { kpis, trends={} } = data;
+    const { kpis } = data;
     
-    // Update values
-    if (elements.totalCommunities) elements.totalCommunities.textContent = kpis.totalCommunities;
-    if (elements.totalResidents) elements.totalResidents.textContent = kpis.totalResidents.toLocaleString();
-    if (elements.pendingApplications) elements.pendingApplications.textContent = kpis.pendingApplications;
-    if (elements.monthlyRevenue) elements.monthlyRevenue.textContent = formatCurrency(kpis.monthlyRevenue);
-    if (elements.activeManagers) elements.activeManagers.textContent = kpis.activeManagers;
+    const totalCommunitiesEl = document.querySelector('.kpi-card.communities .kpi-value');
+    const totalResidentsEl = document.querySelector('.kpi-card.residents .kpi-value');
+    const pendingApplicationsEl = document.querySelector('.kpi-card.applications .kpi-value');
+    const monthlyRevenueEl = document.querySelector('.kpi-card.revenue .kpi-value');
     
-    // Update changes
-    const changeElements = [
-        { element: elements.communitiesChange, trend: trends.communities },
-        { element: elements.residentsChange, trend: trends.residents },
-        { element: elements.applicationsChange, trend: trends.applications },
-        { element: elements.revenueChange, trend: trends.revenue },
-        { element: elements.managersChange, trend: trends.managers }
-    ];
-    
-    changeElements.forEach(({ element, trend }) => {
-        if (element && trend) {
-            const changeInfo = formatChange(trend.change, trend.type, trend.period);
-            const icon = element.querySelector('.material-symbols-rounded');
-            const textNode = element.childNodes[element.childNodes.length - 1];
-            
-            if (icon) icon.textContent = changeInfo.icon;
-            if (textNode) textNode.textContent = changeInfo.text;
-            
-            element.className = `kpi-change ${changeInfo.className}`;
-        }
-    });
+    if (totalCommunitiesEl) totalCommunitiesEl.textContent = kpis.totalCommunities;
+    if (totalResidentsEl) totalResidentsEl.textContent = kpis.totalResidents.toLocaleString();
+    if (pendingApplicationsEl) pendingApplicationsEl.textContent = kpis.pendingApplications;
+    if (monthlyRevenueEl) monthlyRevenueEl.textContent = formatCurrency(kpis.monthlyRevenue);
 }
 
+// Update Applications Summary
 function updateApplicationsSummary(data) {
     const { applicationsStatus } = data;
     const total = applicationsStatus.approved + applicationsStatus.pending + applicationsStatus.rejected;
     
-    if (elements.monthlyApplications) elements.monthlyApplications.textContent = total;
-    if (elements.pendingCount) elements.pendingCount.textContent = applicationsStatus.pending;
-    if (elements.approvedCount) elements.approvedCount.textContent = applicationsStatus.approved;
-    if (elements.rejectedCount) elements.rejectedCount.textContent = applicationsStatus.rejected;
+    const summaryValues = document.querySelectorAll('.summary-item .summary-value');
+    if (summaryValues.length >= 4) {
+        summaryValues[0].textContent = total;
+        summaryValues[1].textContent = applicationsStatus.pending;
+        summaryValues[2].textContent = applicationsStatus.approved;
+        summaryValues[3].textContent = applicationsStatus.rejected;
+    }
     
     // Update status summary in doughnut chart section
     const statusItems = document.querySelectorAll('.status-item .status-value');
@@ -325,15 +259,8 @@ function updateApplicationsSummary(data) {
     }
 }
 
-
-function updateCharts(data) {
-    updateGrowthChart(data.growthChart);
-    updateApplicationsStatusChart(data.applicationsStatus);
-}
-
-function updateGrowthChart(data) {
-  if (!data || !data.growthChart) return;
-  const { labels = [], communities = [], revenue = [] } = data.growthChart;
+// Update Growth Chart
+function updateGrowthChart(chartData) {
     const ctx = document.getElementById('growthChart');
     if (!ctx) return;
     
@@ -342,45 +269,99 @@ function updateGrowthChart(data) {
         growthChart.destroy();
     }
     
+    const { labels, communities, revenue } = chartData;
+    
     growthChart = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
-            labels: data.labels,
+            labels: labels,
             datasets: [{
                 label: 'New Communities',
-                data: data.communities,
+                data: communities,
                 borderColor: '#3b82f6',
                 backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 borderWidth: 3,
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                yAxisID: 'y'
             }, {
-                label: 'Revenue (₹L)',
-                data: data.revenue,
+                label: 'Revenue (₹)',
+                data: revenue,
                 borderColor: '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
                 borderWidth: 3,
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                yAxisID: 'y1'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             plugins: {
                 legend: {
                     position: 'top',
                     labels: {
                         usePointStyle: true,
-                        padding: 20
+                        padding: 20,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                if (context.datasetIndex === 1) {
+                                    label += '₹' + context.parsed.y.toLocaleString();
+                                } else {
+                                    label += context.parsed.y;
+                                }
+                            }
+                            return label;
+                        }
                     }
                 }
             },
             scales: {
                 y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
                     beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Communities'
+                    },
                     grid: {
                         color: 'rgba(21, 26, 45, 0.05)'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Revenue (₹)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
                     }
                 },
                 x: {
@@ -391,14 +372,15 @@ function updateGrowthChart(data) {
             },
             elements: {
                 point: {
-                    radius: 6,
-                    hoverRadius: 8
+                    radius: 4,
+                    hoverRadius: 6
                 }
             }
         }
     });
 }
 
+// Update Applications Status Chart
 function updateApplicationsStatusChart(data) {
     const ctx = document.getElementById('applicationsStatusChart');
     if (!ctx) return;
@@ -429,24 +411,38 @@ function updateApplicationsStatusChart(data) {
             plugins: {
                 legend: {
                     display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
+                    }
                 }
             }
         }
     });
 }
 
-// Event handlers
-function handleChartFilterClick(period) {
+// Update all charts
+function updateCharts(data) {
+    updateGrowthChart(data.growthChart);
+    updateApplicationsStatusChart(data.applicationsStatus);
+}
+
+// Handle chart filter click
+async function handleChartFilterClick(period) {
     showLoading();
-    fetchChartData(period)
-        .then(data => {
-            updateCharts(data);
-            hideLoading();
-        })
-        .catch(error => {
-            hideLoading();
-            showError('Failed to update charts');
-        });
+    try {
+        const data = await fetchChartData(period);
+        updateGrowthChart(data.growthChart);
+    } catch (error) {
+        showError('Failed to update charts');
+    } finally {
+        hideLoading();
+    }
 }
 
 // Initialize dashboard
@@ -454,17 +450,12 @@ async function initializeDashboard() {
     showLoading();
     
     try {
-        // Fetch all data in parallel
-        const [dashboardData] = await Promise.all([
-            fetchDashboardData(),
-       
-        ]);
+        const dashboardData = await fetchDashboardData();
         
-        // Update UI
         updateKPIs(dashboardData);
         updateApplicationsSummary(dashboardData.chartData);
         updateCharts(dashboardData.chartData);
-         
+        
         console.log('Dashboard initialized successfully');
         
     } catch (error) {
@@ -475,14 +466,10 @@ async function initializeDashboard() {
     }
 }
 
-
 // DOM Content Loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize dashboard
     initializeDashboard();
-    
-    // Start auto-refresh
-    startAutoRefresh();
     
     // Sidebar functionality
     const sidebar = document.getElementById('sidebar');
@@ -542,27 +529,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
-
-    // Add animation to KPI cards
-    const kpiCards = document.querySelectorAll('.kpi-card');
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    });
-
-    kpiCards.forEach((card) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = 'all 0.6s ease';
-        observer.observe(card);
-    });
 });
 
-// Loading styles (add to CSS)
+// Add loading styles
 const loadingStyles = `
     .loading {
         cursor: wait;
@@ -590,17 +559,15 @@ const loadingStyles = `
     }
 `;
 
-// Inject loading styles
 const styleSheet = document.createElement('style');
 styleSheet.textContent = loadingStyles;
 document.head.appendChild(styleSheet);
 
-// Export functions for external use
+// Export for external use
 window.dashboardAPI = {
     refresh: initializeDashboard,
     updateCharts: handleChartFilterClick,
-    fetchDashboardData,
-   
+    fetchDashboardData
 };</script>
 </body>
 </html>
