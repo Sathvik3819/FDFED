@@ -25,12 +25,7 @@
                     <div class="header-subtitle">Welcome back, Admin! Here's what's happening across all communities.</div>
                 </div>
             </div>
-            <div class="header-actions">
-                <div class="notification-bell">
-                    <span class="material-symbols-rounded">notifications</span>
-                    <div class="notification-badge">5</div>
-                </div>
-            </div>
+            
         </div>
 
         <!-- KPI Cards -->
@@ -202,13 +197,7 @@ const elements = {
     pendingCount: document.querySelectorAll('.summary-item .summary-value')[1],
     approvedCount: document.querySelectorAll('.summary-item .summary-value')[2],
     rejectedCount: document.querySelectorAll('.summary-item .summary-value')[3],
-    
-    // Notification badge
-    notificationBadge: document.querySelector('.notification-badge'),
-    
-    // Notification lists
-    systemAlertsList: document.querySelectorAll('.notification-list')[0],
-    actionRequiredList: document.querySelectorAll('.notification-list')[1]
+ 
 };
 
 // Utility functions
@@ -229,24 +218,6 @@ function formatChange(change, type, period) {
     };
 }
 
-function createNotificationElement(notification) {
-    const notificationItem = document.createElement('div');
-    notificationItem.className = 'notification-item';
-    notificationItem.innerHTML = `
-        <div class="notification-icon ${notification.type}">
-            <span class="material-symbols-rounded">${notification.icon}</span>
-        </div>
-        <div class="notification-content">
-            <div class="notification-text">${notification.message}</div>
-            <div class="notification-meta">
-                <div class="notification-time">${notification.time}</div>
-                <div class="priority-badge priority-${notification.priority}">${notification.priorityLabel}</div>
-            </div>
-        </div>
-    `;
-    return notificationItem;
-}
-
 function showLoading() {
     document.body.classList.add('loading');
 }
@@ -257,7 +228,7 @@ function hideLoading() {
 
 function showError(message) {
     console.error('Dashboard Error:', message);
-    // You can implement a toast notification here
+   
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
     errorDiv.textContent = `Error: ${message}`;
@@ -301,17 +272,6 @@ async function fetchChartData(period = '6M') {
     }
 }
 
-async function fetchNotifications() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/notifications`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        const result = await response.json();
-        return result.data;
-    } catch (error) {
-        console.error('Failed to fetch notifications:', error);
-        throw error;
-    }
-}
 
 // Update functions
 function updateKPIs(data) {
@@ -365,30 +325,6 @@ function updateApplicationsSummary(data) {
     }
 }
 
-function updateNotifications(data) {
-    const { total, systemAlerts, actionRequired } = data;
-    
-    // Update notification badge
-    if (elements.notificationBadge) {
-        elements.notificationBadge.textContent = Math.min(total, 99); // Cap at 99
-    }
-    
-    // Update system alerts
-    if (elements.systemAlertsList) {
-        elements.systemAlertsList.innerHTML = '';
-        systemAlerts.forEach(notification => {
-            elements.systemAlertsList.appendChild(createNotificationElement(notification));
-        });
-    }
-    
-    // Update action required
-    if (elements.actionRequiredList) {
-        elements.actionRequiredList.innerHTML = '';
-        actionRequired.forEach(notification => {
-            elements.actionRequiredList.appendChild(createNotificationElement(notification));
-        });
-    }
-}
 
 function updateCharts(data) {
     updateGrowthChart(data.growthChart);
@@ -519,17 +455,16 @@ async function initializeDashboard() {
     
     try {
         // Fetch all data in parallel
-        const [dashboardData, notifications] = await Promise.all([
+        const [dashboardData] = await Promise.all([
             fetchDashboardData(),
-            fetchNotifications()
+       
         ]);
         
         // Update UI
         updateKPIs(dashboardData);
         updateApplicationsSummary(dashboardData.chartData);
         updateCharts(dashboardData.chartData);
-        updateNotifications(notifications);
-        
+         
         console.log('Dashboard initialized successfully');
         
     } catch (error) {
@@ -540,17 +475,6 @@ async function initializeDashboard() {
     }
 }
 
-// Auto-refresh functionality
-function startAutoRefresh() {
-    setInterval(async () => {
-        try {
-            const notifications = await fetchNotifications();
-            updateNotifications(notifications);
-        } catch (error) {
-            console.error('Auto-refresh error:', error);
-        }
-    }, 30000); // Refresh every 30 seconds
-}
 
 // DOM Content Loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -676,7 +600,7 @@ window.dashboardAPI = {
     refresh: initializeDashboard,
     updateCharts: handleChartFilterClick,
     fetchDashboardData,
-    fetchNotifications
+   
 };</script>
 </body>
 </html>

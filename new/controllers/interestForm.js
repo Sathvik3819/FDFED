@@ -361,28 +361,6 @@ export const rejectApplication = async (req, res) => {
 
 
 
-const notifyAdminOfNewApplication = async (application) => {
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM ,
-      to: process.env.ADMIN_EMAIL ,
-      subject: 'New Community Manager Application',
-      text: `New application received from ${application.firstName} ${application.lastName}`,
-      html: `
-        <h2>New Application Received</h2>
-        <p><strong>Name:</strong> ${application.firstName} ${application.lastName}</p>
-        <p><strong>Email:</strong> ${application.email}</p>
-        <p><strong>Phone:</strong> ${application.phone}</p>
-        <p>Please review this application in the admin panel.</p>
-        <a href="${process.env.BASE_URL || 'http://localhost:3000'}/admin/applications">View Applications</a>
-      `
-    });
-    console.log('Admin notification sent');
-  } catch (error) {
-    console.error('Error sending admin notification:', error);
-  }
-};
-
 const sendStatusEmail = async (email, status, adminName, reason = '', password = '') => {
   const subject = status === 'approved' 
     ? 'Your Application Has Been Approved' 

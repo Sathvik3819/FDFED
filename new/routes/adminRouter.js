@@ -600,13 +600,21 @@ AdminRouter.get("/communities", async (req, res) => {
     const totalCommunities = communities.length;
     const activeCommunities = communities.filter(c => c.status === "Active").length;
     const inactiveCommunities = totalCommunities - activeCommunities;
+      const topLocations = await Community.aggregate([
+      { 
+        $group: { _id: "$location", count: { $sum: 1 } } 
+      },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
 
     res.render("admin/communities", {
       communities, 
       managers,
       totalCommunities,
       activeCommunities,
-      inactiveCommunities
+      inactiveCommunities,
+       topLocations
     });
   } catch (error) {
     console.error("Error fetching communities:", error);

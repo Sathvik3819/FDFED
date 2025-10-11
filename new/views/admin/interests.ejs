@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community Manager Applications | Urban Ease</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        /* Importing Google Fonts - Poppins */
+<style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
         * {
@@ -23,31 +20,26 @@
             color: #2c3e50;
         }
 
-        /* Container Layout */
         .container {
             display: flex;
             min-height: 100vh;
         }
 
-     
-
-        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 286px;
-            padding: 24px;
-            nstraition: margin-left 0.4s ease;
+            padding: 32px;
+           
+            transition: margin-left 0.4s ease;
         }
 
-       
-
-        /* Header Section */
+        /* Header Section - Improved */
         .header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 12px 32px;
-            margin-bottom: 12px;
+            border-radius: 20px;
+            padding: 24px 32px;
+            margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -58,26 +50,40 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 20px;
         }
 
+        .menu-toggle {
+            display: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #151A2D;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(21, 26, 45, 0.05);
+        }
 
         .header h1 {
             font-size: 2rem;
             font-weight: 600;
             color: #151A2D;
             margin: 0;
+            line-height: 1.2;
         }
 
-        /* Filters Section */
+        /* Improved Filters Section */
         .filters-section {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 16px 24px;
+            border-radius: 20px;
+            padding: 24px;
             margin-bottom: 24px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 2fr 1fr;
             gap: 20px;
             align-items: center;
             box-shadow: 0 4px 20px rgba(21, 26, 45, 0.06);
@@ -90,10 +96,10 @@
 
         .search-input {
             width: 100%;
-            padding: 12px 16px 12px 48px;
+            padding: 14px 18px 14px 52px;
             border: 2px solid rgba(21, 26, 45, 0.1);
             border-radius: 12px;
-            font-size: 14px;
+            font-size: 15px;
             background: white;
             transition: all 0.3s ease;
         }
@@ -101,24 +107,25 @@
         .search-input:focus {
             outline: none;
             border-color: #151A2D;
-            box-shadow: 0 0 0 3px rgba(21, 26, 45, 0.1);
+            box-shadow: 0 0 0 4px rgba(21, 26, 45, 0.08);
         }
 
         .search-icon {
             position: absolute;
-            left: 16px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
             color: #6c757d;
+            font-size: 1.1rem;
         }
 
         .form-select {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 18px;
             border: 2px solid rgba(21, 26, 45, 0.1);
             border-radius: 12px;
             background: white;
-            font-size: 14px;
+            font-size: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -126,95 +133,196 @@
         .form-select:focus {
             outline: none;
             border-color: #151A2D;
-            box-shadow: 0 0 0 3px rgba(21, 26, 45, 0.1);
+            box-shadow: 0 0 0 4px rgba(21, 26, 45, 0.08);
         }
 
-        /* Applications Cards */
+        /* Improved Applications Cards */
         .applications-container {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 16px;
+            gap: 20px;
         }
 
         .application-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 24px;
+            border-radius: 20px;
+            padding: 28px;
             transition: all 0.3s ease;
             box-shadow: 0 4px 20px rgba(21, 26, 45, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .application-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(21, 26, 45, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(21, 26, 45, 0.12);
         }
 
         .application-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .application-info {
+            flex: 1;
         }
 
         .application-title {
-            font-size: 1.25rem;
+            font-size: 1.35rem;
             font-weight: 600;
             color: #151A2D;
+            margin-bottom: 12px;
         }
 
         .application-meta {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
             color: #6b7280;
-            font-size: 0.875rem;
-            margin-top: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .application-meta span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .application-meta i {
-            width: 16px;
+            width: 18px;
             text-align: center;
+            color: #9ca3af;
         }
 
-        /* Status Badges */
+        /* Community Info Section */
+        .community-info {
+            margin: 16px 0;
+            padding: 16px;
+            background: rgba(21, 26, 45, 0.03);
+            border-radius: 12px;
+            border-left: 3px solid #151A2D;
+        }
+
+        .community-info p {
+            margin: 0;
+            color: #4b5563;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Photo Gallery */
+        .photo-gallery {
+            margin: 16px 0;
+        }
+
+        .photo-label {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .photo-grid img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid rgba(21, 26, 45, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .photo-grid img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(21, 26, 45, 0.15);
+        }
+
+        /* Status Badges - Enhanced */
         .status-badge {
-            font-size: 0.75rem;
-            padding: 0.375rem 0.75rem;
+            font-size: 0.8rem;
+            padding: 8px 16px;
             border-radius: 9999px;
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         .status-pending {
-            background: rgba(245, 158, 11, 0.1);
+            background: rgba(245, 158, 11, 0.15);
             color: #d97706;
+            border: 2px solid rgba(245, 158, 11, 0.3);
         }
 
         .status-approved {
-            background: rgba(34, 197, 94, 0.1);
+            background: rgba(34, 197, 94, 0.15);
             color: #16a34a;
+            border: 2px solid rgba(34, 197, 94, 0.3);
         }
 
         .status-rejected {
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.15);
             color: #dc2626;
+            border: 2px solid rgba(239, 68, 68, 0.3);
         }
 
+        /* Rejection Reason */
+        .rejection-reason {
+            margin: 16px 0;
+            padding: 16px;
+            background: rgba(239, 68, 68, 0.05);
+            border-radius: 12px;
+            border-left: 3px solid #dc2626;
+        }
+
+        .rejection-reason-label {
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rejection-reason-text {
+            color: #4b5563;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Application Footer - Improved */
         .application-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(21, 26, 45, 0.08);
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(21, 26, 45, 0.06);
         }
 
         .application-date {
-            font-size: 0.875rem;
+            font-size: 0.9rem;
             color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .application-date i {
+            color: #9ca3af;
         }
 
         .application-actions {
@@ -222,10 +330,11 @@
             gap: 12px;
         }
 
+        /* Improved Buttons */
         .btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.875rem;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
             font-weight: 500;
             display: inline-flex;
             align-items: center;
@@ -236,7 +345,7 @@
         }
 
         .btn i {
-            font-size: 0.875rem;
+            font-size: 0.9rem;
         }
 
         .btn-approve {
@@ -246,7 +355,7 @@
 
         .btn-approve:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
         }
 
         .btn-reject {
@@ -256,39 +365,42 @@
 
         .btn-reject:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
         }
 
+        /* Empty State - Enhanced */
         .empty-state {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 48px 24px;
+            border-radius: 20px;
+            padding: 60px 24px;
             text-align: center;
             box-shadow: 0 4px 20px rgba(21, 26, 45, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .empty-state i {
-            font-size: 3rem;
-            color: #9ca3af;
-            margin-bottom: 16px;
+            font-size: 4rem;
+            color: #cbd5e1;
+            margin-bottom: 20px;
         }
 
         .empty-state h3 {
-            font-size: 1.25rem;
+            font-size: 1.4rem;
             font-weight: 600;
             color: #151A2D;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .empty-state p {
             color: #6b7280;
-            max-width: 400px;
+            max-width: 450px;
             margin: 0 auto;
+            font-size: 1rem;
+            line-height: 1.5;
         }
 
-        /* Modal Styles */
+        /* Modal Styles - Enhanced */
         .modal-backdrop {
             position: fixed;
             top: 0;
@@ -296,7 +408,7 @@
             right: 0;
             bottom: 0;
             background: rgba(21, 26, 45, 0.8);
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(6px);
             display: none;
             align-items: center;
             justify-content: center;
@@ -312,8 +424,8 @@
 
         .modal {
             background: white;
-            border-radius: 16px;
-            max-width: 500px;
+            border-radius: 20px;
+            max-width: 540px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
@@ -327,37 +439,53 @@
         }
 
         .modal-header {
-            padding: 24px 32px 0;
+            padding: 28px 32px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .modal-title {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 600;
             color: #151A2D;
             margin: 0;
         }
 
         .modal-close {
-            background: none;
+            background: rgba(21, 26, 45, 0.05);
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
             color: #6b7280;
-            padding: 8px;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border-radius: 8px;
             transition: all 0.3s ease;
         }
 
         .modal-close:hover {
-            background: rgba(21, 26, 45, 0.1);
+            background: rgba(21, 26, 45, 0.12);
             color: #151A2D;
         }
 
         .modal-body {
-            padding: 24px 32px;
+            padding: 28px 32px;
+        }
+
+        .warning-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.12);
+            margin: 0 auto 20px;
+        }
+
+        .warning-icon i {
+            font-size: 1.6rem;
+            color: #dc2626;
         }
 
         .form-group {
@@ -366,17 +494,18 @@
 
         .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-weight: 500;
             color: #151A2D;
+            font-size: 0.95rem;
         }
 
         .form-control {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 16px;
             border: 2px solid rgba(21, 26, 45, 0.1);
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 10px;
+            font-size: 15px;
             transition: all 0.3s ease;
             font-family: "Poppins", sans-serif;
             resize: vertical;
@@ -385,21 +514,27 @@
         .form-control:focus {
             outline: none;
             border-color: #151A2D;
-            box-shadow: 0 0 0 3px rgba(21, 26, 45, 0.1);
+            box-shadow: 0 0 0 4px rgba(21, 26, 45, 0.08);
         }
 
         .form-control::placeholder {
             color: #9ca3af;
-            opacity: 1;
         }
 
         textarea.form-control {
-            min-height: 100px;
-            line-height: 1.5;
+            min-height: 120px;
+            line-height: 1.6;
+        }
+
+        .char-count {
+            color: #6b7280;
+            font-size: 0.85rem;
+            display: block;
+            margin-top: 6px;
         }
 
         .modal-footer {
-            padding: 0 32px 24px;
+            padding: 0 32px 28px;
             display: flex;
             gap: 12px;
             justify-content: flex-end;
@@ -410,7 +545,7 @@
             color: #374151;
             border: none;
             padding: 12px 24px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 500;
             transition: all 0.3s ease;
@@ -425,7 +560,7 @@
             color: white;
             border: none;
             padding: 12px 24px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 500;
             transition: all 0.3s ease;
@@ -433,35 +568,19 @@
 
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-        }
-
-        .warning-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(239, 68, 68, 0.1);
-            margin: 0 auto 16px;
-        }
-
-        .warning-icon i {
-            font-size: 1.5rem;
-            color: #dc2626;
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.35);
         }
 
         /* Responsive Design */
         @media (max-width: 1024px) {
-          
-
             .main-content {
                 margin-left: 0;
-                padding: 16px;
+                padding: 20px;
             }
 
-          
+            .menu-toggle {
+                display: block;
+            }
 
             .filters-section {
                 grid-template-columns: 1fr;
@@ -469,42 +588,64 @@
             }
 
             .header {
-                padding: 16px 20px;
+                padding: 20px 24px;
             }
 
             .header h1 {
-                font-size: 1.5rem;
+                font-size: 1.6rem;
             }
+        }
 
+        @media (max-width: 768px) {
             .application-card {
-                padding: 16px;
+                padding: 20px;
             }
 
-            .application-actions {
+            .application-header {
                 flex-direction: column;
-                width: 100%;
+                gap: 12px;
+            }
+
+            .status-badge {
+                align-self: flex-start;
             }
 
             .application-footer {
                 flex-direction: column;
-                gap: 12px;
+                gap: 16px;
                 align-items: flex-start;
+            }
+
+            .application-actions {
+                width: 100%;
+                flex-direction: column;
             }
 
             .btn {
                 width: 100%;
                 justify-content: center;
             }
+
+            .photo-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+
+            .photo-grid img {
+                height: 100px;
+            }
         }
 
         @media (max-width: 640px) {
-            .application-header {
-                flex-direction: column;
-                gap: 8px;
+            .main-content {
+                padding: 16px;
             }
 
-            .status-badge {
-                align-self: flex-start;
+            .header {
+                padding: 16px 20px;
+            }
+
+            .header h1 {
+                font-size: 1.4rem;
             }
 
             .modal {
@@ -524,14 +665,19 @@
             .modal-footer .btn {
                 width: 100%;
             }
+
+            .application-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-         <%- include('../partials/sidebarAdmin') %>
+        <%- include('../partials/sidebarAdmin') %>
   
-        <!-- Main content -->
         <div class="main-content">
             <div class="header">
                 <div class="header-left">
@@ -542,10 +688,9 @@
                 </div>
             </div>
 
-            <!-- Filters section -->
             <div class="filters-section">
                 <div class="search-box">
-                    <input type="text" class="search-input" id="searchInput" placeholder="Search applications...">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search by name, email, community, location...">
                     <i class="fas fa-search search-icon"></i>
                 </div>
                 <div>
@@ -558,104 +703,96 @@
                 </div>
             </div>
 
-            <!-- Applications list -->
-           <% if (interests.length === 0) { %>
-    <div class="empty-state">
-        <i class="fas fa-inbox"></i>
-        <h3>No applications found</h3>
-        <p>There are currently no community interest applications to review.</p>
-    </div>
-<% } else { %>
-    <div class="applications-container">
-        <% interests.forEach(interest => { %>
-            <div class="application-card" data-status="<%= interest.status.toLowerCase() %>">
-                <div class="application-header">
-                    <div>
-                        <h3 class="application-title">
-                            <%= interest.firstName %> <%= interest.lastName %>
-                        </h3>
-                        <div class="application-meta">
-                            <span><i class="fas fa-envelope"></i> <%= interest.email %></span>
-                            <span><i class="fas fa-phone"></i> <%= interest.phone %></span>
+            <% if (interests.length === 0) { %>
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No applications found</h3>
+                    <p>There are currently no community interest applications to review.</p>
+                </div>
+            <% } else { %>
+                <div class="applications-container">
+                    <% interests.forEach(interest => { %>
+                        <div class="application-card" data-status="<%= interest.status.toLowerCase() %>">
+                            <div class="application-header">
+                                <div class="application-info">
+                                    <h3 class="application-title">
+                                        <%= interest.firstName %> <%= interest.lastName %>
+                                    </h3>
+                                    <div class="application-meta">
+                                        <span><i class="fas fa-envelope"></i> <%= interest.email %></span>
+                                        <span><i class="fas fa-phone"></i> <%= interest.phone %></span>
+                                    </div>
+                                    <div class="application-meta">
+                                        <span><i class="fas fa-users"></i> <%= interest.communityName %></span>
+                                        <span><i class="fas fa-map-marker-alt"></i> <%= interest.location %></span>
+                                    </div>
+                                </div>
+                                <span class="status-badge status-<%= interest.status.toLowerCase() %>">
+                                    <%= interest.status %>
+                                </span>
+                            </div>
+
+                            <div class="community-info">
+                                <p><%= interest.description %></p>
+                            </div>
+
+                            <% if (interest.photos && interest.photos.length > 0) { %>
+                                <div class="photo-gallery">
+                                    <div class="photo-label">
+                                        <i class="fas fa-images"></i>
+                                        <span><%= interest.photos.length %> image<%= interest.photos.length > 1 ? 's' : '' %> attached</span>
+                                    </div>
+                                    <div class="photo-grid">
+                                        <% interest.photos.forEach(function(photo) { %>
+                                            <img 
+                                                src="/<%= photo.replace(/\\/g, '/') %>" 
+                                                alt="Community photo"
+                                            >
+                                        <% }) %>
+                                    </div>
+                                </div>
+                            <% } %>
+
+                            <% if (interest.status === 'rejected' && interest.rejectionReason) { %>
+                                <div class="rejection-reason">
+                                    <div class="rejection-reason-label">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        Rejection Reason
+                                    </div>
+                                    <p class="rejection-reason-text"><%= interest.rejectionReason %></p>
+                                </div>
+                            <% } %>
+
+                            <div class="application-footer">
+                                <div class="application-date">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    Applied on <%= interest.createdAt.toLocaleDateString('en-US', { 
+                                        year: 'numeric', 
+                                        month: 'long', 
+                                        day: 'numeric' 
+                                    }) %>
+                                </div>
+
+                                <% if (interest.status === 'pending') { %>
+                                    <div class="application-actions">
+                                        <form method="POST" action="/admin/interests/<%= interest._id %>/approve" style="display: inline;">
+                                            <button type="submit" class="btn btn-approve">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                        </form>
+                                        <button onclick="openRejectModal('<%= interest._id %>')" class="btn btn-reject">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    </div>
+                                <% } %>
+                            </div>
                         </div>
-                        <!-- Add community information -->
-                        <div class="application-meta" style="margin-top: 8px;">
-                            <span><i class="fas fa-users"></i> <%= interest.communityName %></span>
-                            <span><i class="fas fa-map-marker-alt"></i> <%= interest.location %></span>
-                        </div>
-                    </div>
-                    <span class="status-badge status-<%= interest.status.toLowerCase() %>">
-                        <%= interest.status %>
-                    </span>
+                    <% }); %>
                 </div>
-
-                <!-- Add community description -->
-                <div style="margin: 12px 0; padding: 12px; background: rgba(21, 26, 45, 0.02); border-radius: 8px;">
-                    <p style="margin: 0; color: #4b5563; font-size: 0.9rem;">
-                        <%= interest.description.length > 150 ? interest.description.substring(0, 150) + '...' : interest.description %>
-                    </p>
-                </div>
-
-               <!-- Show images if any -->
-<% if (interest.photos && interest.photos.length > 0) { %>
-    <div style="margin: 12px 0;">
-        <div style="display: flex; gap: 8px; align-items: center; color: #6b7280; font-size: 0.875rem;">
-            <i class="fas fa-images"></i>
-            <span><%= interest.photos.length %> image<%= interest.photos.length > 1 ? 's' : '' %> attached</span>
-        </div>
-
-        <!-- Render each image -->
-        <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
-            <% interest.photos.forEach(function(photo) { %>
-                <img 
-                    src="/<%= photo.replace(/\\/g, '/') %>" 
-                    alt="Uploaded photo" 
-                    style="max-width: 150px; max-height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;"
-                >
-            <% }) %>
-        </div>
-    </div>
-<% } %>
-
-
-                <% if (interest.status === 'rejected' && interest.rejectionReason) { %>
-                    <div class="application-meta">
-                        <i class="fas fa-comment-alt"></i>
-                        <span><strong>Reason:</strong> <%= interest.rejectionReason %></span>
-                    </div>
-                <% } %>
-
-                <div class="application-footer">
-                    <div class="application-date">
-                        <i class="fas fa-calendar-alt"></i>
-                        Applied on <%= interest.createdAt.toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                        }) %>
-                    </div>
-
-                    <div class="application-actions">
-                        <% if (interest.status === 'pending') { %>
-                            <form method="POST" action="/admin/interests/<%= interest._id %>/approve" class="inline">
-                                <button type="submit" class="btn btn-approve">
-                                    <i class="fas fa-check"></i> Approve
-                                </button>
-                            </form>
-                            <button onclick="openRejectModal('<%= interest._id %>')" class="btn btn-reject">
-                                <i class="fas fa-times"></i> Reject
-                            </button>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
-        <% }); %>
-    </div>
-<% } %>
+            <% } %>
         </div>
     </div>
 
-    <!-- Reject Modal -->
     <div class="modal-backdrop" id="rejectModal">
         <div class="modal">
             <div class="modal-header">
@@ -666,10 +803,10 @@
                 <div class="warning-icon">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <p style="text-align: center; color: #6b7280; margin-bottom: 24px;">
+                <p style="text-align: center; color: #6b7280; margin-bottom: 24px; line-height: 1.5;">
                     Please provide a reason for rejecting this application. This will help the applicant understand the decision.
                 </p>
-                <form id="rejectForm" method="POST" > 
+                <form id="rejectForm" method="POST"> 
                     <div class="form-group">
                         <label for="rejectionReason" class="form-label">Rejection Reason *</label>
                         <textarea 
@@ -681,9 +818,7 @@
                             required
                             maxlength="500"
                         ></textarea>
-                        <small style="color: #6b7280; font-size: 0.8rem; display: block; margin-top: 4px;">
-                            Maximum 500 characters
-                        </small>
+                        <small class="char-count">Maximum 500 characters</small>
                     </div>
                 </form>
             </div>
@@ -697,9 +832,6 @@
     </div>
 
     <script>
-       
-
-        // Filter applications by status
         document.getElementById('statusFilter').addEventListener('change', function() {
             const status = this.value;
             const applications = document.querySelectorAll('.application-card');
@@ -713,7 +845,6 @@
             });
         });
 
-        // Search functionality
         document.getElementById('searchInput').addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const applications = document.querySelectorAll('.application-card');
@@ -728,7 +859,6 @@
             });
         });
 
-        // Reject modal functions
         let currentApplicationId = null;
         
         function openRejectModal(applicationId) {
@@ -736,20 +866,15 @@
             const form = document.getElementById('rejectForm');
             form.action = "/admin/interests/" + applicationId + "/reject";
             
-            // Clear the textarea
             const textarea = document.getElementById('rejectionReason');
             textarea.value = '';
             textarea.focus();
             
-            // Show modal with animation
             const modal = document.getElementById('rejectModal');
             modal.style.display = 'flex';
-            
-            // Trigger reflow to ensure transition works
             modal.offsetHeight;
             modal.classList.add('show');
             
-            // Prevent body scrolling
             document.body.style.overflow = 'hidden';
         }
         
@@ -763,12 +888,9 @@
             }, 300);
             
             currentApplicationId = null;
-            
-            // Clear form
             document.getElementById('rejectForm').reset();
         }
 
-        // Submit rejection form
         function submitRejection() {
             const form = document.getElementById('rejectForm');
             const textarea = document.getElementById('rejectionReason');
@@ -786,21 +908,16 @@
                 return;
             }
             
-            // Reset border color
             textarea.style.borderColor = '';
-            
-            // Submit the form
             form.submit();
         }
 
-        // Close modal when clicking outside
         document.getElementById('rejectModal').addEventListener('click', function(event) {
             if (event.target === this) {
                 closeRejectModal();
             }
         });
 
-        // Handle escape key to close modal
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 const modal = document.getElementById('rejectModal');
@@ -810,7 +927,6 @@
             }
         });
 
-        // Character counter for textarea
         document.getElementById('rejectionReason').addEventListener('input', function() {
             const remaining = 500 - this.value.length;
             const small = this.nextElementSibling;
@@ -824,11 +940,8 @@
             }
         });
 
-        // Auto-resize textarea
         document.getElementById('rejectionReason').addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = this.scrollHeight + 'px';
         });
     </script>
-</body>
-</html>

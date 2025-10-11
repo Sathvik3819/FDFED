@@ -30,7 +30,17 @@ document.addEventListener('DOMContentLoaded', function() {
   if (editFromViewBtn) editFromViewBtn.addEventListener('click', editCommunityFromView);
   if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', deleteCommunity);
   if (searchInput) searchInput.addEventListener('input', filterCommunities);
-  if (statusFilter) statusFilter.addEventListener('change', filterCommunities);
+const statusFilterButtons = document.querySelectorAll('.filter-btn[data-status]');
+statusFilterButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        statusFilterButtons.forEach(btn => btn.classList.remove('active'));
+        // Add active class to clicked button
+        this.classList.add('active');
+        // Filter communities
+        filterCommunitiesByStatus(this.getAttribute('data-status'));
+    });
+});
   if (locationFilter) locationFilter.addEventListener('change', filterCommunities);
 
   // Close modals
@@ -108,26 +118,48 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Filter communities based on search input and filters
-  function filterCommunities() {
+// Replace the filterCommunities function with:
+function filterCommunities() {
     const searchTerm = searchInput.value.toLowerCase();
-    const statusValue = statusFilter.value;
     const locationValue = locationFilter.value;
+    const statusValue = document.querySelector('.filter-btn.active')?.getAttribute('data-status') || '';
     
     filteredCommunities = communities.filter(community => {
-      const matchSearch = 
-        community.name.toLowerCase().includes(searchTerm) ||
-        community.location.toLowerCase().includes(searchTerm) ||
-        (community.communityManager && community.communityManager.name && 
-         community.communityManager.name.toLowerCase().includes(searchTerm));
-      
-      const matchStatus = statusValue === '' || community.status === statusValue;
-      const matchLocation = locationValue === '' || community.location === locationValue;
-      
-      return matchSearch && matchStatus && matchLocation;
+        const matchSearch = 
+            community.name.toLowerCase().includes(searchTerm) ||
+            community.location.toLowerCase().includes(searchTerm) ||
+            (community.communityManager && community.communityManager.name && 
+             community.communityManager.name.toLowerCase().includes(searchTerm));
+        
+        const matchStatus = statusValue === '' || community.status === statusValue;
+        const matchLocation = locationValue === '' || community.location === locationValue;
+        
+        return matchSearch && matchStatus && matchLocation;
     });
     
     displayCommunities();
-  }
+}
+
+// Add this new helper function:
+function filterCommunitiesByStatus(status) {
+    const searchTerm = searchInput.value.toLowerCase();
+    const locationValue = locationFilter.value;
+    
+    filteredCommunities = communities.filter(community => {
+        const matchSearch = 
+            community.name.toLowerCase().includes(searchTerm) ||
+            community.location.toLowerCase().includes(searchTerm) ||
+            (community.communityManager && community.communityManager.name && 
+             community.communityManager.name.toLowerCase().includes(searchTerm));
+        
+        const matchStatus = status === '' || community.status === status;
+        const matchLocation = locationValue === '' || community.location === locationValue;
+        
+        return matchSearch && matchStatus && matchLocation;
+    });
+    
+    displayCommunities();
+}
 
   // Display first 7 communities with option to show more
  function displayCommunities() {
@@ -160,9 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <td>${community.communityManager ? community.communityManager.name : 'Unassigned'}</td>
           <td>
             <div class="table-actions">
-              <button class="btn btn-sm btn-icon btn-view" data-id="${community._id}">
-                <i class="fas fa-eye"></i>
-              </button>
+              
               <button class="btn btn-sm btn-icon btn-edit" data-id="${community._id}">
                 <i class="fas fa-edit"></i>
               </button>

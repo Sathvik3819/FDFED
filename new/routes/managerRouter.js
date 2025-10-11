@@ -1687,13 +1687,26 @@ managerRouter.get("/payments", async (req, res) => {
       status: "Active",
     });
 
-    const community = req.user.community;
+    const managerId = req.user.id;
+    const manager = await CommunityManager.findById(managerId);
+
+    if (!manager) {
+      return res.status(404).render("error", { message: "Community manager not found" });
+    }
+
+    const community = await Community.findById(manager.assignedCommunity).select(
+      "name subscriptionPlan subscriptionStatus planStartDate planEndDate subscriptionHistory"
+    );
+
+    if (!community) {
+      return res.status(404).render("error", { message: "Community not found" });
+    }
+
     const payments = community.subscriptionHistory || [];
     const hasPayments = payments.length > 0;
 
     const now = new Date();
-    const isExpired =
-      community?.planEndDate && new Date(community.planEndDate) < now;
+    const isExpired = community?.planEndDate && new Date(community.planEndDate) < now;
 
     const x = !hasPayments; // No payment yet
     const y = hasPayments && isExpired; // Paid but expired
@@ -1704,13 +1717,22 @@ managerRouter.get("/payments", async (req, res) => {
       premium: 3999,
     };
 
+    const currentPlan = community.subscriptionPlan || "basic";
+    const currentPlanPrice = planPrices[currentPlan];
+
     res.render("communityManager/Payments", {
       path: "p",
       ads,
       x,
       y,
-      plan: community.plan || "basic",
+      plan: currentPlan,
+      planPrice: currentPlanPrice,
       planPrices,
+      community: {
+        name: community.name,
+        subscriptionStatus: community.subscriptionStatus,
+        planEndDate: community.planEndDate,
+      }
     });
   } catch (error) {
     console.error("Error loading payments page:", error);

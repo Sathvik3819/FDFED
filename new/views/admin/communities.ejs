@@ -62,7 +62,7 @@
             backdrop-filter: blur(10px);
             border-radius: 16px;
             padding: 12px 32px;
-            margin-bottom: 12px;
+            margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -124,8 +124,8 @@
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
             border-radius: 16px;
-            
-            
+            padding: 24px;
+            margin-bottom: 24px;
             display: grid;
             grid-template-columns: 2fr 1fr 1fr;
             gap: 20px;
@@ -531,6 +531,39 @@
                 font-size: 12px;
             }
         }
+        /* Status Filter Buttons */
+.status-filter-buttons {
+    display: flex;
+    gap: 8px;
+    background: white;
+    padding: 4px;
+    border-radius: 12px;
+    border: 2px solid rgba(21, 26, 45, 0.1);
+}
+
+.filter-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background: rgba(21, 26, 45, 0.05);
+    color: #151A2D;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #151A2D 0%, #2c3441 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(21, 26, 45, 0.2);
+}
     </style>
 </head>
 <body>
@@ -540,45 +573,41 @@
         <!-- Main content -->
         <div class="main-content">
             <div class="header">
-                <div class="header-left">
-                    <span class="menu-toggle" id="menu-toggle">
-                        <i class="fas fa-bars"></i>
-                    </span>
-                    <h1>Communities</h1>
-                </div>
-                
-                    <div class="filters-section">
-                <div class="search-box">
-                    <input type="text" class="search-input" id="searchInput" placeholder="Search communities...">
-                    <i class="fas fa-search search-icon"></i>
-                </div>
-                <div>
-                    <select class="form-select" id="statusFilter">
-                        <option value="">All Statuses</option>
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
-                </div>
-                <div>
-                    <select class="form-select" id="locationFilter">
-                        <option value="">All Locations</option>
-                        <!-- Locations will be populated dynamically -->
-                        <option value="New York">New York</option>
-                        <option value="Los Angeles">Los Angeles</option>
-                        <option value="Chicago">Chicago</option>
-                    </select>
-                </div>
-            </div>
-            <div class="header-actions">
-                    <button class="btn btn-primary" id="addCommunityBtn">
-                        <i class="fas fa-plus"></i>
-                        <span>Add Community</span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Filters section -->
-        
+        <div class="header-left">
+            <span class="menu-toggle" id="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </span>
+            <h1>Communities</h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" id="addCommunityBtn">
+                <i class="fas fa-plus"></i>
+                <span>Add Community</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters section (new row below header) -->
+    <div class="filters-section">
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search communities...">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        <div class="status-filter-buttons">
+    <button class="filter-btn active" data-status="">All</button>
+    <button class="filter-btn" data-status="Active">Active</button>
+    <button class="filter-btn" data-status="Inactive">Inactive</button>
+</div>
+        <div>
+           <select class="form-select" id="locationFilter">
+    <option value="">All Locations</option>
+    <% topLocations.forEach(loc => { %>
+        <option value="<%= loc._id %>"><%= loc._id %> (<%= loc.count %>)</option>
+    <% }) %>
+</select>
+
+        </div>
+    </div>
 
             <!-- Communities table -->
             <div class="table-container">
