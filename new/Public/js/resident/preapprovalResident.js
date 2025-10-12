@@ -1,37 +1,14 @@
-// Function to open form popup
+// POPUP HANDLERS
 function openForm(type) {
   document.getElementById(`${type}FormPopup`).style.display = "flex";
 }
 
-// Function to close form popup
 function closeForm(type) {
   document.getElementById(`${type}FormPopup`).style.display = "none";
 }
 
-// Function to close QR modal
 function closeQRModal() {
-  document.getElementById('qrCodeModal').style.display = 'none';
-}
-
-// Function to generate QR code
-function generateQRCode(data) {
-  const qrCodeContainer = document.getElementById('qrCodeContainer');
-  qrCodeContainer.innerHTML = ''; // Clear previous QR code
-  
-  try {
-    new QRCode(qrCodeContainer, {
-      text: JSON.stringify(data),
-      width: 200,
-      height: 200,
-      colorDark: "#000000",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H
-    });
-    document.getElementById('qrCodeModal').style.display = 'flex';
-  } catch (error) {
-    console.error('QR generation failed:', error);
-    alert('Failed to generate QR code. Please try again.');
-  }
+  document.getElementById("qrCodeModal").style.display = "none";
 }
 
 // Function to download QR code
@@ -80,20 +57,13 @@ async function submitPreapprovalForm(event) {
     
     const result = await response.json();
     
-    generateQRCode({
-      id: result.preapproval._id,
-      visitorName: result.preapproval.visitorName,
-      date: result.preapproval.dateOfVisit,
-      time: result.preapproval.timeOfVisit,
-      purpose: result.preapproval.purpose,
-      status: 'Approved'
-    });
+  //fetch QR from backend
+   await viewQRCode(result.preapproval._id);
     
     closeForm('preapproval');
     form.reset();
     
     // Refresh the list after showing QR code
-    setTimeout(() => window.location.reload(), 3000);
   } catch (error) {
     console.error('Submission error:', error);
     alert(`Error: ${error.message}`);
@@ -104,30 +74,32 @@ async function submitPreapprovalForm(event) {
 }
 
 // Function to view existing QR code
+// View existing QR from backend
 async function viewQRCode(requestId) {
   try {
-    const card = document.querySelector(`.request-card [data-id="${requestId}"]`)?.closest('.request-card');
-    if (!card) throw new Error('Card not found');
-    
-    const visitorName = card.querySelector('.visitor-name')?.textContent.trim();
-    const dateElements = card.querySelectorAll('.detail-value');
-    const visitDate = dateElements[1]?.textContent.trim();
-    const visitTime = dateElements[2]?.textContent.trim();
-    const purpose = dateElements[3]?.textContent.trim();
+    const response = await fetch(`/resident/preapproval/qr/${requestId}`);
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.message || "Failed to fetch QR");
+    }
 
-    const qrData = {
-      id: requestId,
-      visitorName: card.querySelector('.visitor-name')?.textContent.trim(),
-      date: card.querySelectorAll('.detail-value')[1]?.textContent.trim(),
-      time: card.querySelectorAll('.detail-value')[2]?.textContent.trim(),
-      purpose: card.querySelectorAll('.detail-value')[3]?.textContent.trim(),
-      status: 'Approved'
-    };
-    
-    generateQRCode(qrData);
+    const data = await response.json();
+    const qrContainer = document.getElementById('qrCodeContainer');
+    qrContainer.innerHTML = ''; // clear old QR
+
+    // Create image element
+    const img = document.createElement('img');
+    img.src = data.qrCodeBase64;
+    img.alt = 'Pre-Approval QR';
+    img.width = 200;
+    img.height = 200;
+    qrContainer.appendChild(img);
+
+    // Show modal
+    document.getElementById('qrCodeModal').style.display = 'flex';
   } catch (error) {
     console.error('QR view error:', error);
-    alert('Failed to display QR code. Please try again.');
+    alert(error.message);
   }
 }
 

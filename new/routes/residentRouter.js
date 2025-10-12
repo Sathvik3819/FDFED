@@ -19,7 +19,7 @@ import Ad from "../models/Ad.js";
 import communities from "../models/communities.js";
 import PaymentController from "../controllers/payments.js";
 import { OTP } from "../controllers/OTP.js";
-import { getPreApprovals, getCommonSpace, getIssueData, getPaymentData } from "../controllers/Resident.js";
+import { getPreApprovals, getCommonSpace, getIssueData, getPaymentData, getQRcode } from "../controllers/Resident.js";
 
 import multer from "multer";
 import cron from "node-cron";
@@ -720,7 +720,7 @@ residentRouter.post("/payment/post", async (req, res) => {
   }
 });
 
-residentRouter.get('/preApprovals',auth, authorizeR ,getPreApprovals)
+residentRouter.get('/preApprovals',auth, authorizeR ,getPreApprovals);
 
 //pre approval routes
 // residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
@@ -915,6 +915,8 @@ residentRouter.delete("/preapproval/cancel/:id", async (req, res) => {
     return res.status(500).json({ error: "Failed to cancel request" });
   }
 });
+
+residentRouter.get("/preapproval/qr/:id", auth, authorizeR, getQRcode);
 
 residentRouter.get("/profile", async (req, res) => {
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });

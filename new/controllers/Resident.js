@@ -238,4 +238,29 @@ const getIssueData = async (req, res) => {
     return res.status(500).json({ error: "Internal server error." });
   }
 };
-export { getPreApprovals, getCommonSpace, getIssueData, getPaymentData };
+
+const getQRcode = async (req, res) =>{
+   try {
+    const visitor = await Visitor.findById(req.params.id);
+    if (!visitor) {
+      return res.status(404).json({ message: "Visitor not found" });
+    }
+    if (!visitor.qrCode) {
+      return res.status(400).json({ message: "QR code not generated yet" });
+    }
+
+    res.json({
+      qrCodeBase64: visitor.qrCode,
+      name: visitor.name,
+      purpose: visitor.purpose,
+      scheduledAt: visitor.scheduledAt,
+      status: visitor.status
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+
+export { getPreApprovals, getCommonSpace, getIssueData, getPaymentData, getQRcode };
