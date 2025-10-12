@@ -604,9 +604,7 @@
                 padding: 16px;
             }
             
-            .sidebar.collapsed ~ .container {
-                margin-left: 0;
-            }
+           
             
             .stats-grid {
                 grid-template-columns: 1fr;
@@ -785,27 +783,19 @@
                             <th>Payment Method</th>
                             <th>Date</th>
                             <th>Status</th>
-                           
                         </tr>
                     </thead>
                     <tbody id="paymentsTableBody">
                         <!-- Dynamic content will be loaded here -->
                         <tr>
-                            <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
+                            <td colspan="7" style="text-align: center; padding: 40px; color: #666;">
                                 Loading transactions...
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="pagination">
-                <div class="page-info" id="pageInfo">
-                    Showing 0-0 of 0 entries
-                </div>
-                <div class="page-buttons" id="pageButtons">
-                    <!-- Dynamic pagination buttons will be loaded here -->
-                </div>
-            </div>
+           
         </div>
     </div>
 

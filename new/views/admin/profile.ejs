@@ -118,59 +118,63 @@
         }
 
         .profile-image-container {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background-color: #f8f9fa;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto 20px;
-            overflow: hidden;
-            border: 3px solid #dc2626;
-            position: relative;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-        }
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px;
+    overflow: hidden;
+    border: 3px solid #dc2626;
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    cursor: pointer;
+}
 
-        .profile-image-container:hover {
-            transform: scale(1.05);
-        }
+.profile-image-container:hover {
+    transform: scale(1.05);
+    border-color: #b91c1c;
+}
 
-        .profile-image-container i {
-            font-size: 3rem;
-            color: #6b7280;
-        }
+.profile-image-container:hover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-        .upload-btn {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            background-color: #dc2626;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+.profile-image-container:hover::before {
+    content: '\F30F';
+    font-family: 'bootstrap-icons';
+    position: absolute;
+    color: white;
+    font-size: 2rem;
+    z-index: 1;
+}
 
-        .upload-btn:hover {
-            background-color: #b91c1c;
-            transform: scale(1.1);
-        }
+.profile-image-container > i {
+    font-size: 3rem;
+    color: #6b7280;
+}
 
-        .upload-btn label {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-        }
+.profile-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
+.upload-btn {
+    display: none;
+} 
         .form-content {
             flex: 1;
             overflow-y: auto;
@@ -356,14 +360,7 @@
                     </h2>
                     
                     <form id="profileForm" enctype="multipart/form-data">
-                        <div class="profile-image-container">
-                            <i class="bi bi-person-circle"></i>
-                            <div class="upload-btn" title="Upload Photo">
-                                <label for="image"><i class="bi bi-camera"></i></label>
-                                <input type="file" name="image" id="image" hidden />
-                            </div>
-                        </div>
-
+                       
                         <div class="form-content">
                             <div class="form-group">
                                 <label for="firstName">First Name</label>
@@ -427,214 +424,290 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        // Preview uploaded image
-        document.getElementById('image')?.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const container = document.querySelector('.profile-image-container');
-                    container.innerHTML = `
-                        <img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">
-                        <div class="upload-btn" title="Upload Photo">
-                            <label for="image"><i class="bi bi-camera"></i></label>
-                            <input type="file" name="image" id="image" hidden />
-                        </div>
-                    `;
-                    // Re-attach event listener
-                    document.getElementById('image').addEventListener('change', arguments.callee);
-                }
-                reader.readAsDataURL(file);
-            }
-        });
+   <script>// Replace the existing script section with this improved version
 
-        // Password Strength Checker
-        function checkPasswordStrength(password) {
-            let strength = 0;
-            const feedback = [];
+// Global variable to store selected file
+let selectedFile = null;
 
-            if (password.length >= 8) {
-                strength += 25;
-            } else {
-                feedback.push('At least 8 characters');
-            }
-
-            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) {
-                strength += 25;
-            } else {
-                feedback.push('Mix of uppercase and lowercase');
-            }
-
-            if (/\d/.test(password)) {
-                strength += 25;
-            } else {
-                feedback.push('At least one number');
-            }
-
-            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-                strength += 25;
-            } else {
-                feedback.push('At least one special character');
-            }
-
-            return { strength, feedback };
+// Image preview handler
+document.getElementById('image')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File',
+                text: 'Please select an image file',
+                confirmButtonColor: '#dc2626'
+            });
+            return;
         }
 
-        // Real-time password validation
-        const newPasswordInput = document.getElementById('newPassword');
-        newPasswordInput?.addEventListener('input', function() {
-            const { strength, feedback } = checkPasswordStrength(this.value);
-            
-            // Visual feedback (you can add a progress bar if needed)
-            if (this.value.length > 0) {
-                if (strength < 50) {
-                    this.style.borderColor = '#dc2626';
-                } else if (strength < 75) {
-                    this.style.borderColor = '#f59e0b';
-                } else {
-                    this.style.borderColor = '#16a34a';
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            Swal.fire({
+                icon: 'error',
+                title: 'File Too Large',
+                text: 'Image size should be less than 5MB',
+                confirmButtonColor: '#dc2626'
+            });
+            return;
+        }
+
+        selectedFile = file;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const container = document.querySelector('.profile-image-container');
+            container.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+// Profile Form Submission
+document.getElementById('profileForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    
+    // Get form values
+    const name = document.getElementById('firstName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    
+    // Validate fields
+    if (!name || !email) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Missing Fields',
+            text: 'Please fill in all required fields',
+            confirmButtonColor: '#dc2626'
+        });
+        return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Email',
+            text: 'Please enter a valid email address',
+            confirmButtonColor: '#dc2626'
+        });
+        return;
+    }
+
+    // Append form data
+    formData.append('name', name);
+    formData.append('email', email);
+    
+    // Append image if selected
+    if (selectedFile) {
+        formData.append('image', selectedFile);
+        console.log('Image attached:', selectedFile.name);
+    }
+
+    // Show loading
+    Swal.fire({
+        title: 'Updating Profile...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        const response = await fetch('/admin/profile/update', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: data.message || 'Profile updated successfully',
+                confirmButtonColor: '#dc2626'
+            }).then(() => {
+                // Update displayed image if new one was uploaded
+                if (data.admin && data.admin.image) {
+                    const container = document.querySelector('.profile-image-container');
+                    container.innerHTML = `<img src="${data.admin.image}" style="width: 100%; height: 100%; object-fit: cover;">`;
                 }
-            } else {
-                this.style.borderColor = '#e5e7eb';
-            }
+                selectedFile = null;
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: data.message || 'Failed to update profile',
+                confirmButtonColor: '#dc2626'
+            });
+        }
+    } catch (error) {
+        console.error('Profile update error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Something went wrong. Please try again.',
+            confirmButtonColor: '#dc2626'
+        });
+    }
+});
+
+// Password Strength Checker
+function checkPasswordStrength(password) {
+    let strength = 0;
+    const feedback = [];
+
+    if (password.length >= 8) {
+        strength += 25;
+    } else {
+        feedback.push('At least 8 characters');
+    }
+
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) {
+        strength += 25;
+    } else {
+        feedback.push('Mix of uppercase and lowercase');
+    }
+
+    if (/\d/.test(password)) {
+        strength += 25;
+    } else {
+        feedback.push('At least one number');
+    }
+
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        strength += 25;
+    } else {
+        feedback.push('At least one special character');
+    }
+
+    return { strength, feedback };
+}
+
+// Real-time password validation
+const newPasswordInput = document.getElementById('newPassword');
+newPasswordInput?.addEventListener('input', function() {
+    const { strength, feedback } = checkPasswordStrength(this.value);
+    
+    if (this.value.length > 0) {
+        if (strength < 50) {
+            this.style.borderColor = '#dc2626';
+        } else if (strength < 75) {
+            this.style.borderColor = '#f59e0b';
+        } else {
+            this.style.borderColor = '#16a34a';
+        }
+    } else {
+        this.style.borderColor = '#e5e7eb';
+    }
+});
+
+// Password Form Submission
+document.getElementById('passwordForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    // Validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Missing Fields',
+            text: 'Please fill in all password fields',
+            confirmButtonColor: '#dc2626'
+        });
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Passwords Don\'t Match',
+            text: 'New password and confirm password must match',
+            confirmButtonColor: '#dc2626'
+        });
+        return;
+    }
+
+    const { strength, feedback } = checkPasswordStrength(newPassword);
+    if (strength < 75) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Weak Password',
+            html: `Your password needs improvement:<br><ul style="text-align: left; margin-top: 10px;">${feedback.map(f => `<li>${f}</li>`).join('')}</ul>`,
+            confirmButtonColor: '#dc2626'
+        });
+        return;
+    }
+
+    if (currentPassword === newPassword) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Same Password',
+            text: 'New password must be different from current password',
+            confirmButtonColor: '#dc2626'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Updating Password...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        const response = await fetch('/admin/profile/change-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                currentPassword,
+                newPassword
+            })
         });
 
-        // Profile Form Submission
-        document.getElementById('profileForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            
-            try {
-                const response = await fetch('/admin/profile/update', {
-                    method: 'POST',
-                    body: formData
-                });
+        const data = await response.json();
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: data.message || 'Profile updated successfully',
-                        confirmButtonColor: '#dc2626'
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: data.message || 'Failed to update profile',
-                        confirmButtonColor: '#dc2626'
-                    });
-                }
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Something went wrong. Please try again.',
-                    confirmButtonColor: '#dc2626'
-                });
-            }
+        if (response.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: data.message || 'Password changed successfully',
+                confirmButtonColor: '#dc2626'
+            }).then(() => {
+                document.getElementById('passwordForm').reset();
+                document.getElementById('newPassword').style.borderColor = '#e5e7eb';
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: data.message || 'Failed to change password',
+                confirmButtonColor: '#dc2626'
+            });
+        }
+    } catch (error) {
+        console.error('Password change error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Something went wrong. Please try again.',
+            confirmButtonColor: '#dc2626'
         });
-
-        // Password Form Submission with Validation
-        document.getElementById('passwordForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            // Validation
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Missing Fields',
-                    text: 'Please fill in all password fields',
-                    confirmButtonColor: '#dc2626'
-                });
-                return;
-            }
-
-            if (newPassword !== confirmPassword) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Passwords Don\'t Match',
-                    text: 'New password and confirm password must match',
-                    confirmButtonColor: '#dc2626'
-                });
-                return;
-            }
-
-            const { strength, feedback } = checkPasswordStrength(newPassword);
-            if (strength < 75) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Weak Password',
-                    html: `Your password needs improvement:<br><ul style="text-align: left; margin-top: 10px;">${feedback.map(f => `<li>${f}</li>`).join('')}</ul>`,
-                    confirmButtonColor: '#dc2626'
-                });
-                return;
-            }
-
-            if (currentPassword === newPassword) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Same Password',
-                    text: 'New password must be different from current password',
-                    confirmButtonColor: '#dc2626'
-                });
-                return;
-            }
-
-            try {
-                const response = await fetch('/admin/profile/change-password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        currentPassword,
-                        newPassword
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: data.message || 'Password changed successfully',
-                        confirmButtonColor: '#dc2626'
-                    }).then(() => {
-                        document.getElementById('passwordForm').reset();
-                        document.getElementById('newPassword').style.borderColor = '#e5e7eb';
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: data.message || 'Failed to change password',
-                        confirmButtonColor: '#dc2626'
-                    });
-                }
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Something went wrong. Please try again.',
-                    confirmButtonColor: '#dc2626'
-                });
-            }
-        });
-
-        // Load admin data on page load
-        window.addEventListener('DOMContentLoaded', function() {
-          
-        });
-    </script>
+    }
+});</script>
 </body>
 </html>

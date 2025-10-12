@@ -157,7 +157,7 @@ async function loadTransactions(page = 1) {
         if (data.success) {
             allTransactions = data.transactions;
             updateTransactionsTable(data.transactions);
-            updatePagination(data.pagination);
+            
             updateStatistics(data.summary);
         } else {
             throw new Error(data.error || 'Failed to load transactions');
@@ -198,7 +198,7 @@ function updateTransactionsTable(transactions) {
     if (transactions.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
+                <td colspan="7" style="text-align: center; padding: 40px; color: #666;">
                     No transactions found
                 </td>
             </tr>
@@ -206,7 +206,10 @@ function updateTransactionsTable(transactions) {
         return;
     }
 
-    transactions.forEach(transaction => {
+    // Show only first 10 transactions
+    const limitedTransactions = transactions.slice(0, 10);
+
+    limitedTransactions.forEach(transaction => {
         const row = createTransactionRow(transaction);
         tbody.appendChild(row);
     });
@@ -495,44 +498,6 @@ async function fetchRevenueData(timePeriod) {
     }
 }
 
-// Update pagination
-function updatePagination(pagination) {
-    const pageInfo = document.getElementById('pageInfo');
-    const pageButtons = document.getElementById('pageButtons');
-    
-    const start = (pagination.currentPage - 1) * 50 + 1;
-    const end = Math.min(start + 49, pagination.totalTransactions);
-    
-    pageInfo.textContent = `Showing ${start}-${end} of ${pagination.totalTransactions} entries`;
-    
-    pageButtons.innerHTML = '';
-    
-    // Previous button
-    const prevBtn = document.createElement('button');
-    prevBtn.className = `page-btn ${!pagination.hasPrev ? 'disabled' : ''}`;
-    prevBtn.textContent = '‹';
-    prevBtn.onclick = () => pagination.hasPrev && changePage(pagination.currentPage - 1);
-    pageButtons.appendChild(prevBtn);
-    
-    // Page numbers
-    const startPage = Math.max(1, pagination.currentPage - 2);
-    const endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
-    
-    for (let i = startPage; i <= endPage; i++) {
-        const pageBtn = document.createElement('button');
-        pageBtn.className = `page-btn ${i === pagination.currentPage ? 'active' : ''}`;
-        pageBtn.textContent = i;
-        pageBtn.onclick = () => changePage(i);
-        pageButtons.appendChild(pageBtn);
-    }
-    
-    // Next button
-    const nextBtn = document.createElement('button');
-    nextBtn.className = `page-btn ${!pagination.hasNext ? 'disabled' : ''}`;
-    nextBtn.textContent = '›';
-    nextBtn.onclick = () => pagination.hasNext && changePage(pagination.currentPage + 1);
-    pageButtons.appendChild(nextBtn);
-}
 
 // Change page
 function changePage(page) {

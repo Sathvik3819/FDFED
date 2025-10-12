@@ -83,9 +83,9 @@
                 <div class="chart-header">
                     <div class="chart-title">Portfolio Growth & Revenue</div>
                     <div class="chart-filter">
-                        <button class="filter-btn active">6M</button>
-                        <button class="filter-btn">1Y</button>
-                        <button class="filter-btn">All</button>
+                        <button class="filter-btn active" data-period="6M">6M</button>
+                        <button class="filter-btn" data-period="1Y">1Y</button>
+                        <button class="filter-btn" data-period="All">All</button>
                     </div>
                 </div>
                 <div class="chart-container">
@@ -117,39 +117,37 @@
                         </div>
                     </div>
                     
-                    <div class="applications-charts">
-                        <div class="trend-chart-container">
-                            <canvas id="applicationsTrendChart"></canvas>
-                        </div>
-                        <div class="status-chart-container">
-                            <div class="doughnut-wrapper">
-                                <canvas id="applicationsStatusChart"></canvas>
-                            </div>
-                            <div class="status-summary">
-                                <div class="status-item">
-                                    <div class="status-label">
-                                        <div class="status-color" style="background: #10b981;"></div>
-                                        Approved
-                                    </div>
-                                    <div class="status-value"></div>
-                                </div>
-                                <div class="status-item">
-                                    <div class="status-label">
-                                        <div class="status-color" style="background: #f59e0b;"></div>
-                                        Pending
-                                    </div>
-                                    <div class="status-value"></div>
-                                </div>
-                                <div class="status-item">
-                                    <div class="status-label">
-                                        <div class="status-color" style="background: #ef4444;"></div>
-                                        Rejected
-                                    </div>
-                                    <div class="status-value"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                   <div class="applications-charts" style="display: flex; justify-content: center; align-items: center; gap: 40px; flex-wrap: wrap;">
+    <div class="status-chart-container" style="display: flex; align-items: center; justify-content: center; gap: 40px;">
+        <div class="doughnut-wrapper" >
+            <canvas id="applicationsStatusChart"></canvas>
+        </div>
+        <div class="status-summary" style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="status-item" style="display: flex; justify-content: space-between; align-items: center; width: 160px;">
+                <div class="status-label" style="display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                    <div class="status-color" style="width: 14px; height: 14px; background: #10b981; border-radius: 50%;"></div>
+                    Approved
+                </div>
+                <div class="status-value" style="font-weight: 600;"></div>
+            </div>
+            <div class="status-item" style="display: flex; justify-content: space-between; align-items: center; width: 160px;">
+                <div class="status-label" style="display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                    <div class="status-color" style="width: 14px; height: 14px; background: #f59e0b; border-radius: 50%;"></div>
+                    Pending
+                </div>
+                <div class="status-value" style="font-weight: 600;"></div>
+            </div>
+            <div class="status-item" style="display: flex; justify-content: space-between; align-items: center; width: 160px;">
+                <div class="status-label" style="display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                    <div class="status-color" style="width: 14px; height: 14px; background: #ef4444; border-radius: 50%;"></div>
+                    Rejected
+                </div>
+                <div class="status-value" style="font-weight: 600;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
                 </div>
             </div>
         </div>
@@ -157,24 +155,37 @@
       
     </div>
 
-   <script>// Configuration
+  <script>
 const API_BASE_URL = window.location.origin + '/admin/api';
-
-// Global variables for charts
 let growthChart;
 let applicationsStatusChart;
+let autoRefreshInterval;
+let currentChartPeriod = '6M';
 
-// Utility functions
+// Auto-refresh configuration (30 seconds = 30000ms)
+const AUTO_REFRESH_INTERVAL = 30000;
+
 function formatCurrency(value) {
+    if (typeof value !== 'number') return value;
     return `₹${value.toLocaleString()}`;
 }
 
-function showLoading() {
-    document.body.classList.add('loading');
+function showLoading(target = 'body') {
+    if (target === 'body') {
+        document.body.classList.add('loading');
+    } else {
+        const element = document.querySelector(target);
+        if (element) element.classList.add('loading');
+    }
 }
 
-function hideLoading() {
-    document.body.classList.remove('loading');
+function hideLoading(target = 'body') {
+    if (target === 'body') {
+        document.body.classList.remove('loading');
+    } else {
+        const element = document.querySelector(target);
+        if (element) element.classList.remove('loading');
+    }
 }
 
 function showError(message) {
@@ -197,51 +208,31 @@ function showError(message) {
     setTimeout(() => errorDiv.remove(), 5000);
 }
 
-// API functions
 async function fetchDashboardData() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/dashboard`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        const result = await response.json();
-        return result.data;
-    } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-        throw error;
-    }
+    const response = await fetch(`${API_BASE_URL}/dashboard`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    const result = await response.json();
+    return result.data ?? result;
 }
 
 async function fetchChartData(period = '6M') {
-    try {
-        const response = await fetch(`${API_BASE_URL}/dashboard/charts?period=${period}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        const result = await response.json();
-        return result.data;
-    } catch (error) {
-        console.error('Failed to fetch chart data:', error);
-        throw error;
-    }
+    const response = await fetch(`${API_BASE_URL}/dashboard/charts?period=${encodeURIComponent(period)}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    const result = await response.json();
+    return result.data ?? result;
 }
 
-// Update KPIs
 function updateKPIs(data) {
     const { kpis } = data;
-    
-    const totalCommunitiesEl = document.querySelector('.kpi-card.communities .kpi-value');
-    const totalResidentsEl = document.querySelector('.kpi-card.residents .kpi-value');
-    const pendingApplicationsEl = document.querySelector('.kpi-card.applications .kpi-value');
-    const monthlyRevenueEl = document.querySelector('.kpi-card.revenue .kpi-value');
-    
-    if (totalCommunitiesEl) totalCommunitiesEl.textContent = kpis.totalCommunities;
-    if (totalResidentsEl) totalResidentsEl.textContent = kpis.totalResidents.toLocaleString();
-    if (pendingApplicationsEl) pendingApplicationsEl.textContent = kpis.pendingApplications;
-    if (monthlyRevenueEl) monthlyRevenueEl.textContent = formatCurrency(kpis.monthlyRevenue);
+    document.querySelector('.kpi-card.communities .kpi-value').textContent = kpis.totalCommunities;
+    document.querySelector('.kpi-card.residents .kpi-value').textContent = kpis.totalResidents.toLocaleString();
+    document.querySelector('.kpi-card.applications .kpi-value').textContent = kpis.pendingApplications;
+    document.querySelector('.kpi-card.revenue .kpi-value').textContent = formatCurrency(kpis.monthlyRevenue);
 }
 
-// Update Applications Summary
 function updateApplicationsSummary(data) {
     const { applicationsStatus } = data;
     const total = applicationsStatus.approved + applicationsStatus.pending + applicationsStatus.rejected;
-    
     const summaryValues = document.querySelectorAll('.summary-item .summary-value');
     if (summaryValues.length >= 4) {
         summaryValues[0].textContent = total;
@@ -249,8 +240,6 @@ function updateApplicationsSummary(data) {
         summaryValues[2].textContent = applicationsStatus.approved;
         summaryValues[3].textContent = applicationsStatus.rejected;
     }
-    
-    // Update status summary in doughnut chart section
     const statusItems = document.querySelectorAll('.status-item .status-value');
     if (statusItems.length >= 3) {
         statusItems[0].textContent = applicationsStatus.approved;
@@ -259,74 +248,36 @@ function updateApplicationsSummary(data) {
     }
 }
 
-// Update Growth Chart
 function updateGrowthChart(chartData) {
     const ctx = document.getElementById('growthChart');
     if (!ctx) return;
-    
-    // Destroy existing chart
-    if (growthChart) {
-        growthChart.destroy();
-    }
-    
-    const { labels, communities, revenue } = chartData;
-    
+    if (growthChart) growthChart.destroy();
+    const { labels, revenue } = chartData;
     growthChart = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
-            labels: labels,
+            labels,
             datasets: [{
-                label: 'New Communities',
-                data: communities,
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                yAxisID: 'y'
-            }, {
                 label: 'Revenue (₹)',
                 data: revenue,
                 borderColor: '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
                 borderWidth: 3,
                 fill: true,
-                tension: 0.4,
-                yAxisID: 'y1'
+                tension: 0.4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
+            interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 20,
-                        font: {
-                            size: 12
-                        }
-                    }
-                },
+                legend: { position: 'top', labels: { usePointStyle: true, padding: 20, font: { size: 12 } } },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed.y !== null) {
-                                if (context.datasetIndex === 1) {
-                                    label += '₹' + context.parsed.y.toLocaleString();
-                                } else {
-                                    label += context.parsed.y;
-                                }
-                            }
+                        label: c => {
+                            let label = c.dataset.label ? c.dataset.label + ': ' : '';
+                            if (c.parsed.y !== null) label += '₹' + c.parsed.y.toLocaleString();
                             return label;
                         }
                     }
@@ -334,73 +285,29 @@ function updateGrowthChart(chartData) {
             },
             scales: {
                 y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
                     beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Communities'
-                    },
-                    grid: {
-                        color: 'rgba(21, 26, 45, 0.05)'
-                    }
+                    title: { display: true, text: 'Revenue (₹)' },
+                    ticks: { callback: v => '₹' + v.toLocaleString() },
+                    grid: { drawOnChartArea: false }
                 },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Revenue (₹)'
-                    },
-                    grid: {
-                        drawOnChartArea: false,
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return '₹' + value.toLocaleString();
-                        }
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
+                x: { grid: { display: false } }
             },
-            elements: {
-                point: {
-                    radius: 4,
-                    hoverRadius: 6
-                }
-            }
+            elements: { point: { radius: 4, hoverRadius: 6 } }
         }
     });
 }
 
-// Update Applications Status Chart
 function updateApplicationsStatusChart(data) {
     const ctx = document.getElementById('applicationsStatusChart');
     if (!ctx) return;
-    
-    // Destroy existing chart
-    if (applicationsStatusChart) {
-        applicationsStatusChart.destroy();
-    }
-    
+    if (applicationsStatusChart) applicationsStatusChart.destroy();
     applicationsStatusChart = new Chart(ctx.getContext('2d'), {
         type: 'doughnut',
         data: {
             labels: ['Approved', 'Pending', 'Rejected'],
             datasets: [{
                 data: [data.approved, data.pending, data.rejected],
-                backgroundColor: [
-                    '#10b981',
-                    '#f59e0b',
-                    '#ef4444'
-                ],
+                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
                 borderWidth: 0,
                 cutout: '65%'
             }]
@@ -409,15 +316,13 @@ function updateApplicationsStatusChart(data) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((context.parsed / total) * 100).toFixed(1);
-                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        label: c => {
+                            const total = c.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((c.parsed / total) * 100).toFixed(1);
+                            return `${c.label}: ${c.parsed} (${percentage}%)`;
                         }
                     }
                 }
@@ -426,148 +331,180 @@ function updateApplicationsStatusChart(data) {
     });
 }
 
-// Update all charts
 function updateCharts(data) {
     updateGrowthChart(data.growthChart);
     updateApplicationsStatusChart(data.applicationsStatus);
 }
 
-// Handle chart filter click
+// Handle chart filter clicks - only updates chart data
 async function handleChartFilterClick(period) {
-    showLoading();
+    showLoading('.chart-card');
     try {
+        currentChartPeriod = period;
         const data = await fetchChartData(period);
         updateGrowthChart(data.growthChart);
     } catch (error) {
-        showError('Failed to update charts');
+        showError('Failed to update chart');
     } finally {
-        hideLoading();
+        hideLoading('.chart-card');
     }
 }
 
-// Initialize dashboard
-async function initializeDashboard() {
-    showLoading();
-    
+// Auto-refresh function - refreshes all dashboard data
+async function autoRefreshDashboard() {
     try {
+        // Fetch full dashboard data
         const dashboardData = await fetchDashboardData();
         
+        // Update KPIs and applications summary
+        updateKPIs(dashboardData);
+        updateApplicationsSummary(dashboardData.chartData);
+        updateApplicationsStatusChart(dashboardData.chartData.applicationsStatus);
+        
+        // Fetch and update growth chart with current period
+        const chartData = await fetchChartData(currentChartPeriod);
+        updateGrowthChart(chartData.growthChart);
+        
+        console.log('Dashboard auto-refreshed at', new Date().toLocaleTimeString());
+    } catch (error) {
+        console.error('Auto-refresh failed:', error);
+        // Don't show error message for auto-refresh failures to avoid spam
+    }
+}
+
+// Start auto-refresh
+function startAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+    autoRefreshInterval = setInterval(autoRefreshDashboard, AUTO_REFRESH_INTERVAL);
+    console.log(`Auto-refresh started: every ${AUTO_REFRESH_INTERVAL / 1000} seconds`);
+}
+
+// Stop auto-refresh
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+        console.log('Auto-refresh stopped');
+    }
+}
+
+// Initial dashboard load
+async function initializeDashboard() {
+    showLoading();
+    try {
+        const dashboardData = await fetchDashboardData();
         updateKPIs(dashboardData);
         updateApplicationsSummary(dashboardData.chartData);
         updateCharts(dashboardData.chartData);
         
-        console.log('Dashboard initialized successfully');
-        
+        // Start auto-refresh after successful initialization
+        startAutoRefresh();
     } catch (error) {
         showError('Failed to load dashboard data');
-        console.error('Dashboard initialization error:', error);
     } finally {
         hideLoading();
     }
 }
 
-// DOM Content Loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize dashboard
     initializeDashboard();
     
-    // Sidebar functionality
+    // Sidebar toggles
     const sidebar = document.getElementById('sidebar');
     const sidebarToggler = document.getElementById('sidebarToggler');
     const menuToggler = document.getElementById('menuToggler');
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-
-    // Desktop sidebar toggle
+    
     if (sidebarToggler) {
-        sidebarToggler.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
+        sidebarToggler.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
     }
-
-    // Mobile menu toggle
+    
     const mobileTogglers = [menuToggler, mobileMenuToggle].filter(Boolean);
     mobileTogglers.forEach(toggler => {
         toggler.addEventListener('click', () => {
             sidebar.classList.toggle('menu-active');
             const icon = toggler.querySelector('span');
-            if (icon) {
-                icon.textContent = sidebar.classList.contains('menu-active') ? 'close' : 'menu';
-            }
+            if (icon) icon.textContent = sidebar.classList.contains('menu-active') ? 'close' : 'menu';
         });
     });
-
-    // Close mobile menu on outside click
-    document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 1024 && 
-            !sidebar.contains(e.target) && 
-            !mobileTogglers.some(toggler => toggler && toggler.contains(e.target))) {
+    
+    document.addEventListener('click', e => {
+        if (window.innerWidth <= 1024 && !sidebar.contains(e.target) &&
+            !mobileTogglers.some(t => t && t.contains(e.target))) {
             sidebar.classList.remove('menu-active');
-            mobileTogglers.forEach(toggler => {
-                const icon = toggler && toggler.querySelector('span');
+            mobileTogglers.forEach(t => {
+                const icon = t && t.querySelector('span');
                 if (icon) icon.textContent = 'menu';
             });
         }
     });
-
+    
     // Chart filter buttons
     const filterBtns = document.querySelectorAll('.filter-btn');
     filterBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             filterBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            handleChartFilterClick(this.textContent);
+            const period = this.getAttribute('data-period') || this.textContent;
+            handleChartFilterClick(period);
         });
     });
-
-    // Responsive handling
+    
     window.addEventListener("resize", () => {
         if (window.innerWidth >= 1024) {
             sidebar.classList.remove("menu-active");
-            mobileTogglers.forEach(toggler => {
-                const icon = toggler && toggler.querySelector('span');
+            mobileTogglers.forEach(t => {
+                const icon = t && t.querySelector('span');
                 if (icon) icon.textContent = 'menu';
             });
         }
     });
+    
+    // Stop auto-refresh when page is hidden (performance optimization)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else {
+            startAutoRefresh();
+            // Immediately refresh when page becomes visible
+            autoRefreshDashboard();
+        }
+    });
 });
 
-// Add loading styles
-const loadingStyles = `
-    .loading {
-        cursor: wait;
-    }
-    
-    .loading .kpi-value,
-    .loading .chart-container {
-        opacity: 0.6;
-        pointer-events: none;
-    }
-    
-    .error-message {
-        animation: slideIn 0.3s ease;
-    }
-    
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-`;
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    stopAutoRefresh();
+});
 
+const loadingStyles = `
+    .loading { cursor: wait; }
+    .loading .kpi-value, .loading .chart-container { opacity: 0.6; pointer-events: none; }
+    .chart-card.loading .chart-container { opacity: 0.6; }
+    .error-message { animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+`;
 const styleSheet = document.createElement('style');
 styleSheet.textContent = loadingStyles;
 document.head.appendChild(styleSheet);
 
-// Export for external use
-window.dashboardAPI = {
-    refresh: initializeDashboard,
-    updateCharts: handleChartFilterClick,
-    fetchDashboardData
-};</script>
+// Expose API for external control
+window.dashboardAPI = { 
+    refresh: initializeDashboard, 
+    updateCharts: handleChartFilterClick, 
+    fetchDashboardData,
+    startAutoRefresh,
+    stopAutoRefresh,
+    setAutoRefreshInterval: (ms) => {
+        AUTO_REFRESH_INTERVAL = ms;
+        if (autoRefreshInterval) {
+            startAutoRefresh();
+        }
+    }
+};
+</script>
+
 </body>
 </html>

@@ -480,7 +480,15 @@ AdminRouter.get("/profile", async (req, res) => {
 // POST: Update Profile
 AdminRouter.post("/profile/update", upload.single('image'), async (req, res) => {
   try {
-    const { name, email, contact } = req.body;
+    const { name, email } = req.body;
+    
+    console.log('Request body:', req.body);
+    console.log('Uploaded file:', req.file);
+    
+    // Validate input
+    if (!name || !email) {
+      return res.status(400).json({ message: "Name and email are required" });
+    }
     
     // Find admin
     const admin = await Admin.findOne();
@@ -497,30 +505,32 @@ AdminRouter.post("/profile/update", upload.single('image'), async (req, res) => 
     }
 
     // Update fields
-    admin.name = name || admin.name;
-    admin.email = email || admin.email;
-    admin.contact = contact || admin.contact;
+    admin.name = name;
+    admin.email = email;
 
     // Update image if uploaded
     if (req.file) {
-      admin.image = '/uploads/admin/' + req.file.filename;
+      admin.image = `/uploads/admin/${req.file.filename}`;
+      console.log('Image path saved:', admin.image);
     }
 
     await admin.save();
 
-    res.status(200).json({ 
+    return res.status(200).json({ 
       message: "Profile updated successfully",
       admin: {
         name: admin.name,
         email: admin.email,
-        contact: admin.contact,
         image: admin.image
       }
     });
 
   } catch (err) {
     console.error('Profile update error:', err);
-    res.status(500).json({ message: "Failed to update profile" });
+    return res.status(500).json({ 
+      message: "Failed to update profile",
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 });
 
@@ -1444,19 +1454,23 @@ AdminRouter.put("/api/payments/transaction/:communityId/:transactionId", async (
   }
 });
 // Communities Page Route
+// Add this temporary debug route to see what's actually in your database
 AdminRouter.get("/communities", async (req, res) => {
   try {
     const communities = await Community.find().populate("communityManager");
     const managers = await CommunityManager.find();
 
-    // Calculate statistics
+    // Calculate statistics using subscriptionStatus field (lowercase values)
     const totalCommunities = communities.length;
-    const activeCommunities = communities.filter(c => c.status === "Active").length;
-    const inactiveCommunities = totalCommunities - activeCommunities;
-      const topLocations = await Community.aggregate([
-      { 
-        $group: { _id: "$location", count: { $sum: 1 } } 
-      },
+    const activeCommunities = communities.filter(c => 
+      c.subscriptionStatus && c.subscriptionStatus.toLowerCase() === "active"
+    ).length;
+    const pendingCommunities = communities.filter(c => 
+      c.subscriptionStatus && c.subscriptionStatus.toLowerCase() === "pending"
+    ).length;
+    
+    const topLocations = await Community.aggregate([
+      { $group: { _id: "$location", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $limit: 5 }
     ]);
@@ -1466,8 +1480,8 @@ AdminRouter.get("/communities", async (req, res) => {
       managers,
       totalCommunities,
       activeCommunities,
-      inactiveCommunities,
-       topLocations
+      pendingCommunities,
+      topLocations
     });
   } catch (error) {
     console.error("Error fetching communities:", error);

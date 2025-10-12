@@ -62,7 +62,7 @@ statusFilterButtons.forEach(button => {
   try {
     // Determine how many to fetch based on screen size
     const screenWidth = window.innerWidth;
-    let limit = 10; // Default
+    let limit = 8; // Default
     
     if (screenWidth < 768) {
       limit = 5; // Mobile
@@ -117,8 +117,8 @@ statusFilterButtons.forEach(button => {
     });
   }
 
-  // Filter communities based on search input and filters
-// Replace the filterCommunities function with:
+
+
 function filterCommunities() {
     const searchTerm = searchInput.value.toLowerCase();
     const locationValue = locationFilter.value;
@@ -131,7 +131,11 @@ function filterCommunities() {
             (community.communityManager && community.communityManager.name && 
              community.communityManager.name.toLowerCase().includes(searchTerm));
         
-        const matchStatus = statusValue === '' || community.status === statusValue;
+        // FIX: Use subscriptionStatus and make it case-insensitive
+        const communitySubStatus = (community.subscriptionStatus || '').toLowerCase();
+        const filterStatus = statusValue.toLowerCase();
+        const matchStatus = filterStatus === '' || communitySubStatus === filterStatus;
+        
         const matchLocation = locationValue === '' || community.location === locationValue;
         
         return matchSearch && matchStatus && matchLocation;
@@ -140,7 +144,7 @@ function filterCommunities() {
     displayCommunities();
 }
 
-// Add this new helper function:
+// Update the helper function too:
 function filterCommunitiesByStatus(status) {
     const searchTerm = searchInput.value.toLowerCase();
     const locationValue = locationFilter.value;
@@ -152,7 +156,11 @@ function filterCommunitiesByStatus(status) {
             (community.communityManager && community.communityManager.name && 
              community.communityManager.name.toLowerCase().includes(searchTerm));
         
-        const matchStatus = status === '' || community.status === status;
+        // FIX: Use subscriptionStatus and make it case-insensitive
+        const communitySubStatus = (community.subscriptionStatus || '').toLowerCase();
+        const filterStatus = status.toLowerCase();
+        const matchStatus = filterStatus === '' || communitySubStatus === filterStatus;
+        
         const matchLocation = locationValue === '' || community.location === locationValue;
         
         return matchSearch && matchStatus && matchLocation;
@@ -170,8 +178,8 @@ function filterCommunitiesByStatus(status) {
   const filterHeight = filterSection ? filterSection.offsetHeight : 0;
   const rowHeight = 56; // Approximate average table row height (px). Adjust as needed.
 
-  const totalAvailableHeight = window.innerHeight - headerHeight - filterHeight - 100; // buffer for paddings/margins
-  const initialRowsToShow = Math.floor(totalAvailableHeight / rowHeight);
+  const totalAvailableHeight = window.innerHeight - headerHeight - filterHeight - 150; // increased buffer for paddings/margins
+  const initialRowsToShow = Math.max(3, Math.floor(totalAvailableHeight / rowHeight) - 2); // subtract 2 more rows and ensure minimum of 3
 
   const showAll = communitiesTableBody.getAttribute('data-show-all') === 'true';
   const displayedCommunities = showAll ? filteredCommunities : filteredCommunities.slice(0, initialRowsToShow-1);
@@ -188,7 +196,7 @@ function filterCommunitiesByStatus(status) {
           <td>${community.location}</td>
           <td>${community.totalMembers || 0}</td>
           <td>${formattedDate}</td>
-          <td><span class="table-status status-${community.status.toLowerCase()}">${community.status}</span></td>
+          <td><span class="table-status status-${(community.subscriptionStatus || 'pending').toLowerCase()}">${community.subscriptionStatus || 'Pending'}</span></td>
           <td>${community.communityManager ? community.communityManager.name : 'Unassigned'}</td>
           <td>
             <div class="table-actions">
@@ -321,7 +329,7 @@ function filterCommunitiesByStatus(status) {
         name,
         location,
         description,
-        status,
+        subscriptionStatus,
         communityManagerId: managerId || null
       };
       

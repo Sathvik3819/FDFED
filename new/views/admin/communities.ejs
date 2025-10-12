@@ -593,10 +593,10 @@
             <input type="text" class="search-input" id="searchInput" placeholder="Search communities...">
             <i class="fas fa-search search-icon"></i>
         </div>
-        <div class="status-filter-buttons">
+       <div class="status-filter-buttons">
     <button class="filter-btn active" data-status="">All</button>
-    <button class="filter-btn" data-status="Active">Active</button>
-    <button class="filter-btn" data-status="Inactive">Inactive</button>
+    <button class="filter-btn" data-status="active">Active</button>
+    <button class="filter-btn" data-status="pending">Pending</button>
 </div>
         <div>
            <select class="form-select" id="locationFilter">
@@ -619,7 +619,7 @@
                                 <th>Location</th>
                                 <th>Total Members</th>
                                 <th>Created Date</th>
-                                <th>Status</th>
+                                <th>subscription Status</th>
                                 <th>Manager</th>
                                 <th>Actions</th>
                             </tr>
@@ -666,10 +666,10 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="communityStatus" class="form-label">Status</label>
+                        <label for="communityStatus" class="form-label">Subscription status</label>
                         <select class="form-select form-control" id="communityStatus" required>
                             <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
+                            <option value="Pending">Pending</option>
                         </select>
                     </div>
                 </form>
@@ -693,7 +693,7 @@
                     <h3 id="detailName"></h3>
                     <p><strong>Location:</strong> <span id="detailLocation"></span></p>
                     <p><strong>Total Members:</strong> <span id="detailMembers"></span></p>
-                    <p><strong>Status:</strong> <span id="detailStatus"></span></p>
+                    <p><strong>Subscription Status:</strong> <span id="detailStatus"></span></p>
                     <p><strong>Manager:</strong> <span id="detailManager"></span></p>
                     <p><strong>Created Date:</strong> <span id="detailCreated"></span></p>
                     <p><strong>Description:</strong></p>
