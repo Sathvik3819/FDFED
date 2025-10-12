@@ -1669,7 +1669,8 @@ managerRouter.get("/issueResolving/:id", async (req, res) => {
 
   const issue = await Issue.findById(id)
     .populate("resident")
-    .populate("workerAssigned");
+    .populate("workerAssigned")
+    .populate("payment");
 
   console.log(issue);
 

@@ -535,7 +535,8 @@ residentRouter.get("/getIssueData/:issueID", async (req, res) => {
     console.log("Fetching issue data for ID:", issueID);
     const issue = await Issue.findById(issueID)
       .populate("resident")
-      .populate("workerAssigned");
+      .populate("workerAssigned")
+      .populate("payment");
     if (!issue) {
       return res.status(404).json({ error: "Issue not found." });
     }
@@ -549,42 +550,43 @@ residentRouter.get("/getIssueData/:issueID", async (req, res) => {
 });
 
 residentRouter.post("/submitFeedback", async (req, res) => {
-    const { id, feedback, rating } = req.body;
-    console.log("Feedback Data Received:", req.body);
+  const { id, feedback, rating } = req.body;
+  console.log("Feedback Data Received:", req.body);
 
-    try{
-      const issue = await Issue.findById(id).populate("community","communityManager");
-      console.log(issue);
-      
-      if (!issue) {
-        return res.status(404).json({ success: false, message: "Issue not found." });
-      }
+  try {
+    const issue = await Issue.findById(id).populate("community", "communityManager");
 
-      const payment = await Payment.create({
-        title: `Payment for Issue ${issue.issueID}`,
-        sender: issue.resident,
-        receiver: issue.community.communityManager,
-        amount: 2000,
-        status: "Pending",
-        community: issue.community,
-        belongTo: "Issue",
-        belongToId: issue._id,
-        paymentDeadline: new Date(Date.now() + 7*24*60*60*1000),
-      });
+    if (!issue) {
+      return res.status(404).json({ success: false, message: "Issue not found." });
+    }
 
-      const uniqueId = generateCustomID(issue._id.toString(), "PY", null);
-      payment.ID = uniqueId;
-      await payment.save();
+    const payment = await Payment.create({
+      title: `Payment for Issue ${issue.issueID}`,
+      sender: issue.resident,
+      receiver: issue.community.communityManager,
+      amount: 2000,
+      status: "Pending",
+      community: issue.community,
+      belongTo: "Issue",
+      belongToId: issue._id,
+      paymentDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
 
-      issue.payment = payment._id;
-      issue.feedback = feedback;
-      issue.rating = Number(rating);
-      issue.status = "Payment Pending";
+    const uniqueId = generateCustomID(issue._id.toString(), "PY", null);
+    payment.ID = uniqueId;
+    await payment.save();
 
-      await issue.save();
+    issue.payment = payment._id;
+    issue.feedback = feedback;
+    issue.rating = Number(rating);
+    issue.status = "Payment Pending";
+    await issue.save();
 
-
-    return res.status(201).json({ success: true, message: "Feedback submitted successfully." });
+    return res.status(201).json({
+      success: true,
+      message: "Feedback submitted successfully.",
+      issueId: issue._id,
+    });
   } catch (error) {
     console.error("Error submitting feedback:", error);
     return res.status(500).json({ success: false, message: "Internal server error." });

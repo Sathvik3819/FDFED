@@ -48,6 +48,7 @@ async function openIssuePopup(data) {
     // Update progress line and steps based on status
     if (status === "Pending") {
       progressLine.style.width = "0%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
     } else if (status === "In Progress") {
       progressLine.style.width = "28%";
       steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
@@ -58,12 +59,30 @@ async function openIssuePopup(data) {
       steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
       steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
     }else if (status === "Review Pending") {
-      progressLine.style.width = "42%";
+      progressLine.style.width = "56%";
       steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
       steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
       steps[2].querySelector(".step-icon").classList.add("step-icon-completed");
       steps[3].querySelector(".step-icon").classList.add("step-icon-completed");
+    }else if (status === "Payment Pending") {
+      progressLine.style.width = "84%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[2].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[3].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[4].querySelector(".step-icon").classList.add("step-icon-completed");
+    }else if (status === "Resolved") {
+      progressLine.style.width = "100%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[2].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[3].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[4].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[5].querySelector(".step-icon").classList.add("step-icon-completed");
     }
+
+    console.log(issueData);
+    
 
     document.getElementById("popupTrackingId").textContent =
       issueData.issueID || "-";
@@ -80,6 +99,10 @@ async function openIssuePopup(data) {
       popupStatusElement.classList.add("review");
     } else if (issueData.status === "Payment Pending") {
       popupStatusElement.classList.add("paymentPending");
+    }
+
+    if (issueData.status === "Resolved") {
+      document
     }
 
     document.getElementById("popupDescription").textContent =
@@ -113,13 +136,13 @@ async function openIssuePopup(data) {
     if (issueData.payment ) {
       // Assuming these fields indicate payment details exist
       paymentDetailsSection.style.display = "grid";
-      document.getElementById("popupAmount").textContent = issueData.amount
+      document.getElementById("popupAmount").textContent = issueData.payment.amount
         ? `₹${issueData.payment.amount}`
         : "-";
       const popupPaymentStatusElement =
         document.getElementById("popupPaymentStatus");
       popupPaymentStatusElement.textContent = issueData.payment.status || "-";
-      popupPaymentStatusElement.className = `status-badge status-${issueData.payment.status.replace(
+      popupPaymentStatusElement.className = `status-badge status-${issueData.payment?.status?.replace(
         /\s/g,
         ""
       )}`;
@@ -364,5 +387,47 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  
+
+  document.getElementById("feedbackForm").addEventListener("submit", async function (event) {
+  event.preventDefault();
+
+  const formData = new FormData(this);
+  const formObject = Object.fromEntries(formData.entries());
+  console.log("Form data:", formObject);
+
+  try {
+    const response = await fetch("/resident/submitFeedback", { // ✅ corrected route
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formObject),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+
+      this.reset();
+      this.style.display = "none";
+
+
+      const btn = document.querySelector(`.issue-card[data-id="${formObject.id}"] .issue-card-actions .review-btn`);
+      const card = document.querySelector(`.issue-card[data-id="${formObject.id}"] .status-badge`);
+
+      if (card) {
+        card.textContent = "Payment Pending";
+        card.className = `status-badge status-Payment Pending paymentPending`;
+      }
+      if (btn) {
+        btn.classList.remove("review-btn");
+        btn.classList.add("pay-btn");
+        btn.innerHTML = '<i class="bi bi-credit-card"></i> Pay';
+      }
+    } else {
+      notyf.error(result.message || "Failed to submit feedback.");
+    }
+  } catch (error) {
+    console.error("Error submitting feedback:", error);
+    notyf.error("Error submitting feedback. Please try again.");
+  }
+});
 });

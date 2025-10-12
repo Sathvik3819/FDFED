@@ -66,88 +66,177 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  document.getElementById("close-btn").addEventListener("click", () => {
+    closeForm("details");
+  });
+
   // Issue Details Popup functionality
   const bookingDetailsPopup = document.getElementById("bookingDetailsPopup");
   const viewDetailButtons = document.querySelectorAll(".view-btn");
 
   viewDetailButtons.forEach((button) => {
     button.addEventListener("click", async (event) => {
-      const issueMongoId = event.target.dataset.id;
+  const issueMongoId = event.target.dataset.id;
 
-      try {
-        const response = await fetch(
-          `/manager/issueResolving/${issueMongoId}`,
-          {
-            method: "GET",
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const i = await response.json();
-        const issue = i.issue;
-
-        // Set Issue ID
-        document.getElementById("detail-id").textContent = issue.issueID || "-";
-
-        // Set Status and class
-        const statusElement = document.getElementById("detail-status");
-        if (issue.status) {
-          statusElement.textContent = issue.status;
-          statusElement.className = `detail-value status-${issue.status.replace(
-            /\s+/g,
-            "-"
-          )}`;
-        } else {
-          statusElement.textContent = "-";
-          statusElement.className = "detail-value";
-        }
-
-        // Other fields
-        document.getElementById("detail-facility").textContent =
-          issue.title || "-";
-        document.getElementById("detail-date").textContent = issue.resolvedAt
-          ? new Date(issue.resolvedAt).toLocaleDateString()
-          : "-";
-        document.getElementById("detail-time").textContent =
-          issue.workerAssigned?.name || "-";
-        document.getElementById("detail-created").textContent =
-          issue.description || "-";
-
-        // Handle feedback and rating
-        const ratingContainer = document.getElementById("detail-rating");
-        const feedbackText = document.getElementById("detail-feedback");
-
-        if (issue.feedback?.rating) {
-          ratingContainer.innerHTML = "";
-          const rating = issue.feedback.rating;
-
-          for (let i = 0; i < 5; i++) {
-            const starIcon = document.createElement("i");
-            starIcon.classList.add(
-              "bi",
-              i < rating ? "bi-star-fill" : "bi-star"
-            );
-            ratingContainer.appendChild(starIcon);
-          }
-
-          feedbackText.textContent =
-            issue.feedback.comment || "No feedback comment provided.";
-        } else {
-          ratingContainer.innerHTML =
-            '<span class="text-muted">No rating provided</span>';
-          feedbackText.textContent = "No feedback available.";
-        }
-
-        // Show the popup
-        bookingDetailsPopup.style.display = "flex";
-      } catch (error) {
-        console.error("Error fetching issue details:", error);
-        alert("Failed to load issue details. Please try again.");
-      }
+  try {
+    const response = await fetch(`/manager/issueResolving/${issueMongoId}`, {
+      method: "GET",
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const issue = await response.json();
+    const issueData = issue.issue;
+
+    const progressLine = document.querySelector(".progress-indicator");
+    const steps = document.querySelectorAll(".step");
+    const status = issueData.status;
+
+    // Reset progress line and steps
+    progressLine.style.width = "0%";
+    steps.forEach((step) => {
+      step.querySelector(".step-icon").classList.remove("step-icon-completed");
+    }
+    );
+    // Update progress line and steps based on status
+    if (status === "Pending") {
+      progressLine.style.width = "0%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
+    } else if (status === "In Progress") {
+      progressLine.style.width = "28%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[2].querySelector(".step-icon").classList.add("step-icon-completed");
+    }else if (status === "Assigned") {
+      progressLine.style.width = "14%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
+    }else if (status === "Review Pending") {
+      progressLine.style.width = "56%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[2].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[3].querySelector(".step-icon").classList.add("step-icon-completed");
+    }else if (status === "Payment Pending") {
+      progressLine.style.width = "84%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[2].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[3].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[4].querySelector(".step-icon").classList.add("step-icon-completed");
+    }else if (status === "Resolved") {
+      progressLine.style.width = "100%";
+      steps[0].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[1].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[2].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[3].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[4].querySelector(".step-icon").classList.add("step-icon-completed");
+      steps[5].querySelector(".step-icon").classList.add("step-icon-completed");
+    }
+
+    console.log(issueData);
+    
+
+    document.getElementById("popupTrackingId").textContent =
+      issueData.issueID || "-";
+    document.getElementById("popupTitle").textContent = issueData.title || "-";
+
+    const popupStatusElement = document.getElementById("popupStatus");
+    popupStatusElement.textContent = issueData.status || "-";
+    popupStatusElement.className = `status-badge status-${issueData?.status?.replace(
+      /\s/g,
+      ""
+    )}`; 
+
+    if (issueData.status === "Review Pending") {
+      popupStatusElement.classList.add("review");
+    } else if (issueData.status === "Payment Pending") {
+      popupStatusElement.classList.add("paymentPending");
+    }
+
+    if (issueData.status === "Resolved") {
+      document
+    }
+
+    document.getElementById("popupDescription").textContent =
+      issueData.description || "-";
+    document.getElementById("popupDate").textContent =
+      new Date(issueData.createdAt).toLocaleDateString() || "-";
+    document.getElementById("popupDeadline").textContent =
+      issueData.deadline
+        ? new Date(issueData.deadline).toLocaleDateString()
+        : "-";
+    
+
+    // Worker section
+    const worker = issueData.workerAssigned;
+    const workerSection = document.getElementById("workerDetails");
+
+    if (worker && worker.name) {
+      workerSection.style.display = "grid";
+      document.getElementById("popupWorkerName").textContent =
+        worker.name || "-";
+      document.getElementById("popupWorkerContact").textContent =
+        worker.contact || "-";
+      document.getElementById("popupWorkerSpecialization").textContent =
+        worker.jobRole || "-";
+    } else {
+      workerSection.style.display = "none";
+    }
+
+    // Payment section
+    const paymentDetailsSection = document.querySelector(".payment-details");
+    if (issueData.payment ) {
+      // Assuming these fields indicate payment details exist
+      paymentDetailsSection.style.display = "grid";
+      document.getElementById("popupAmount").textContent = issueData.payment.amount
+        ? `₹${issueData.payment.amount}`
+        : "-";
+      const popupPaymentStatusElement =
+        document.getElementById("popupPaymentStatus");
+      popupPaymentStatusElement.textContent = issueData.payment.status || "-";
+      popupPaymentStatusElement.className = `status-badge status-${issueData.payment?.status?.replace(
+        /\s/g,
+        ""
+      )}`;
+    } else {
+      paymentDetailsSection.style.display = "none";
+    }
+
+    const feedbackDetailsSection = document.querySelector(".feedback-details");
+    if (issueData.feedback && issueData.rating) {
+      feedbackDetailsSection.style.display = "grid";
+      // Display stars based on rating
+      const starsContainer = document.getElementById("popupRating");
+      starsContainer.innerHTML = "";
+      const rating = issueData.rating;
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement("i");
+        star.className = i <= rating ? "bi bi-star-fill" : "bi bi-star";
+        starsContainer.appendChild(star);
+      }
+      document.getElementById("popupComments").textContent =
+        issueData.feedback || "-";
+    } else {
+      feedbackDetailsSection.style.display = "none";
+    }
+
+    // Show cancel button only if status is Pending
+    const cancelBtn = document.getElementById("cancelBtn");
+    cancelBtn.style.display = issueData.status === "Pending" ? "block" : "none";
+    // Set the issue ID for cancellation
+    cancelBtn.setAttribute("data-id", issueData._id);
+
+    // Show popup
+    document.getElementById("bookingDetailsPopup").style.display = "flex";
+  } catch (error) {
+    console.error("Error fetching issue:", error);
+    alert("An error occurred while fetching issue details.");
+  }
+});
+
   });
 
   // Function to close the popup

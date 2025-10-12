@@ -99,23 +99,24 @@
                                         </p>
                                     </div>
                                     <div class="issue-card-actions">
+
+                                        <button class="action-btn view" data-id="<%= is._id %>">
+                                            <i class="bi bi-eye"></i>View
+                                        </button>
+
                                         <% if (is.status==="Pending" ) { %>
                                             <button class="action-btn delete">
                                                 <i class="bi bi-trash"></i>Cancel
                                             </button>
-                                            <% } else if(is.status==="Review Pending" ) { %>
+                                        <% } else if(is.status==="Review Pending" ) { %>
                                                 <button class="action-btn review-btn" data-id="<%= is._id %>">
                                                     Review
                                                 </button>
-                                                <% } else if(is.status==="Payment Pending" ) { %>
+                                        <% } else if(is.status==="Payment Pending" ) { %>
                                                     <button class="action-btn pay-btn" data-id="<%= is._id %>">
                                                         Pay
                                                     </button>
-                                                    <% } else { %>
-                                                        <button class="action-btn view" data-id="<%= is._id %>">
-                                                            <i class="bi bi-eye"></i>View
-                                                        </button>
-                                                        <% } %>
+                                        <% } %>
                                     </div>
                                 </div>
                                 <% }) %>
@@ -273,6 +274,7 @@
                             <div class="detail-label">Payment Status:</div>
                             <div class="status-badge status-Resolved" id="popupPaymentStatus">Completed</div>
                         </div>
+                        <div id="afterPayment" ></div>
 
                     </div>
 
@@ -291,11 +293,9 @@
                     <i class="bi bi-chat-square-text"></i> Provide Feedback
                 </h3>
 
-
-                <form id="feedbackForm" action="/resident/issueRaising/feedback" method="POST">
+                <form id="feedbackForm" >
                     <div class="form-group">
                         <input type="text" id="issueId" value="" name="id" readonly />
-
                     </div>
                     <div class="form-group">
                         <label for="feedbackRating">Your Rating:</label>

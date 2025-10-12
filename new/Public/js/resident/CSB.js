@@ -52,6 +52,8 @@ function handleFacilityChange() {
   maxHoursDisplay.style.color = "#007bff";
 }
 
+
+
 function handleDateChange() {
   document.getElementById("bookingDate").value && resetTimeSlots();
 }
@@ -135,6 +137,13 @@ function handleTimeSlotChange(cb) {
   updateSelectedTimeDisplay();
 }
 
+
+function bookingRules() {
+  const facility = document.getElementById("facility").value;
+  return facilityData[facility]?.bookingRules || "";
+}
+
+
 function showLoading(btn) {
   const txt = btn.innerHTML;
   btn.innerHTML = '<i class="bi bi-spinner bi-spin"></i> Loading...';
@@ -172,6 +181,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       cb.checked = !cb.checked;
       fn();
     });
+  });
+
+  document.getElementById("facility")?.addEventListener("change", () => {
+    handleFacilityChange();
+    document.getElementById('bookingRulesField').value = bookingRules() ;
   });
 
   bookingGrid?.addEventListener("click", async (e) => {

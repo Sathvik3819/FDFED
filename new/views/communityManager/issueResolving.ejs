@@ -16,675 +16,12 @@
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="/notyf/notyf.min.css" />
     <link rel="stylesheet" href="../../css/nav.css" />
-
-    <style>
-      /* Page Header */
-      .page-header {
-        margin-bottom: 30px;
-      }
-
-      .page-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--primary);
-        position: relative;
-        padding-bottom: 10px;
-      }
-
-      .page-title::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 450px;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
-        border-radius: 4px;
-      }
-
-      /* Tabs */
-      .tabs {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 25px;
-        border-bottom: 1px solid #eaeaea;
-        padding-bottom: 10px;
-      }
-
-      .tab {
-        padding: 10px 20px;
-        cursor: pointer;
-        font-weight: 500;
-        border-radius: 30px;
-        transition: var(--transition);
-        color: var(--gray);
-      }
-
-      .tab.active {
-        background-color: var(--primary);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
-      }
-
-      .tab:not(.active):hover {
-        background-color: rgba(13, 110, 253, 0.1);
-        color: var(--primary);
-      }
-
-      /* Card Styles */
-      .card {
-        background: white;
-        border-radius: var(--border-radius);
-        padding: 25px;
-        box-shadow: var(--shadow);
-        margin-bottom: 25px;
-        transition: var(--transition);
-        border: none;
-      }
-
-      .card:hover {
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      }
-
-      .card-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--primary);
-        margin-bottom: 20px;
-        position: relative;
-        padding-bottom: 10px;
-      }
-
-      .card-title::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 60px;
-        height: 3px;
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
-        border-radius: 3px;
-      }
-
-      /* Form Styles */
-      .form-group {
-        margin-bottom: 20px;
-      }
-
-      .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: var(--dark);
-      }
-
-      .form-group input,
-      .form-group select,
-      .form-group textarea {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 15px;
-        transition: var(--transition);
-      }
-
-      .form-group input:focus,
-      .form-group select:focus,
-      .form-group textarea:focus {
-        border-color: var(--primary);
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
-      }
-
-      .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-      }
-
-      /* Table Styles */
-      .issues-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-      }
-
-      .issues-table th {
-        background-color: var(--primary-light);
-        color: var(--dark);
-        padding: 15px;
-        text-align: left;
-        font-weight: 600;
-        border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-      }
-
-      .issue-list-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-      }
-
-      /* Individual issue card */
-      .issue-card {
-        background: #ffffff;
-        border: 1px solid #e2e6ea;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-
-      .issue-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      }
-
-      .issue-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-      }
-
-      .issue-card-id {
-        font-weight: 600;
-        color: var(--primary);
-        font-size: 0.95rem;
-      }
-
-      .issue-card-content {
-        margin-bottom: 15px;
-      }
-
-      .issue-card-title {
-        margin: 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #333;
-      }
-
-      .issue-card-reporter,
-      .issue-card-date {
-        font-size: 0.9rem;
-        color: #666;
-        margin-top: 5px;
-      }
-
-      .issue-card-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-      }
-
-      .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 22px;
-        font-weight: bold;
-        cursor: pointer;
-        color: var(--text-light);
-        transition: 0.3s ease-in-out;
-        padding: 25px;
-      }
-
-      .close-btn:hover {
-        color: var(--primary-color);
-      }
-
-      .issues-table td {
-        padding: 15px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-      }
-
-      .issues-table tr:last-child td {
-        border-bottom: none;
-      }
-
-      .popup {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.4);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 2000;
-      }
-
-      .popup-content {
-        background: white;
-        padding: 30px;
-        width: 450px;
-        max-height: 90vh;
-        overflow-y: auto;
-        border-radius: var(--border-radius);
-        position: relative;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-        animation: popupFadeIn 0.3s ease-out;
-      }
-
-      /* Booking Details Popup Styles */
-      .booking-details-card {
-        width: 100%;
-        max-width: 900px;
-        padding: 20px;
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        overflow: auto;
-        animation: popIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-      }
-
-      @keyframes popIn {
-        from {
-          opacity: 0;
-          transform: scale(0.9);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-
-      .booking-header {
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
-
-        color: white;
-        padding: 25px;
-        position: relative;
-        text-align: center;
-        margin-top: 20px;
-      }
-
-      .booking-badge {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        background: rgba(255, 255, 255, 0.2);
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-
-      .booking-badge.emergency {
-        background: rgba(255, 255, 255, 0.3);
-      }
-
-      .booking-title {
-        margin: 0;
-        font-size: 1.8rem;
-        font-weight: 700;
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-      }
-
-      .booking-body {
-        padding: 25px;
-        display: flex;
-        flex-wrap: wrap; /* Allow items to wrap */
-        justify-content: space-between;
-        gap: 20px; /* Add some gap between elements */
-      }
-
-      .detail-card {
-        background: #f9f9f9;
-        border-radius: 12px;
-        padding: 15px; /* Adjust padding for better fit */
-        margin-bottom: 20px;
-        flex: 1 1 300px; /* Allow card to grow and shrink, with a base of 300px */
-        min-width: 280px; /* Ensure a minimum width */
-      }
-
-      .detail-row {
-        display: flex;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-      }
-
-      .detail-row:last-child {
-        border-bottom: none;
-      }
-
-      .detail-icon {
-        width: 40px;
-        height: 40px;
-        background: rgba(255, 77, 77, 0.1);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 15px;
-        color: #ff4d4d;
-        font-size: 1.2rem;
-      }
-
-      .detail-content {
-        flex: 1;
-      }
-
-      .detail-label {
-        display: block;
-        font-size: 0.8rem;
-        color: #777;
-        margin-bottom: 3px;
-      }
-
-      .detail-value {
-        display: block;
-        font-size: 1.1rem;
-        font-weight: 500;
-        color: #333;
-      }
-
-      .detail-value.resolved {
-        color: #28a745;
-        font-weight: 600;
-      }
-
-      .description-card,
-      .feedback-card {
-        background: #f9f9f9;
-        border-radius: 12px;
-        padding: 20px; /* Adjust padding */
-        margin-bottom: 20px;
-        flex: 1 1 100%; /* Make them take full width on smaller screens */
-      }
-
-      @media (min-width: 768px) {
-        .description-card,
-        .feedback-card {
-          flex: 1 1 calc(50% - 10px); /* Two columns on medium screens */
-        }
-      }
-
-      @media (min-width: 992px) {
-        .description-card,
-        .feedback-card {
-          flex: 1 1 calc(33.333% - 20px); /* Three columns for larger screens, adjusting for gap */
-        }
-      }
-
-      .section-title {
-        color: #444;
-        font-size: 1.2rem;
-        margin-top: 0;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .section-title i {
-        color: #ff4d4d;
-      }
-
-      .description-text {
-        color: #555;
-        line-height: 1.6;
-        margin: 0;
-      }
-
-      .rating-container {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 10px;
-      }
-
-      .stars {
-        color: #ffc107;
-        font-size: 1.5rem;
-        letter-spacing: 3px;
-      }
-
-      .rating-text {
-        font-weight: 600;
-        color: #555;
-      }
-
-      .feedback-text {
-        color: #555;
-        line-height: 1.6;
-        padding: 10px;
-        background: white;
-        border-radius: 8px;
-        margin-top: 10px;
-      }
-
-      /* Responsive */
-      @media (max-width: 600px) {
-        .booking-details-card {
-          width: 90%;
-        }
-
-        .booking-header {
-          padding: 20px;
-        }
-
-        .booking-title {
-          font-size: 1.5rem;
-        }
-
-        .detail-row {
-          flex-direction: column;
-          align-items: flex-start;
-        }
-
-        .detail-icon {
-          margin-right: 0;
-          margin-bottom: 10px;
-        }
-      }
-
-      .issues-table tr:hover {
-        background-color: #f8f9fa;
-      }
-
-      /* Status Badges */
-      .status-Pending {
-        background-color: #fff3cd;
-        color: var(--warning);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        display: inline-block;
-      }
-
-      .status-PaymentPending {
-        background-color: #fff4e6;
-        color: #d9480f;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        display: inline-block;
-      }
-
-      .status-in-progress {
-        background-color: #cfe2ff;
-        color: var(--primary);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        display: inline-block;
-      }
-
-      .status-Resolved {
-        background-color: #d1e7dd;
-        color: var(--success);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        display: inline-block;
-      }
-
-      .status-Assigned {
-        background-color: #f8d7da;
-        color: var(--danger);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        display: inline-block;
-      }
-
-      /* Action Buttons */
-      .action-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 15px;
-        margin-top: 25px;
-      }
-
-      .btn {
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: var(--transition);
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .btn-primary {
-        background-color: var(--primary);
-        color: white;
-        border: none;
-      }
-
-      .btn-primary:hover {
-        background-color: #0b5ed7;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
-      }
-
-      .btn-secondary {
-        background-color: var(--gray);
-        color: white;
-        border: none;
-      }
-
-      .btn-secondary:hover {
-        background-color: #5c636a;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3);
-      }
-
-      .btn-sm {
-        padding: 8px 16px;
-        font-size: 0.875rem;
-      }
-
-      
-
-      /* Responsive Styles */
-      @media (max-width: 992px) {
-        .bodyContainer {
-          grid-template-columns: 1fr;
-        }
-
-        .adCon {
-          height: auto;
-          position: relative;
-          top: 0;
-          margin-bottom: 20px;
-        }
-
-        .ad-text {
-          transform: rotate(0);
-          padding: 30px;
-        }
-
-        .form-row {
-          grid-template-columns: 1fr;
-        }
-
-        .issues-container {
-          grid-template-columns: 1fr;
-        }
-
-        .page-title::after {
-          width: 100%; /* Make the underline full width on smaller screens */
-        }
-      }
-
-      @media (max-width: 768px) {
-        nav ul {
-          gap: 10px !important;
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-
-        .tabs {
-          flex-direction: column;
-        }
-
-        .tab {
-          width: 100%;
-          text-align: center;
-        }
-
-        .action-buttons {
-          flex-direction: column;
-        }
-
-        .btn {
-          width: 100%;
-          justify-content: center;
-        }
-
-        .booking-body {
-          flex-direction: column; /* Stack elements vertically in the popup body */
-          padding: 15px; /* Adjust padding */
-        }
-
-        .detail-card,
-        .description-card,
-        .feedback-card {
-          width: 100%; /* Ensure these take full width on small screens */
-          flex: none; /* Remove flex sizing to allow width 100% to work */
-        }
-      }
-
-      /* Further refinements for very small screens */
-      @media (max-width: 480px) {
-        .page-title {
-          font-size: 1.7rem;
-        }
-
-        .card-title {
-          font-size: 1.3rem;
-        }
-
-        .issues-table th,
-        .issues-table td {
-          padding: 10px; /* Reduce table padding */
-          font-size: 0.9rem; /* Smaller font for table content */
-        }
-
-        .btn {
-          padding: 10px 18px; /* Smaller button padding */
-          font-size: 0.9rem;
-        }
-
-        .popup-content {
-          width: 95%; /* Wider popup on very small screens */
-          padding: 20px;
-        }
-      }
-    </style>
+    <link
+      rel="stylesheet"
+      href="../../css/communityManager/issueResolving.css"
+    />
   </head>
 
   <body>
@@ -694,8 +31,8 @@
       <!-- AD SECTION -->
       <div class="adCon d-flex justify-content-center align-items-center">
         <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length >
-          0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
+          <% if (locals.ads && ads.filter(ad=> ad.status==="Active").length > 0)
+          { %> <% ads.filter(ad=> ad.status==="Active").forEach(ad => { %>
           <img
             src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
             class="ad-slide"
@@ -739,14 +76,18 @@
             <div>
               <h3 class="card-title">Current Issues</h3>
               <div class="issue-list-cards">
-                <% if (locals.issues) { %> <% issues.forEach((i) => { %> <% if
-                (i.status === "Assigned" || i.status==="Pending") { %>
+                <% if (locals.issues && issues.length> 0) { %> <% let
+                hasCurrentIssues=false; %> <% issues.forEach((i)=> { %> <% if
+                (i.status==="Assigned" || i.status==="Pending" ) { %> <%
+                hasCurrentIssues=true; %>
                 <div class="issue-card">
                   <div class="issue-card-header">
                     <span class="issue-card-id"
                       >Issue ID: <%= i.issueID %></span
                     >
-                    <span class="status-<%= i.status %>"><%= i.status %></span>
+                    <span class="status-<%= i.status %>">
+                      <%= i.status %>
+                    </span>
                   </div>
                   <div class="issue-card-content">
                     <h4 class="issue-card-title"><%= i.title %></h4>
@@ -770,7 +111,15 @@
                     <% } %>
                   </div>
                 </div>
-                <% } %> <% }) %> <% } %>
+                <% } %> <% }) %> <% if (!hasCurrentIssues) { %>
+                <div class="no-issues-message">
+                  <p class="mb-0">No current issues to display.</p>
+                </div>
+                <% } %> <% } else { %>
+                <div class="no-issues-message">
+                  <p class="mb-0">No current issues to display.</p>
+                </div>
+                <% } %>
               </div>
             </div>
 
@@ -814,7 +163,7 @@
                       <option value="" disabled selected>
                         Select a Worker
                       </option>
-                      <% if (locals.workers) { %> <% workers.forEach(w => { %>
+                      <% if (locals.workers) { %> <% workers.forEach(w=> { %>
                       <option value="<%= w._id %>">
                         <%= w.name %> - <%= w.jobRole %>
                       </option>
@@ -861,15 +210,15 @@
         <div class="card" id="history-card" style="display: none">
           <div class="card-title">Assigned Issues History</div>
           <div class="issue-list-cards" id="history-cards-container">
-            <% if (locals.issues) { %> <% issues.forEach((i) => { %> <% if
-            (i.status === "Resolved" || i.status === "Assigned" || i.status ===
-            "Payment Pending" ) { %>
+            <% if (locals.issues) { %> <% issues.forEach((i)=> { %> <% if
+            (i.status==="Resolved" || i.status==="Assigned" ||
+            i.status==="Payment Pending" ) { %>
             <div class="issue-card">
               <div class="issue-card-header">
                 <span class="issue-card-id">Issue ID: <%= i.issueID %></span>
-                <span class="status-<%= i.status.replace(/\s+/g, '') %>"
-                  ><%= i.status %></span
-                >
+                <span class="status-<%= i.status.replace(/\s+/g, '') %>">
+                  <%= i.status %>
+                </span>
               </div>
               <div class="issue-card-content">
                 <h4 class="issue-card-title"><%= i.title %></h4>
@@ -877,7 +226,7 @@
                   Worker: <%= i?.workerAssigned?.name %>
                 </p>
                 <p class="issue-card-date">
-                  Completion Date: <%= i.resolvedAt ? i.resolvedAt : "-" %>
+                  Completion Date: <%= new Date(i.resolvedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) || "-" %>
                 </p>
               </div>
               <div class="issue-card-actions">
@@ -895,100 +244,168 @@
       </div>
     </div>
 
-    <!-- Booking Details Popup -->
-    <!-- Booking Details Popup -->
     <div id="bookingDetailsPopup" class="popup" style="display: none">
       <div class="popup-content booking-details-card">
-        <button
-          class="close-btn"
-          onclick="closeForm('details')"
-          aria-label="Close"
-        >
-          <i class="bi bi-x-lg"></i>
-        </button>
-
-        <div class="booking-header">
-          <h2 class="booking-title">Issue Details</h2>
+        <div class="popup-header">
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <div>
+              <h4 class="popup-main-title">Issue Details</h4>
+              <p class="popup-tracking-id">
+                Tracking ID: <span id="popupTrackingId"></span>
+              </p>
+            </div>
+            <div class="w-25" style="height: 100%">
+              <span class="status-badge text-center" id="popupStatus"
+                >Resolved</span
+              >
+            </div>
+          </div>
+          <span class="close-btn" id="close-btn" >&times;</span>
         </div>
-
-        <div class="booking-body">
-          <!-- Main Details -->
-          <div class="detail-card">
-            <div class="detail-row">
-              <div class="detail-icon">
-                <i class="bi bi-ticket-detailed"></i>
-              </div>
-              <div class="detail-content">
-                <span class="detail-label">Issue ID</span>
-                <span class="detail-value" id="detail-id">-</span>
-              </div>
+        <div class="issue-details">
+          <div
+            class="status-progress position-relative d-flex justify-content-between w-100 align-items-start p-3 my-4"
+          >
+            <div class="progress-line">
+              <div class="progress-indicator"></div>
             </div>
+            <div
+              class="position-absolute d-flex justify-content-between align-items-center w-75"
+              style="left: 12%; top: 5px"
+            >
+              <div class="step">
+                <div
+                  class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon step-icon-completed"
+                >
+                  <i class="bi bi-check"></i>
+                </div>
+                <span class="step-label">Pending</span>
+              </div>
 
-            <div class="detail-row">
-              <div class="detail-icon">
-                <i class="bi bi-check-circle"></i>
+              <div class="step">
+                <div
+                  class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon step-icon-completed"
+                >
+                  <i class="bi bi-check"></i>
+                </div>
+                <span class="step-label">Assigned</span>
               </div>
-              <div class="detail-content">
-                <span class="detail-label">Status</span>
-                <span class="detail-value resolved" id="detail-status">-</span>
-              </div>
-            </div>
 
-            <div class="detail-row">
-              <div class="detail-icon">
-                <i class="bi bi-tags"></i>
+              <div class="step">
+                <div
+                  class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"
+                >
+                  <i class="bi bi-check"></i>
+                </div>
+                <span class="step-label">In Progress</span>
               </div>
-              <div class="detail-content">
-                <span class="detail-label">Category</span>
-                <span class="detail-value" id="detail-facility">-</span>
-              </div>
-            </div>
 
-            <div class="detail-row">
-              <div class="detail-icon">
-                <i class="bi bi-calendar-check"></i>
+              <div class="step">
+                <div
+                  class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"
+                >
+                  <i class="bi bi-check"></i>
+                </div>
+                <span class="step-label">Review Pending</span>
               </div>
-              <div class="detail-content">
-                <span class="detail-label">Completion Date</span>
-                <span class="detail-value" id="detail-date">-</span>
-              </div>
-            </div>
 
-            <div class="detail-row">
-              <div class="detail-icon">
-                <i class="bi bi-person-badge"></i>
+              <div class="step">
+                <div
+                  class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"
+                >
+                  <i class="bi bi-check"></i>
+                </div>
+
+                <span class="step-label">Payment pending</span>
               </div>
-              <div class="detail-content">
-                <span class="detail-label">Worker Assigned</span>
-                <span class="detail-value" id="detail-time">-</span>
+              <div class="step">
+                <div
+                  class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"
+                >
+                  <i class="bi bi-check"></i>
+                </div>
+                <span class="step-label">Paid</span>
               </div>
             </div>
           </div>
 
-          <!-- Description -->
-          <div class="description-card">
-            <h3 class="section-title">
-              <i class="bi bi-chat-square-text"></i> Description
-            </h3>
-            <p class="description-text" id="detail-created">-</p>
-          </div>
-
-          <!-- Feedback -->
-          <div class="feedback-card">
-            <h3 class="section-title">
-              <i class="bi bi-star-fill"></i> Feedback
-            </h3>
-            <div class="rating-container">
-              <div class="stars" id="detail-rating">
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star"></i>
+          <div class="issue-details-con">
+            <div class="detail-row">
+              <div class="detail-label">Category:</div>
+              <div class="detail-value" id="popupTitle">
+                Emergency Plumbing Issue
               </div>
             </div>
-            <div class="feedback-text" id="detail-feedback">-</div>
+
+            <div class="detail-row">
+              <div class="detail-label">Description:</div>
+              <div class="detail-value" id="popupDescription">
+                There was a major water leak in the bathroom that was causing
+                flooding. Immediate attention was required to prevent water
+                damage to the apartment below.
+              </div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Date Reported:</div>
+              <div class="detail-value" id="popupDate">2023-06-15</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Deadline:</div>
+              <div class="detail-value" id="popupDeadline">2023-06-15</div>
+            </div>
           </div>
+
+          <div class="worker-details" id="workerDetails">
+            <h4>Worker Details</h4>
+            <div class="detail-row">
+              <div class="detail-label">Name:</div>
+              <div class="detail-value" id="popupWorkerName">Sunil Patel</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Contact:</div>
+              <div class="detail-value" id="popupWorkerContact">
+                +91 9876543210
+              </div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Specialization:</div>
+              <div class="detail-value" id="popupWorkerSpecialization">
+                Plumbing & Emergency Repairs
+              </div>
+            </div>
+          </div>
+
+          <div class="feedback-details" >
+            <h4>Feedback</h4>
+            <div class="detail-row">
+              <div class="detail-label">Rating:</div>
+              <div class="detail-value" id="popupRating"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Comments:</div>
+              <div class="detail-value" id="popupComments"></div>
+            </div>
+          </div>
+
+          <div class="payment-details">
+            <h4>Payment Details</h4>
+            <div class="detail-row">
+              <div class="detail-label">Amount:</div>
+              <div class="detail-value" id="popupAmount">₹1500</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Payment Status:</div>
+              <div class="status-badge status-Resolved" id="popupPaymentStatus">
+                Completed
+              </div>
+            </div>
+            <div id="afterPayment"></div>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-cancel" id="cancelBtn" onclick="cancelIssue()">
+            Cancel Issue
+          </button>
         </div>
       </div>
     </div>

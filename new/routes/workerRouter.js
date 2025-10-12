@@ -81,10 +81,10 @@ workerRouter.post("/issueResolving/resolve/:id", async (req, res) => {
 
     await issue.resident.save();
     await issue.save();
-    res.status(200).json({ success: true });
+    res.status(200).json({ success: true, message: "Issue resolved successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({success: false, message: "Server error" });
   }
 });
 

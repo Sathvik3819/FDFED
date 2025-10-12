@@ -120,6 +120,10 @@
         border-radius: 3px;
       }
 
+      h3{
+        color: rgb(62, 62, 62);
+      }
+
       .card-value {
         font-size: 2.5rem;
         font-weight: 700;
@@ -156,15 +160,14 @@
 
       .notification-item {
         padding: 15px;
-        border-left: 4px solid var(--warning);
-        background-color: #fffbeb;
+        background-color: #92b5ff18;
         margin: 10px;
-        border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        border-radius: 8px;
         transition: var(--transition);
       }
 
       .notification-item:hover {
-        background-color: #fff3d1;
+        background-color: #92b5ff36;
         transform: translateX(5px);
       }
 
@@ -283,16 +286,23 @@
         <div class="notification-card">
           <div class="notification-header">
             <h3 class="m-0">
-              <i class="bi bi-bell-fill me-2"></i> Recent Notifications
+               Recent Notifications
             </h3>
           </div>
           <div class="p-3">
             <% if (locals.t) { %>
              <% t.forEach(task => { %>
-              <div class="notification-item">
-              <p class="m-0"><b>New task</b> - <%= task.description %></p>
-              <small class="text-muted"><%= task.createdAt %></small>
-            </div>
+
+               <% if (task.status === 'Assigned') { %>
+             
+               <div class="notification-item d-flex align-items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 flex-shrink-0">❖</div>
+                 <div>
+                  <p class="m-0"><b>New task</b> - <%= task.description %></p>
+                 <small class="text-muted">Deadline : <%= new Date(task.deadline).toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></small>
+                 </div>
+               </div>
+               <% } %>
               
              <% }) %>
             <% } %>

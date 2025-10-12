@@ -16,6 +16,7 @@
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="/notyf/notyf.min.css" />
     <link rel="stylesheet" href="../../css/nav.css" />
 
     <style>
@@ -319,7 +320,7 @@
           <% if (locals.tasks && tasks.length > 0) { %> 
             <% tasks.forEach(t => { %> 
               <% if (t.status === "Assigned") { %>
-                <div class="task-card">
+                <div class="task-card" data-id="<%= t._id %>" >
                   <% if (t.priority === "High") { %>
                     <span class="urgent-badge">URGENT</span>
                   <% } %>
@@ -380,6 +381,7 @@
       </div>
     </div>
 
+    <script src="/notyf/notyf.min.js"></script>
     <script src="../../js/worker/tasks.js"></script>
     <script src="../../js/sidebar.js"></script>
   </body>

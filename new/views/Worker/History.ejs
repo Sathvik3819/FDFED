@@ -86,6 +86,11 @@
         line-height: 1.3;
       }
 
+      .status-review {
+        background-color: #ecf1b0;
+        color: #c6a900;
+      }
+
       .task-details {
         margin-bottom: 15px;
       }
@@ -309,7 +314,7 @@
                 <div class="history-card">
                   <div class="history-card-header">
                     <span class="task-id">Task #<%= i.issueID %></span>
-                    <span class="task-status <%= i.status === "Payment Pending" ? "status-pending" : "status-completed" %>">
+                    <span class="task-status <%= i.status === "Payment Pending" ? "status-pending" : i.status === "Review Pending" ? "status-review" : "status-completed" %>">
                       <%= i.status %>
                     </span>
                   </div>
@@ -320,18 +325,22 @@
                     <div class="detail-row">
                       <i class="bi bi-geo-alt"></i>
                       <span class="task-location">
-                        <%= i.resident.blockNo %>, Flat <%= i.resident.flatNo %>
+                        <%= i.resident.uCode %>
                       </span>
                     </div>
                     <div class="detail-row">
                       <i class="bi bi-calendar-check"></i>
-                      <span class="task-date">Completed on <%= i.resolvedAt %></span>
+                      <span class="task-date">
+                          Completed on <%= new Date(i.resolvedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                      </span>
+
                     </div>
                   </div>
 
                   <div class="task-feedback">
                     <div class="feedback-title">Feedback:</div>
-                    <% if (i.feedback) { %>
+                    <div class="ms-3">
+                      <% if (i.feedback) { %>
                       <div class="star-rating">
                         <% for(let index = 0; index < i.rating; index++ ) { %>
                           <i class="bi bi-star-fill"></i>
@@ -344,6 +353,8 @@
                     <% } else { %>
                       <div class="no-feedback">No feedback provided</div>
                     <% } %>
+                    <span><%= i.feedback || " " %></span>
+                    </div>
                   </div>
                 </div>
               <% } %> 

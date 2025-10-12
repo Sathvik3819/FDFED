@@ -370,6 +370,7 @@
 
 .close-btn {
     position: absolute;
+    z-index: 10;
     right: 15px;
     font-size: 22px;
     font-weight: bold;

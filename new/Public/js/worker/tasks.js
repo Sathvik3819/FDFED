@@ -1,4 +1,20 @@
-// Simple animation for table rows on page load
+const notyf = new Notyf({
+  duration: 3000,
+  position: { x: "right", y: "top" },
+  types: [
+    {
+      type: "success",
+      background: "#3eb73eff",
+    },
+    {
+      type: "error",
+      background: "#d9534f",
+    },
+  ],
+});
+
+
+
 document.addEventListener("DOMContentLoaded", function () {
   const rows = document.querySelectorAll(".tasks-table tbody tr");
 
@@ -33,10 +49,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const result = await response.json();
       if (result.success) {
-        alert("Issue resolved successfully!");
-        window.location.reload()
+        notyf.success("Issue resolved successfully!");
+        const card = document.querySelector(`.task-card[data-id='${issueId}']`);
+        if (card) {
+          card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+          card.style.opacity = "0";
+          card.style.transform = "translateY(20px)";
+          setTimeout(() => {
+            card.remove();
+          }, 300);
+          const cards = document.querySelectorAll(".task-card");
+          if (cards.length === 0) {
+            const table = document.querySelector(".tasks-container");
+            if (table) {
+            table.innerHTML = `
+              <div class="empty-state">
+                <i class="bi bi-clipboard-check"></i>
+                <h3>No Assigned Tasks</h3>
+                <p>Tasks assigned to you will appear here</p>
+              </div>
+            `;
+                
+            }
+          }
+        }
       } else {
-        alert("Failed to resolve issue. Please try again.");
+        notyf.error("Failed to resolve issue.");
       }
     });
   });
