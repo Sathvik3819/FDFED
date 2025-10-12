@@ -45,7 +45,7 @@ securityRouter.post("/addVisitor", async (req, res) => {
 
   try {
     const v = await visitor.create({
-    //  ID: req.user.id,
+      ID: req.user.id,
       name: fullName,
       contactNumber: contact,
       purpose: visitorType,
