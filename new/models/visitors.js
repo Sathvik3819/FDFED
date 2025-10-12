@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const visitorSchema = new mongoose.Schema(
   {
     //Custom unique ID like PA-12345
-    ID: { type: String, unique: true },
+  //  ID: { type: String, unique: true },
 
     // Basic visitor info
     name: { type: String, required: true, trim: true },
