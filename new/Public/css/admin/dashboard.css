@@ -159,7 +159,92 @@ body {
 }
 
 
+/* Refresh Button Styles */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
 
+.refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.refresh-btn:active {
+    transform: translateY(0);
+}
+
+.refresh-btn.refreshing .material-symbols-rounded {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.auto-refresh-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 20px;
+    font-size: 13px;
+    color: #10b981;
+}
+
+.refresh-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.auto-refresh-indicator.paused {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.auto-refresh-indicator.paused .refresh-dot {
+    background: #ef4444;
+    animation: none;
+}
+
+@media (max-width: 768px) {
+    .refresh-text {
+        display: none;
+    }
+    
+    .auto-refresh-indicator .refresh-label {
+        display: none;
+    }
+    
+    .refresh-btn {
+        padding: 10px;
+    }
+}
 /* KPI Cards */
 .kpi-grid {
     display: grid;

@@ -25,6 +25,16 @@
                     <div class="header-subtitle">Welcome back, Admin! Here's what's happening across all communities.</div>
                 </div>
             </div>
+            <div class="header-right">
+    <button class="refresh-btn" id="manualRefreshBtn" title="Refresh Dashboard">
+        <span class="material-symbols-rounded">refresh</span>
+        <span class="refresh-text">Refresh</span>
+    </button>
+    <div class="auto-refresh-indicator">
+        <span class="refresh-dot"></span>
+        <span class="refresh-label">Auto-refresh: ON</span>
+    </div>
+</div>
             
         </div>
 
@@ -207,7 +217,24 @@ function showError(message) {
     document.body.appendChild(errorDiv);
     setTimeout(() => errorDiv.remove(), 5000);
 }
-
+function showSuccessMessage(message) {
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success-message';
+    successDiv.textContent = message;
+    successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+    `;
+    document.body.appendChild(successDiv);
+    setTimeout(() => successDiv.remove(), 3000);
+}
 async function fetchDashboardData() {
     const response = await fetch(`${API_BASE_URL}/dashboard`);
     if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -351,8 +378,13 @@ async function handleChartFilterClick(period) {
 }
 
 // Auto-refresh function - refreshes all dashboard data
-async function autoRefreshDashboard() {
+// Auto-refresh function - refreshes all dashboard data
+async function autoRefreshDashboard(isManual = false) {
     try {
+        if (isManual) {
+            showLoading();
+        }
+        
         // Fetch full dashboard data
         const dashboardData = await fetchDashboardData();
         
@@ -365,13 +397,22 @@ async function autoRefreshDashboard() {
         const chartData = await fetchChartData(currentChartPeriod);
         updateGrowthChart(chartData.growthChart);
         
-        console.log('Dashboard auto-refreshed at', new Date().toLocaleTimeString());
+        console.log(`Dashboard ${isManual ? 'manually' : 'auto-'}refreshed at`, new Date().toLocaleTimeString());
+        
+        if (isManual) {
+            showSuccessMessage('Dashboard refreshed successfully!');
+        }
     } catch (error) {
-        console.error('Auto-refresh failed:', error);
-        // Don't show error message for auto-refresh failures to avoid spam
+        console.error('Refresh failed:', error);
+        if (isManual) {
+            showError('Failed to refresh dashboard');
+        }
+    } finally {
+        if (isManual) {
+            hideLoading();
+        }
     }
 }
-
 // Start auto-refresh
 function startAutoRefresh() {
     if (autoRefreshInterval) {

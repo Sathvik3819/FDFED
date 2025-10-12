@@ -1488,7 +1488,16 @@ AdminRouter.get("/communities", async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
-
+// Add this new route to provide JSON data for refresh
+AdminRouter.get("/communities/data", async (req, res) => {
+  try {
+    const communities = await Community.find().populate("communityManager");
+    res.json({ communities });
+  } catch (error) {
+    console.error("Error fetching communities data:", error);
+    res.status(500).json({ error: "Server Error" });
+  }
+});
 // Community Managers Page Route
 AdminRouter.get("/community-managers", async (req, res) => {
   try {

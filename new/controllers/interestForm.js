@@ -192,11 +192,13 @@ export const submitInterestForm = async (req, res) => {
 // Admin: Get all applications
 export const getAllApplications = async (req, res) => {
   try {
-    const interests = await Interest.find().sort('createdAt');
+    const interests = await Interest.find().sort({ 
+      createdAt: -1 // Then by creation date (newest first)
+    });
     
     res.render('admin/interests', {
       title: 'Community Interest Applications',
-      interests, // Changed from applications to interests
+      interests,
       success: req.flash('success'),
       error: req.flash('error')
     });

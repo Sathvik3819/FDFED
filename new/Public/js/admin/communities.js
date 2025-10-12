@@ -1,3 +1,17 @@
+// Auto-refresh variables
+let autoRefreshInterval;
+const REFRESH_INTERVAL = 30000; // 30 seconds
+
+// Add spin animation
+const spinStyle = document.createElement('style');
+spinStyle.textContent = `
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(spinStyle);
+
 // DOM Elements
 document.addEventListener('DOMContentLoaded', function() {
   const sidebar = document.getElementById('sidebar');
@@ -14,11 +28,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const searchInput = document.getElementById('searchInput');
   const statusFilter = document.getElementById('statusFilter');
   const locationFilter = document.getElementById('locationFilter');
+  const refreshBtn = document.getElementById('refreshBtn');
 
   const communitiesTableBody = document.getElementById('communitiesTableBody');
   
   // Variables
-  let communities = []; // Will be populated with data from the server
+  let communities = [];
   let filteredCommunities = [];
   let selectedCommunityId = null;
   let isEditing = false;
@@ -30,18 +45,22 @@ document.addEventListener('DOMContentLoaded', function() {
   if (editFromViewBtn) editFromViewBtn.addEventListener('click', editCommunityFromView);
   if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', deleteCommunity);
   if (searchInput) searchInput.addEventListener('input', filterCommunities);
-const statusFilterButtons = document.querySelectorAll('.filter-btn[data-status]');
-statusFilterButtons.forEach(button => {
+  if (refreshBtn) refreshBtn.addEventListener('click', manualRefresh);
+  
+  const statusFilterButtons = document.querySelectorAll('.filter-btn[data-status]');
+  statusFilterButtons.forEach(button => {
     button.addEventListener('click', function() {
-        // Remove active class from all buttons
-        statusFilterButtons.forEach(btn => btn.classList.remove('active'));
-        // Add active class to clicked button
-        this.classList.add('active');
-        // Filter communities
-        filterCommunitiesByStatus(this.getAttribute('data-status'));
+      statusFilterButtons.forEach(btn => btn.classList.remove('active'));
+      this.classList.add('active');
+      filterCommunitiesByStatus(this.getAttribute('data-status'));
     });
-});
+  });
+  
   if (locationFilter) locationFilter.addEventListener('change', filterCommunities);
+
+  // Start auto-refresh
+  startAutoRefresh();
+  window.addEventListener('beforeunload', stopAutoRefresh);
 
   // Close modals
   modalCloseButtons.forEach(button => {
@@ -59,35 +78,76 @@ statusFilterButtons.forEach(button => {
 
   // Fetch all communities from server
   async function fetchCommunities() {
-  try {
-    // Determine how many to fetch based on screen size
-    const screenWidth = window.innerWidth;
-    let limit = 8; // Default
-    
-    if (screenWidth < 768) {
-      limit = 5; // Mobile
-    } else if (screenWidth < 1024) {
-      limit = 6; // Tablet
-    }
-    
-    // If we already have communities, use them (for initial server-side rendering)
-    if (window.initialCommunities && window.initialCommunities.length > 0) {
-      communities = window.initialCommunities;
+    try {
+      const screenWidth = window.innerWidth;
+      let limit = 8;
+      
+      if (screenWidth < 768) {
+        limit = 5;
+      } else if (screenWidth < 1024) {
+        limit = 6;
+      }
+      
+      const response = await fetch(`/admin/api/communities?limit=${limit}&t=${Date.now()}`);
+      if (!response.ok) throw new Error('Failed to fetch communities');
+      
+      const data = await response.json();
+      communities = data.communities;
       filteredCommunities = [...communities];
-      return;
+    } catch (error) {
+      console.error('Error fetching communities:', error);
+      showNotification('Error loading communities. Please try again.', 'error');
+    }
+  }
+
+  // Manual refresh function
+  async function manualRefresh() {
+    const refreshIcon = document.getElementById('refreshIcon');
+    
+    if (refreshIcon) {
+      refreshIcon.style.animation = 'spin 1s linear infinite';
     }
     
-    const response = await fetch(`/admin/api/communities?limit=${limit}`);
-    if (!response.ok) throw new Error('Failed to fetch communities');
-    
-    const data = await response.json();
-    communities = data.communities;
-    filteredCommunities = [...communities];
-  } catch (error) {
-    console.error('Error fetching communities:', error);
-    showNotification('Error loading communities. Please try again.', 'error');
+    try {
+      await fetchCommunities();
+      displayCommunities();
+      showNotification('Communities refreshed successfully!', 'success');
+    } catch (error) {
+      console.error('Error refreshing communities:', error);
+      showNotification('Failed to refresh communities', 'error');
+    } finally {
+      if (refreshIcon) {
+        setTimeout(() => {
+          refreshIcon.style.animation = '';
+        }, 500);
+      }
+    }
   }
-}
+
+  // Start auto-refresh
+  function startAutoRefresh() {
+    if (autoRefreshInterval) {
+      clearInterval(autoRefreshInterval);
+    }
+    
+    autoRefreshInterval = setInterval(async () => {
+      console.log('Auto-refreshing communities...');
+      try {
+        await fetchCommunities();
+        displayCommunities();
+      } catch (error) {
+        console.error('Auto-refresh error:', error);
+      }
+    }, REFRESH_INTERVAL);
+  }
+
+  // Stop auto-refresh
+  function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+      clearInterval(autoRefreshInterval);
+      autoRefreshInterval = null;
+    }
+  }
 
   // Setup action buttons for each community row
   function setupActionButtons() {
@@ -117,120 +177,109 @@ statusFilterButtons.forEach(button => {
     });
   }
 
-
-
-function filterCommunities() {
+  function filterCommunities() {
     const searchTerm = searchInput.value.toLowerCase();
     const locationValue = locationFilter.value;
     const statusValue = document.querySelector('.filter-btn.active')?.getAttribute('data-status') || '';
     
     filteredCommunities = communities.filter(community => {
-        const matchSearch = 
-            community.name.toLowerCase().includes(searchTerm) ||
-            community.location.toLowerCase().includes(searchTerm) ||
-            (community.communityManager && community.communityManager.name && 
-             community.communityManager.name.toLowerCase().includes(searchTerm));
-        
-        // FIX: Use subscriptionStatus and make it case-insensitive
-        const communitySubStatus = (community.subscriptionStatus || '').toLowerCase();
-        const filterStatus = statusValue.toLowerCase();
-        const matchStatus = filterStatus === '' || communitySubStatus === filterStatus;
-        
-        const matchLocation = locationValue === '' || community.location === locationValue;
-        
-        return matchSearch && matchStatus && matchLocation;
+      const matchSearch = 
+        community.name.toLowerCase().includes(searchTerm) ||
+        community.location.toLowerCase().includes(searchTerm) ||
+        (community.communityManager && community.communityManager.name && 
+         community.communityManager.name.toLowerCase().includes(searchTerm));
+      
+      const communitySubStatus = (community.subscriptionStatus || '').toLowerCase();
+      const filterStatus = statusValue.toLowerCase();
+      const matchStatus = filterStatus === '' || communitySubStatus === filterStatus;
+      
+      const matchLocation = locationValue === '' || community.location === locationValue;
+      
+      return matchSearch && matchStatus && matchLocation;
     });
     
     displayCommunities();
-}
+  }
 
-// Update the helper function too:
-function filterCommunitiesByStatus(status) {
+  function filterCommunitiesByStatus(status) {
     const searchTerm = searchInput.value.toLowerCase();
     const locationValue = locationFilter.value;
     
     filteredCommunities = communities.filter(community => {
-        const matchSearch = 
-            community.name.toLowerCase().includes(searchTerm) ||
-            community.location.toLowerCase().includes(searchTerm) ||
-            (community.communityManager && community.communityManager.name && 
-             community.communityManager.name.toLowerCase().includes(searchTerm));
-        
-        // FIX: Use subscriptionStatus and make it case-insensitive
-        const communitySubStatus = (community.subscriptionStatus || '').toLowerCase();
-        const filterStatus = status.toLowerCase();
-        const matchStatus = filterStatus === '' || communitySubStatus === filterStatus;
-        
-        const matchLocation = locationValue === '' || community.location === locationValue;
-        
-        return matchSearch && matchStatus && matchLocation;
+      const matchSearch = 
+        community.name.toLowerCase().includes(searchTerm) ||
+        community.location.toLowerCase().includes(searchTerm) ||
+        (community.communityManager && community.communityManager.name && 
+         community.communityManager.name.toLowerCase().includes(searchTerm));
+      
+      const communitySubStatus = (community.subscriptionStatus || '').toLowerCase();
+      const filterStatus = status.toLowerCase();
+      const matchStatus = filterStatus === '' || communitySubStatus === filterStatus;
+      
+      const matchLocation = locationValue === '' || community.location === locationValue;
+      
+      return matchSearch && matchStatus && matchLocation;
     });
     
     displayCommunities();
-}
-
-  // Display first 7 communities with option to show more
- function displayCommunities() {
-  const header = document.querySelector('.header'); // adjust selector as needed
-  const filterSection = document.querySelector('.filter-section'); // adjust selector as needed
-
-  const headerHeight = header ? header.offsetHeight : 0;
-  const filterHeight = filterSection ? filterSection.offsetHeight : 0;
-  const rowHeight = 56; // Approximate average table row height (px). Adjust as needed.
-
-  const totalAvailableHeight = window.innerHeight - headerHeight - filterHeight - 150; // increased buffer for paddings/margins
-  const initialRowsToShow = Math.max(3, Math.floor(totalAvailableHeight / rowHeight) - 2); // subtract 2 more rows and ensure minimum of 3
-
-  const showAll = communitiesTableBody.getAttribute('data-show-all') === 'true';
-  const displayedCommunities = showAll ? filteredCommunities : filteredCommunities.slice(0, initialRowsToShow-1);
-
-  let html = '';
-  if (displayedCommunities.length === 0) {
-    html = '<tr><td colspan="7" class="text-center">No communities found</td></tr>';
-  } else {
-    displayedCommunities.forEach(community => {
-      const formattedDate = new Date(community.createdAt).toLocaleDateString();
-      html += `
-        <tr data-id="${community._id}">
-          <td>${community.name}</td>
-          <td>${community.location}</td>
-          <td>${community.totalMembers || 0}</td>
-          <td>${formattedDate}</td>
-          <td><span class="table-status status-${(community.subscriptionStatus || 'pending').toLowerCase()}">${community.subscriptionStatus || 'Pending'}</span></td>
-          <td>${community.communityManager ? community.communityManager.name : 'Unassigned'}</td>
-          <td>
-            <div class="table-actions">
-              
-              <button class="btn btn-sm btn-icon btn-edit" data-id="${community._id}">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="btn btn-sm btn-icon btn-delete" data-id="${community._id}">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-
-   
   }
 
-  communitiesTableBody.innerHTML = html;
-  setupActionButtons();
+  function displayCommunities() {
+    const header = document.querySelector('.header');
+    const filterSection = document.querySelector('.filter-section');
 
-  const toggleBtn = document.getElementById('toggleDisplayBtn');
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
-      const currentlyShowingAll = communitiesTableBody.getAttribute('data-show-all') === 'true';
-      communitiesTableBody.setAttribute('data-show-all', !currentlyShowingAll);
-      displayCommunities();
-    });
+    const headerHeight = header ? header.offsetHeight : 0;
+    const filterHeight = filterSection ? filterSection.offsetHeight : 0;
+    const rowHeight = 56;
+
+    const totalAvailableHeight = window.innerHeight - headerHeight - filterHeight - 150;
+    const initialRowsToShow = Math.max(3, Math.floor(totalAvailableHeight / rowHeight) - 2);
+
+    const showAll = communitiesTableBody.getAttribute('data-show-all') === 'true';
+    const displayedCommunities = showAll ? filteredCommunities : filteredCommunities.slice(0, initialRowsToShow-1);
+
+    let html = '';
+    if (displayedCommunities.length === 0) {
+      html = '<tr><td colspan="7" class="text-center">No communities found</td></tr>';
+    } else {
+      displayedCommunities.forEach(community => {
+        const formattedDate = new Date(community.createdAt).toLocaleDateString();
+        html += `
+          <tr data-id="${community._id}">
+            <td>${community.name}</td>
+            <td>${community.location}</td>
+            <td>${community.totalMembers || 0}</td>
+            <td>${formattedDate}</td>
+            <td><span class="table-status status-${(community.subscriptionStatus || 'pending').toLowerCase()}">${community.subscriptionStatus || 'Pending'}</span></td>
+            <td>${community.communityManager ? community.communityManager.name : 'Unassigned'}</td>
+            <td>
+              <div class="table-actions">
+                <button class="btn btn-sm btn-icon btn-edit" data-id="${community._id}">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-icon btn-delete" data-id="${community._id}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    communitiesTableBody.innerHTML = html;
+    setupActionButtons();
+
+    const toggleBtn = document.getElementById('toggleDisplayBtn');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        const currentlyShowingAll = communitiesTableBody.getAttribute('data-show-all') === 'true';
+        communitiesTableBody.setAttribute('data-show-all', !currentlyShowingAll);
+        displayCommunities();
+      });
+    }
   }
-}
 
-
-  // Open the Add Community modal
   function openAddCommunityModal() {
     isEditing = false;
     selectedCommunityId = null;
@@ -239,12 +288,10 @@ function filterCommunitiesByStatus(status) {
     communityModal.classList.add('show');
   }
 
-  // Open the View Community modal
   async function viewCommunity(communityId) {
     try {
       selectedCommunityId = communityId;
       
-      // Fetch the latest data for this community
       const response = await fetch(`/admin/api/communities/${communityId}`);
       if (!response.ok) throw new Error('Failed to fetch community details');
       
@@ -265,13 +312,11 @@ function filterCommunitiesByStatus(status) {
     }
   }
 
-  // Edit Community from the main list
   async function editCommunity(communityId) {
     try {
       isEditing = true;
       selectedCommunityId = communityId;
       
-      // Fetch the latest data for this community
       const response = await fetch(`/admin/api/communities/${communityId}`);
       if (!response.ok) throw new Error('Failed to fetch community details');
       
@@ -283,7 +328,6 @@ function filterCommunitiesByStatus(status) {
       document.getElementById('communityDescription').value = community.description || '';
       document.getElementById('communityStatus').value = community.status;
       
-      // Set the community manager in the select dropdown
       const managerSelect = document.getElementById('communityManager');
       managerSelect.value = community.communityManager ? community.communityManager._id : '';
       
@@ -294,13 +338,11 @@ function filterCommunitiesByStatus(status) {
     }
   }
 
-  // Edit Community from the view details modal
   function editCommunityFromView() {
     viewCommunityModal.classList.remove('show');
     editCommunity(selectedCommunityId);
   }
 
-  // Open the Delete Confirmation modal
   function openDeleteConfirmationModal(communityId) {
     selectedCommunityId = communityId;
     const community = communities.find(c => c._id === communityId);
@@ -311,16 +353,15 @@ function filterCommunitiesByStatus(status) {
     }
   }
 
-  // Save Community (Add or Edit)
   async function saveCommunity() {
     try {
       const name = document.getElementById('communityName').value;
       const location = document.getElementById('communityLocation').value;
       const description = document.getElementById('communityDescription').value;
-      const status = document.getElementById('communityStatus').value;
+      const subscriptionStatus = document.getElementById('communityStatus').value;
       const managerId = document.getElementById('communityManager').value;
       
-      if (!name || !location || !status) {
+      if (!name || !location || !subscriptionStatus) {
         showNotification('Please fill in all required fields', 'error');
         return;
       }
@@ -336,7 +377,6 @@ function filterCommunitiesByStatus(status) {
       let response;
       
       if (isEditing && selectedCommunityId) {
-        // Update existing community
         response = await fetch(`/admin/api/communities/${selectedCommunityId}`, {
           method: 'PUT',
           headers: {
@@ -345,7 +385,6 @@ function filterCommunitiesByStatus(status) {
           body: JSON.stringify(communityData)
         });
       } else {
-        // Add new community
         response = await fetch('/admin/api/communities', {
           method: 'POST',
           headers: {
@@ -360,11 +399,9 @@ function filterCommunitiesByStatus(status) {
         throw new Error(errorData.error || 'Failed to save community');
       }
       
-      // Reset and update UI
       communityForm.reset();
       communityModal.classList.remove('show');
       
-      // Refresh data
       await fetchCommunities();
       displayCommunities();
       
@@ -375,7 +412,6 @@ function filterCommunitiesByStatus(status) {
     }
   }
 
-  // Delete Community
   async function deleteCommunity() {
     try {
       if (!selectedCommunityId) return;
@@ -391,7 +427,6 @@ function filterCommunitiesByStatus(status) {
       
       deleteConfirmationModal.classList.remove('show');
       
-      // Refresh data
       await fetchCommunities();
       displayCommunities();
       
@@ -402,9 +437,7 @@ function filterCommunitiesByStatus(status) {
     }
   }
 
-  // Show notification function
   function showNotification(message, type = 'info') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.innerHTML = `
@@ -415,7 +448,6 @@ function filterCommunitiesByStatus(status) {
       <button class="notification-close">&times;</button>
     `;
     
-    // Add styles if they don't exist
     if (!document.getElementById('notification-styles')) {
       const style = document.createElement('style');
       style.id = 'notification-styles';
@@ -473,7 +505,6 @@ function filterCommunitiesByStatus(status) {
       document.head.appendChild(style);
     }
     
-    // Create container if it doesn't exist
     let container = document.querySelector('.notification-container');
     if (!container) {
       container = document.createElement('div');
@@ -481,10 +512,8 @@ function filterCommunitiesByStatus(status) {
       document.body.appendChild(container);
     }
     
-    // Add to document
     container.appendChild(notification);
     
-    // Add close event
     const closeBtn = notification.querySelector('.notification-close');
     closeBtn.addEventListener('click', () => {
       notification.style.animation = 'slideOut 0.3s ease-in forwards';
@@ -493,7 +522,6 @@ function filterCommunitiesByStatus(status) {
       }, 300);
     });
     
-    // Auto close after 5 seconds
     setTimeout(() => {
       if (notification.parentNode) {
         notification.style.animation = 'slideOut 0.3s ease-in forwards';
@@ -506,12 +534,9 @@ function filterCommunitiesByStatus(status) {
     }, 5000);
   }
 
-  // Script initialization to handle server-side data
   function initializeWithServerData() {
-    // Add this to the EJS template to pass server data to JS
     if (typeof window.initialCommunities === 'undefined') {
       window.initialCommunities = [];
-      // Try to get communities from DOM if they exist
       const communityRows = document.querySelectorAll('#communitiesTableBody tr[data-id]');
       communityRows.forEach(row => {
         const id = row.getAttribute('data-id');
@@ -535,16 +560,14 @@ function filterCommunitiesByStatus(status) {
     }
   }
 
-  // Initialize with any server-side data
   initializeWithServerData();
-  // Add this near your other event listeners
-window.addEventListener('resize', () => {
-  // Only refresh if we're not showing all communities
-  if (communitiesTableBody.getAttribute('data-show-all') !== 'true') {
-    displayCommunities();
-  }
-});
-  // Initial fetch and display
+  
+  window.addEventListener('resize', () => {
+    if (communitiesTableBody.getAttribute('data-show-all') !== 'true') {
+      displayCommunities();
+    }
+  });
+  
   fetchCommunities().then(() => {
     displayCommunities();
   });

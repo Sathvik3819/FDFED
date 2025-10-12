@@ -1,3 +1,16 @@
+// Auto-refresh variables
+let autoRefreshInterval;
+const REFRESH_INTERVAL = 30000; // 30 seconds
+
+// Add spin animation
+const spinStyle = document.createElement('style');
+spinStyle.textContent = `
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(spinStyle);
 
         document.addEventListener('DOMContentLoaded', function() {
             // DOM Elements
@@ -5,6 +18,7 @@
             const addManagerBtn = document.getElementById('addManagerBtn');
             const searchInput = document.getElementById('searchInput');
             const communityFilter = document.getElementById('communityFilter');
+            const refreshBtn = document.getElementById('refreshBtn');
             const managerModal = document.getElementById('managerModal');
             const viewManagerModal = document.getElementById('viewManagerModal');
             const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
@@ -30,6 +44,9 @@
             let managers = [];
             let filteredManagers = [];
             
+            // Start auto-refresh
+            startAutoRefresh();
+            window.addEventListener('beforeunload', stopAutoRefresh);
         
             // Fetch all managers from the API
             async function fetchManagers() {
@@ -40,7 +57,7 @@
                     renderManagers();
                     
                  
-                    const response = await fetch(`/admin/api/community-managers`);
+                    const response = await fetch(`/admin/api/community-managers?t=${Date.now()}`);
                     const data = await response.json();
                     
                     if (data.success) {
@@ -59,6 +76,148 @@
                 }
             }
             
+            // Manual refresh function
+            async function manualRefresh() {
+                const refreshIcon = document.getElementById('refreshIcon');
+                
+                if (refreshIcon) {
+                    refreshIcon.style.animation = 'spin 1s linear infinite';
+                }
+                
+                try {
+                    await fetchManagers();
+                    showNotification('Community Managers refreshed successfully!', 'success');;
+                } catch (error) {
+                    console.error('Error refreshing managers:', error);
+                    showToast('Failed to refresh managers', 'error');
+                } finally {
+                    if (refreshIcon) {
+                        setTimeout(() => {
+                            refreshIcon.style.animation = '';
+                        }, 500);
+                    }
+                }
+            }
+            
+            // Start auto-refresh
+            function startAutoRefresh() {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                }
+                
+                autoRefreshInterval = setInterval(async () => {
+                    console.log('Auto-refreshing managers...');
+                    try {
+                        await fetchManagers();
+                    } catch (error) {
+                        console.error('Auto-refresh error:', error);
+                    }
+                }, REFRESH_INTERVAL);
+            }
+            
+            // Stop auto-refresh
+            function stopAutoRefresh() {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+            }
+              function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+      <div class="notification-content">
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+        <span>${message}</span>
+      </div>
+      <button class="notification-close">&times;</button>
+    `;
+    
+    if (!document.getElementById('notification-styles')) {
+      const style = document.createElement('style');
+      style.id = 'notification-styles';
+      style.textContent = `
+        .notification-container {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 9999;
+        }
+        .notification {
+          background-color: white;
+          border-radius: 4px;
+          box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+          margin-bottom: 10px;
+          padding: 15px;
+          width: 300px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          animation: slideIn 0.3s ease-out forwards;
+        }
+        .notification-content {
+          display: flex;
+          align-items: center;
+        }
+        .notification-content i {
+          margin-right: 10px;
+        }
+        .notification.success i {
+          color: #28a745;
+        }
+        .notification.error i {
+          color: #dc3545;
+        }
+        .notification.info i {
+          color: #17a2b8;
+        }
+        .notification-close {
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 18px;
+          color: #6c757d;
+        }
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    let container = document.querySelector('.notification-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'notification-container';
+      document.body.appendChild(container);
+    }
+    
+    container.appendChild(notification);
+    
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.addEventListener('click', () => {
+      notification.style.animation = 'slideOut 0.3s ease-in forwards';
+      setTimeout(() => {
+        container.removeChild(notification);
+      }, 300);
+    });
+    
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.animation = 'slideOut 0.3s ease-in forwards';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            container.removeChild(notification);
+          }
+        }, 300);
+      }
+    }, 5000);
+  }
             // Show toast notifications
             function showToast(message, type = 'success') {
                 // Simple toast implementation
@@ -409,7 +568,7 @@
                     if (data.success) {
                         showToast(`Manager ${isUpdate ? 'updated' : 'added'} successfully`);
                         closeModal(managerModal);
-                        fetchManagers(); // Refresh the managers list
+                        await fetchManagers(); // Refresh the managers list
                     } else {
                         showToast(data.error || `Failed to ${isUpdate ? 'update' : 'add'} manager`, 'error');
                     }
@@ -448,7 +607,7 @@
                     if (data.success) {
                         showToast('Manager deleted successfully');
                         closeModal(deleteConfirmationModal);
-                        fetchManagers(); // Refresh the managers list
+                        await fetchManagers(); // Refresh the managers list
                     } else {
                         showToast('Error deleting manager: ' + data.error, 'error');
                     }
@@ -500,6 +659,7 @@
             // Search and filter inputs
             searchInput.addEventListener('input', filterManagers);
             communityFilter.addEventListener('change', filterManagers);
+            if (refreshBtn) refreshBtn.addEventListener('click', manualRefresh);
             
             // Save manager button
             saveManagerBtn.addEventListener('click', saveManager);
