@@ -14,7 +14,8 @@ const visitorSchema = new mongoose.Schema(
     vehicleNumber: { type: String },
 
     // QR for verification
-    qrCode: { type: String }, // store unique QR string or image URL
+    qrCode: { type: String }, // store base64 QR image
+    qrToken: { type: String }, // JWT token for verification
 
     // Pre-approval details (if resident schedules a visit)
     scheduledAt: { type: Date }, // planned visit date+time

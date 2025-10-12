@@ -7,6 +7,8 @@ import CommonSpaces from "../models/commonSpaces.js";
 import Community from "../models/communities.js";
 import Payment from "../models/payment.js";
 import Issue from "../models/issues.js";
+import QRCode from "qrcode";
+import jwt from "jsonwebtoken";
 
 // Utils function
 function getTimeAgo(date) {

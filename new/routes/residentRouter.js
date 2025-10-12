@@ -2,6 +2,9 @@ import express from "express";
 const residentRouter = express.Router();
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
+// move them to controller when requried as they are serving only post of preapproval
+import QRCode from "qrcode";
+import jwt from 'jsonwebtoken';
 
 import Issue from "../models/issues.js";
 import Resident from "../models/resident.js";
@@ -720,59 +723,125 @@ residentRouter.post("/payment/post", async (req, res) => {
 residentRouter.get('/preApprovals',auth, authorizeR ,getPreApprovals)
 
 //pre approval routes
+// residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
+//   try {
+//     // Add validation for req.body
+//     if (!req.body) {
+//       return res.status(400).json({ message: "Request body is missing" });
+//     }
+
+//     const { visitorName, contactNumber, dateOfVisit, timeOfVisit, purpose } =
+//       req.body;
+
+//     // Validate required fields
+//     if (
+//       !visitorName ||
+//       !contactNumber ||
+//       !dateOfVisit ||
+//       !timeOfVisit ||
+//       !purpose
+//     ) {
+//       return res.status(400).json({
+//         message: "Missing required fields",
+//         required: [
+//           "visitorName",
+//           "contactNumber",
+//           "dateOfVisit",
+//           "timeOfVisit",
+//           "purpose",
+//         ],
+//       });
+//     }
+
+//     const resident = await Resident.findById(req.user.id).populate("community");
+//     if (!resident) {
+//       return res.status(404).json({ message: "Resident not found" });
+//     }
+
+//     const date = formatDate(dateOfVisit);
+//     console.log("Formatted Date:", date);
+
+//     const scheduledAt = new Date(`${dateOfVisit}T${timeOfVisit}`);
+//     const tempId = new mongoose.Types.ObjectId();
+//     const uniqueId = generateCustomID(tempId.toString(), "PA", null);
+
+//     const newVisitor = await Visitor.create({
+//       _id : tempId,
+//       ID: uniqueId,
+//       name: visitorName,
+//       contactNumber,
+//       purpose,
+//       scheduledAt,
+//       approvedBy: resident._id,
+//       community: resident.community._id,
+//     });
+
+//     // QR Code Generation
+//     const payload = {
+//       visitorId: newVisitor._id.toString(),
+//       name: visitorName,
+//       contactNumber,
+//       purpose,
+//       scheduledAt,
+//     };
+
+//     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "24h" });
+//     newVisitor.qrToken = token;
+
+//     // Generate QR image as Base64
+//     const qrImage = await QRCode.toDataURL(token);
+//     newVisitor.qrCode = qrImage;
+
+//     await newVisitor.save();
+
+//     resident.preApprovedVisitors.push(newVisitor._id);
+//     await resident.save();
+
+//     // Return JSON response
+//     return res.status(201).json({
+//       success: true,
+//       preapproval: {
+//         _id: newVisitor._id,
+//         ID: uniqueId,
+//         visitorName,
+//         contactNumber,
+//         dateOfVisit: date,
+//         timeOfVisit,
+//         purpose,
+//         status: "approved",
+//       },
+//     });
+//   } catch (err) {
+//     console.error("Error in pre-approving visitor:", err);
+//     return res.status(500).json({
+//       message: "Internal server error",
+//       error: err.message,
+//     });
+//   }
+// });
+
 residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    // Add validation for req.body
-    if (!req.body) {
-      return res.status(400).json({ message: "Request body is missing" });
-    }
+    const { visitorName, contactNumber, dateOfVisit, timeOfVisit, purpose } = req.body;
 
-    const { visitorName, contactNumber, dateOfVisit, timeOfVisit, purpose } =
-      req.body;
-
-    // Validate required fields
-    if (
-      !visitorName ||
-      !contactNumber ||
-      !dateOfVisit ||
-      !timeOfVisit ||
-      !purpose
-    ) {
-      return res.status(400).json({
-        message: "Missing required fields",
-        required: [
-          "visitorName",
-          "contactNumber",
-          "dateOfVisit",
-          "timeOfVisit",
-          "purpose",
-        ],
-      });
+    if (!visitorName || !contactNumber || !dateOfVisit || !timeOfVisit || !purpose) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
     const resident = await Resident.findById(req.user.id).populate("community");
-    if (!resident) {
-      return res.status(404).json({ message: "Resident not found" });
-    }
+    if (!resident) return res.status(404).json({ message: "Resident not found" });
 
     const date = formatDate(dateOfVisit);
-    console.log("Formatted Date:", date);
-
     const scheduledAt = new Date(`${dateOfVisit}T${timeOfVisit}`);
-    // const newVisitor = await VisitorPreApproval.create({
-    //   visitorName,
-    //   contactNumber,
-    //   dateOfVisit: date,
-    //   timeOfVisit,
-    //   purpose,
-    //   approvedBy: resident._id,
-    //   community: resident.community._id,
-    // });
     const tempId = new mongoose.Types.ObjectId();
     const uniqueId = generateCustomID(tempId.toString(), "PA", null);
 
-    const newVisitor = await Visitor.create({
-      _id : tempId,
+    // Create Visitor instance (unsaved)
+    const newVisitor = new Visitor({
+      _id: tempId,
       ID: uniqueId,
       name: visitorName,
       contactNumber,
@@ -780,15 +849,29 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
       scheduledAt,
       approvedBy: resident._id,
       community: resident.community._id,
+      otp: OTP(), // if needed
     });
 
+    // Generate JWT and QR
+    const payload = {
+      visitorId: newVisitor._id.toString(),
+      name: visitorName,
+      contactNumber,
+      purpose,
+      scheduledAt,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "24h" });
+    newVisitor.qrToken = token;
+    newVisitor.qrCode = await QRCode.toDataURL(token);
+
+    // Save visitor and update resident in a transaction
+    await newVisitor.save({ session });
     resident.preApprovedVisitors.push(newVisitor._id);
-    await resident.save();
+    await resident.save({ session });
 
-    const o = OTP();
-    await newVisitor.save();
+    await session.commitTransaction();
+    session.endSession();
 
-    // Return JSON response
     return res.status(201).json({
       success: true,
       preapproval: {
@@ -800,16 +883,18 @@ residentRouter.post("/preapproval", auth, authorizeR, async (req, res) => {
         timeOfVisit,
         purpose,
         status: "approved",
+        qrToken: newVisitor.qrToken,
+        qrCode: newVisitor.qrCode,
       },
     });
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     console.error("Error in pre-approving visitor:", err);
-    return res.status(500).json({
-      message: "Internal server error",
-      error: err.message,
-    });
+    return res.status(500).json({ message: "Internal server error", error: err.message });
   }
 });
+
 
 residentRouter.delete("/preapproval/cancel/:id", async (req, res) => {
   const requestId = req.params.id;

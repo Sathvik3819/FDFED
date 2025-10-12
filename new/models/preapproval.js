@@ -1,3 +1,5 @@
+// mark this deletion don't use this use visitor.js model
+
 import mongoose from "mongoose";
 
 const visitorPreApprovalSchema = new mongoose.Schema(
@@ -26,6 +28,16 @@ const visitorPreApprovalSchema = new mongoose.Schema(
     },
     vehicleNo: String,
     OTP: String,
+
+    qrId: { type: String, unique: true, sparse: true },  // unique identifier
+    qrToken: { type: String },                           // signed JWT token
+    qrImage: { type: String },                           // base64 QR image
+    qrStatus: {
+      type: String,
+      enum: ["Active", "Used", "Expired"],
+      default: "Active",
+    },
+    qrExpiresAt: { type: Date },   
   },
   { timestamps: true }
 );
