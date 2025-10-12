@@ -43,13 +43,44 @@ async function fetchFacilityData() {
 function handleFacilityChange() {
   const facility = document.getElementById("facility").value;
   const maxHoursDisplay = document.getElementById("maxHoursDisplay");
+  const timeSlotsContainer = document.getElementById("timeSlotsContainer");
+  const formContainer = document.querySelector(".A");
   document.getElementById("bookingDate").value = "";
   resetTimeSlots();
   const selected = facilityData[facility];
-  maxHoursDisplay.textContent = selected
-    ? `Maximum booking duration: ${selected.maxBookingDurationHours} hour(s)`
-    : "";
-  maxHoursDisplay.style.color = "#007bff";
+
+  // Check if facility requires time slot booking
+  const requiresTimeSlots = shouldShowTimeSlots(facility);
+
+  if (requiresTimeSlots) {
+    maxHoursDisplay.textContent = selected
+      ? `Maximum booking duration: ${selected.maxBookingDurationHours} hour(s)`
+      : "";
+    maxHoursDisplay.style.color = "#007bff";
+    maxHoursDisplay.classList.remove("no-time-slot");
+    timeSlotsContainer.style.display = "block";
+    formContainer.classList.remove("time-slots-hidden");
+  } else {
+    maxHoursDisplay.textContent = "No time slot booking required for this facility";
+    maxHoursDisplay.style.color = "#28a745";
+    maxHoursDisplay.classList.add("no-time-slot");
+    timeSlotsContainer.style.display = "none";
+    formContainer.classList.add("time-slots-hidden");
+  }
+}
+
+function shouldShowTimeSlots(facilityName) {
+  // Facilities that don't require time slot booking
+  const noTimeSlotFacilities = [
+    'gym', 'swimming pool', 'pool', 'fitness center', 'gymnasium'
+  ];
+
+  const facilityLower = facilityName.toLowerCase();
+
+  // Check if facility name contains any of the no-time-slot keywords
+  return !noTimeSlotFacilities.some(keyword =>
+    facilityLower.includes(keyword)
+  );
 }
 
 
@@ -185,7 +216,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("facility")?.addEventListener("change", () => {
     handleFacilityChange();
-    document.getElementById('bookingRulesField').value = bookingRules() ;
+    document.getElementById('bookingRulesField').value = bookingRules();
   });
 
   bookingGrid?.addEventListener("click", async (e) => {
@@ -207,8 +238,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateText("detail-id", b._id ? b.ID : "-");
         document.getElementById(
           "detail-status"
-        ).innerHTML = `<span class="status-badge status-${
-          b.status || "unknown"
+        ).innerHTML = `<span class="status-badge status-${b.status || "unknown"
         }">${b.status || "Unknown"}</span>`;
         updateText("detail-facility", b.name);
         updateText("detail-date", b.Date || b.date);
@@ -249,9 +279,8 @@ document.addEventListener("DOMContentLoaded", async () => {
               </div>
               <div class="col">
                     <div class="detail-item">
-                      <span class="detail-label">Status:</span> <span class="status-badge status-${
-                        b.payment.status
-                      }">${b.payment.status}</span>
+                      <span class="detail-label">Status:</span> <span class="status-badge status-${b.payment.status
+            }">${b.payment.status}</span>
                     </div>
               </div>
             </div>
@@ -261,11 +290,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (b.payment.status === "Pending") {
             paymentSection.insertAdjacentHTML(
               "beforeend",
-              `<div class="detail-item"><span class="detail-label">Payment Deadline:</span> <span class="detail-value">${
-                new Date(b.payment.paymentDeadline).toLocaleString("en-US", {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                }) || "-"
+              `<div class="detail-item"><span class="detail-label">Payment Deadline:</span> <span class="detail-value">${new Date(b.payment.paymentDeadline).toLocaleString("en-US", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }) || "-"
               }</span></div>
                `
             );
@@ -279,12 +307,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <span class="detail-label">Paid On:</span> 
                     <span class="detail-value">
                       ${new Date(b.payment.paymentDate).toLocaleString(
-                        "en-US",
-                        {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        }
-                      )}
+                "en-US",
+                {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }
+              )}
                     </span>
                   </div>
                   
@@ -300,9 +328,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <div class="col">
                       <div class="detail-item">
                         <span class="detail-label">Method:</span> 
-                        <span class="detail-value">${
-                          b.payment.paymentMethod || "-"
-                        }</span>
+                        <span class="detail-value">${b.payment.paymentMethod || "-"
+              }</span>
                       </div>
                 </div>
               </div>
@@ -373,10 +400,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     const d = document.getElementById("bookingDate").value;
     const from = document.getElementById("hiddenFromTime").value;
     const to = document.getElementById("hiddenToTime").value;
-    if (!f || !d || !from || !to || !slots.length)
+
+    // Check if facility requires time slots
+    const requiresTimeSlots = shouldShowTimeSlots(f);
+
+    if (!f || !d) {
       return alert("Please complete all booking details.");
-    if (slots.length > getMaxHoursForFacility())
-      return alert("Exceeded max booking duration.");
+    }
+
+    if (requiresTimeSlots) {
+      if (!from || !to || !slots.length) {
+        return alert("Please complete all booking details including time slots.");
+      }
+      if (slots.length > getMaxHoursForFacility()) {
+        return alert("Exceeded max booking duration.");
+      }
+    }
+
     const btn = bookingForm.querySelector('button[type="submit"]');
     const orig = showLoading(btn);
     try {
@@ -384,12 +424,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          from,
-          to,
+          from: requiresTimeSlots ? from : "00:00",
+          to: requiresTimeSlots ? to : "23:59",
           facility: f,
-          date: d,
+          date: d ? d : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
           purpose: document.getElementById("purpose").value,
-          timeSlots: slots.map((s) => s.value),
+          timeSlots: requiresTimeSlots ? slots.map((s) => s.value) : [],
         }),
       });
       const result = await res.json();
@@ -400,35 +440,28 @@ document.addEventListener("DOMContentLoaded", async () => {
         <div class="booking-card ${result.space.status || "pending"}">
           <div class="booking-card-header">
             <span class="booking-id">#${result.space._id.slice(-6)}</span>
-            <span class="status-badge status-${result.space.status}">${
-        result.space.status
-      }</span>
+            <span class="status-badge status-${result.space.status}">${result.space.status
+        }</span>
           </div>
           <div class="booking-details">
-            <div class="booking-detail"><span class="detail-label">Facility:</span> <span class="detail-value">${
-              result.space.name
-            }</span></div>
-            <div class="booking-detail"><span class="detail-label">Date:</span> <span class="detail-value">${
-              result.space.Date
-            }</span></div>
-            <div class="booking-detail"><span class="detail-label">Time:</span> <span class="detail-value">${
-              result.space.from
-            } - ${result.space.to}</span></div>
-            ${
-              result.space.purpose
-                ? `<div class="booking-detail"><span class="detail-label">Purpose:</span><span class="detail-value">${result.space.purpose}</span></div>`
-                : ""
-            }
+            <div class="booking-detail"><span class="detail-label">Facility:</span> <span class="detail-value">${result.space.name
+        }</span></div>
+            <div class="booking-detail"><span class="detail-label">Date:</span> <span class="detail-value">${result.space.Date
+        }</span></div>
+            <div class="booking-detail"><span class="detail-label">Time:</span> <span class="detail-value">${result.space.from
+        } - ${result.space.to}</span></div>
+            ${result.space.purpose
+          ? `<div class="booking-detail"><span class="detail-label">Purpose:</span><span class="detail-value">${result.space.purpose}</span></div>`
+          : ""
+        }
           </div>
           <div class="booking-actions">
-            <button class="action-btn view" data-id="${
-              result.space._id
-            }"><i class="bi bi-eye"></i> View Details</button>
-            ${
-              result.space.status === "Pending"
-                ? `<button class="action-btn cancel" data-id="${result.space._id}"><i class="bi bi-x-circle"></i> Cancel</button>`
-                : ""
-            }
+            <button class="action-btn view" data-id="${result.space._id
+        }"><i class="bi bi-eye"></i> View Details</button>
+            ${result.space.status === "Pending"
+          ? `<button class="action-btn cancel" data-id="${result.space._id}"><i class="bi bi-x-circle"></i> Cancel</button>`
+          : ""
+        }
           </div>
         </div>`;
       bookingGrid.insertAdjacentHTML("afterbegin", newCard);

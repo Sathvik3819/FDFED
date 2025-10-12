@@ -25,6 +25,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancellationReason = document.getElementById("cancellationReasonPopup");
   const submitRejectionBtn = document.getElementById("submitRejection");
   const cancelRejectionBtn = document.getElementById("cancelRejection");
+  const manualRefreshBtn = document.getElementById("manualRefresh");
+
+  let refreshInterval;
+  let isRefreshing = false;
+  let allBookings = []; 
 
   function openPopup(el) {
     el.style.display = "flex";
@@ -33,6 +38,181 @@ document.addEventListener("DOMContentLoaded", () => {
     el.style.display = "none";
   }
 
+  // Function to fetch and update bookings
+  async function refreshBookings() {
+    if (isRefreshing) return;
+
+    isRefreshing = true;
+
+    // Add loading indicator
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refreshing...';
+    loadingIndicator.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--primary);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      z-index: 1000;
+      animation: pulse 1s infinite;
+    `;
+    document.body.appendChild(loadingIndicator);
+
+    try {
+      const response = await fetch('/manager/commonSpace/api/bookings');
+      const data = await response.json();
+
+      if (data.success) {
+        allBookings = data.bookings; // Store all bookings
+        updateBookingCards(data.bookings);
+        updateStats(data.bookings);
+        // Re-apply search filter if there's an active search
+        if (searchInput.value.trim()) {
+          performSearch(searchInput.value.trim());
+        }
+      } else {
+        console.error('Failed to fetch bookings:', data.message);
+        notyf.error('Failed to refresh bookings');
+      }
+    } catch (error) {
+      console.error('Error refreshing bookings:', error);
+      notyf.error('Error refreshing bookings');
+    } finally {
+      isRefreshing = false;
+      // Remove loading indicator
+      const indicator = document.querySelector('.loading-indicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+  }
+
+  // Function to update booking cards
+  function updateBookingCards(bookings) {
+    if (!bookings || bookings.length === 0) {
+      bookingsContainer.innerHTML = `
+        <div class="empty-state w-100">
+          <i class="bi bi-calendar-x"></i>
+          <h3>No Bookings Found</h3>
+          <p>There are currently no common space bookings to display.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const bookingCardsHTML = bookings.map(booking => `
+      <div class="booking-card">
+        <div class="booking-card-header">
+          <span class="booking-id">ID: ${booking.ID}</span>
+          <span class="booking-status status-${booking.status}">${booking.status}</span>
+        </div>
+
+        <h3 class="booking-space">${booking.name}</h3>
+
+        <div class="booking-datetime">
+          <i class="bi bi-calendar-event"></i>
+          <span>${booking.Date}, ${booking.from} - ${booking.to}</span>
+        </div>
+
+        <div class="booking-actions">
+          ${booking.status === "Pending" ? `
+            <button class="available-btn" data-id="${booking._id}">
+              <i class="bi bi-eye"></i> Check Availability
+            </button>
+          ` : booking.status === "available" ? `
+            <button class="approve-btn" data-id="${booking._id}">
+              <i class="bi bi-check-circle-fill"></i> Approve
+            </button>
+            <button class="reject-btn" data-id="${booking._id}">
+              <i class="bi bi-x-circle-fill"></i> Reject
+            </button>
+          ` : `
+            <button class="view-btn" data-id="${booking._id}">
+              <i class="bi bi-eye"></i> View Details
+            </button>
+          `}
+        </div>
+      </div>
+    `).join('');
+
+    bookingsContainer.innerHTML = bookingCardsHTML;
+  }
+
+  // Function to update statistics
+  function updateStats(bookings) {
+    const todayBookings = bookings.length;
+    const pendingBookings = bookings.filter(b => b.status === "Pending").length;
+    const approvedBookings = bookings.filter(b => b.status === "Approved").length;
+
+    // Update stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    if (statCards.length >= 3) {
+      statCards[0].querySelector('.stat-number').textContent = todayBookings;
+      statCards[1].querySelector('.stat-number').textContent = pendingBookings;
+      statCards[2].querySelector('.stat-number').textContent = approvedBookings;
+    }
+  }
+
+  // Start auto-refresh every 30 seconds
+  function startAutoRefresh() {
+    refreshInterval = setInterval(refreshBookings, 30000); // 30 seconds
+  }
+
+  // Stop auto-refresh
+  function stopAutoRefresh() {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      refreshInterval = null;
+    }
+  }
+
+  // Manual refresh button
+  manualRefreshBtn.addEventListener('click', () => {
+    if (!isRefreshing) {
+      refreshBookings();
+    }
+  });
+
+  // Initialize with current bookings data
+  function initializeBookings() {
+    // Get initial bookings from the server-rendered data
+    const initialCards = bookingsContainer.querySelectorAll('.booking-card');
+    if (initialCards.length > 0) {
+      // Extract data from existing cards for search functionality
+      allBookings = Array.from(initialCards).map(card => {
+        const id = card.querySelector('[data-id]')?.dataset.id;
+        const status = card.querySelector('.booking-status')?.textContent;
+        const name = card.querySelector('.booking-space')?.textContent;
+        const datetime = card.querySelector('.booking-datetime span')?.textContent;
+        const bookingId = card.querySelector('.booking-id')?.textContent?.replace('ID: ', '');
+
+        return {
+          _id: id,
+          status: status,
+          name: name,
+          Date: datetime?.split(',')[0] || '',
+          from: datetime?.split(',')[1]?.split(' - ')[0]?.trim() || '',
+          to: datetime?.split(',')[1]?.split(' - ')[1]?.trim() || '',
+          ID: bookingId
+        };
+      });
+    }
+  }
+
+  // Initialize bookings data
+  initializeBookings();
+
+  // Start auto-refresh when page loads
+  startAutoRefresh();
+
+  // Stop auto-refresh when user leaves the page
+  window.addEventListener('beforeunload', stopAutoRefresh);
+
+  // Event delegation for booking actions (works with dynamically updated content)
   bookingsContainer.addEventListener("click", async (e) => {
     const card = e.target.closest(".booking-card");
     if (!card) return;
@@ -79,6 +259,8 @@ document.addEventListener("DOMContentLoaded", () => {
           ".booking-actions"
         ).innerHTML = `<button class="view-btn" data-id="${id}"><i class="bi bi-eye"></i> View Details</button>`;
         notyf.success("Booking approved successfully.");
+        // Trigger refresh to update all data
+        setTimeout(() => refreshBookings(), 1000);
       } else {
         notyf.error(data.message || "Failed to approve booking.");
       }
@@ -86,7 +268,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (e.target.closest(".reject-btn")) {
       openPopup(cancellationReason);
-      submitRejectionBtn.addEventListener("click", async () => {
+      // Remove existing listeners to prevent duplicates
+      const newSubmitBtn = document.getElementById("submitRejection");
+      const clonedBtn = newSubmitBtn.cloneNode(true);
+      newSubmitBtn.parentNode.replaceChild(clonedBtn, newSubmitBtn);
+
+      clonedBtn.addEventListener("click", async () => {
         const reason = document.getElementById("rejectionReason").value;
         if (!reason) return;
         const response = await fetch(`/manager/commonSpace/reject/${id}`, {
@@ -105,6 +292,8 @@ document.addEventListener("DOMContentLoaded", () => {
           notyf.success("Booking rejected successfully.");
           cancellationReason.style.display = "none";
           document.getElementById("rejectionReason").value = "";
+          // Trigger refresh to update all data
+          setTimeout(() => refreshBookings(), 1000);
         } else {
           notyf.error(data.message || "Failed to reject booking.");
         }
@@ -124,9 +313,8 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="detail-item">
               <span class="detail-label me-2">Status</span>
-              <span class="detail-badge status-badge status-${
-                data.status
-              } " id="detail-status">${data.status}</span>
+              <span class="detail-badge status-badge status-${data.status
+          } " id="detail-status">${data.status}</span>
             </div>
             <div class="detail-item">
               <div class="icon-col">
@@ -134,9 +322,8 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
               <div class="d-flex flex-column">
                 <span class="detail-label">Facility</span>
-                <span class="detail-value" id="detail-facility">${
-                  data.name
-                }</span>
+                <span class="detail-value" id="detail-facility">${data.name
+          }</span>
               </div>
             </div>
             <div class="detail-item">
@@ -154,9 +341,8 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
               <div class="d-flex flex-column">
                 <span class="detail-label">Time</span>
-                <span class="detail-value" id="detail-time">${data.from} - ${
-          data.to
-        }</span>
+                <span class="detail-value" id="detail-time">${data.from} - ${data.to
+          }</span>
               </div>
             </div>
             <div class="detail-item">
@@ -165,9 +351,8 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
               <div class="d-flex flex-column">
                 <span class="detail-label">Created</span>
-                <span class="detail-value" id="detail-created">${
-                  data.bookedBy.residentFirstName
-                } ${data.bookedBy.residentLastName}</span>
+                <span class="detail-value" id="detail-created">${data.bookedBy.residentFirstName
+          } ${data.bookedBy.residentLastName}</span>
               </div>
             </div>
             <div class="detail-item col-span-2">
@@ -176,17 +361,15 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
               <div class="d-flex flex-column">
                 <span class="detail-label">Purpose</span>
-                <span class="detail-value" id="detail-purpose">${
-                  data.description
-                }</span>
+                <span class="detail-value" id="detail-purpose">${data.description
+          }</span>
               </div>
             </div>
           </div>
 
           <!-- Cancellation Section -->
-          ${
-            data.feedback
-              ? `
+          ${data.feedback
+            ? `
                 <div id="cancellation-section" class="cancellation-box">
                   <h4>Cancellation Details</h4>
                   <div class="detail-item">
@@ -200,46 +383,41 @@ document.addEventListener("DOMContentLoaded", () => {
                   
                 </div>
               `
-              : ""
+            : ""
           }
 
-          ${
-            data.status === "Pending Payment" || data.status === "Booked"
-              ? `
+          ${data.status === "Pending Payment" || data.status === "Booked"
+            ? `
               <div id="payment-section" class="payment-box"  >
                   <h4>Payment Details</h4>
                   <div class="detail-item">
                     <span class="detail-label me-1">Amount : </span>
-                    <span class="detail-value mt-0" id="detail-cancellation-reason"> ${
-                      data.payment?.amount
-                    }</span>
+                    <span class="detail-value mt-0" id="detail-cancellation-reason"> ${data.payment?.amount
+            }</span>
                   </div>
                   <div class="detail-item">
                     <span class="detail-label me-2">Status</span>
-                    <span class="detail-badge status-badge mb-1 status-${
-                      data.payment.status
-                    }   " id="detail-status">${data.payment?.status}</span>
+                    <span class="detail-badge status-badge mb-1 status-${data.payment.status
+            }   " id="detail-status">${data.payment?.status}</span>
                   </div>
 
-                  ${
-                    data.payment.status === "Pending"
-                      ? `
+                  ${data.payment.status === "Pending"
+              ? `
                     <div class="detail-item"> 
                       <div class="detail-label me-1">Payment Deadline : </div>
                       <div class="detail-value mt-0" id="detail-payment-deadline">
-                        ${
-                          data.payment?.paymentDeadline
-                            ? new Date(data.payment.paymentDeadline).toLocaleString("en-US", {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                              })
-                            : "-"
-                        }
+                        ${data.payment?.paymentDeadline
+                ? new Date(data.payment.paymentDeadline).toLocaleString("en-US", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })
+                : "-"
+              }
                       </div>
 
                     </div>
                     `
-                      : data.payment.status === "Completed" ? `
+              : data.payment.status === "Completed" ? `
                     <div class="detail-item"> 
                       <div class="detail-label me-1">Transaction ID : </div>
                       <div class="detail-value mt-0" id="detail-transaction-id">
@@ -249,14 +427,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="detail-item"> 
                       <div class="detail-label me-1">Paid On : </div>
                       <div class="detail-value mt-0" id="detail-payment-completed">
-                        ${
-                          data.payment?.paymentDate
-                            ? new Date(data.payment.paymentDate).toLocaleString("en-US", {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                              })
-                            : "-"
-                        }
+                        ${data.payment?.paymentDate
+                  ? new Date(data.payment.paymentDate).toLocaleString("en-US", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })
+                  : "-"
+                }
                       </div>
                     </div>
                     <div class="detail-item"> 
@@ -267,11 +444,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                    
                       ` : "-"
-                  }
+            }
                   
               </div>
             `
-              : ""
+            : ""
           } 
 
           `;
@@ -401,20 +578,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 <h4>${data.space.name}</h4>
                 <p><strong>Type:</strong> ${data.space.type}</p>
                 <p>
-                  <strong>Bookable:</strong> ${
-                    data.space.bookable ? "Yes" : "No"
-                  }
+                  <strong>Bookable:</strong> ${data.space.bookable ? "Yes" : "No"
+        }
                 </p>
                 <p>
-                  <strong>Max Hours:</strong> ${
-                    data.space.maxBookingDurationHours || "Not specified"
-                  }
+                  <strong>Max Hours:</strong> ${data.space.maxBookingDurationHours || "Not specified"
+        }
                 </p>
                 <p>
                   <strong>Rules:</strong> ${data.space.bookingRules.substring(
-                    0,
-                    50
-                  )}...
+          0,
+          50
+        )}...
                 </p>
       `;
       const emptyState = spacesList.querySelector(".empty-state");
@@ -448,26 +623,25 @@ document.addEventListener("DOMContentLoaded", () => {
     bookingRules.value = lines;
   });
 
-  searchInput.addEventListener("input", () => {
-    const term = searchInput.value.toLowerCase();
-    const cards = bookingsContainer.querySelectorAll(".booking-card");
-    let visible = 0;
-    cards.forEach((card) => {
-      const text = card.innerText.toLowerCase();
-      const match = text.includes(term);
-      card.style.display = match ? "block" : "none";
-      if (match) visible++;
+  // Search functionality
+  function performSearch(term) {
+    if (!allBookings || allBookings.length === 0) return;
+
+    const filteredBookings = allBookings.filter(booking => {
+      const searchText = `${booking.name} ${booking.Date} ${booking.from} ${booking.to} ${booking.status} ${booking.ID}`.toLowerCase();
+      return searchText.includes(term.toLowerCase());
     });
-    const empty = bookingsContainer.querySelector(".empty-state");
-    if (visible === 0) {
-      if (!empty) {
-        const div = document.createElement("div");
-        div.className = "empty-state w-100";
-        div.innerHTML = `<i class="bi bi-calendar-x"></i><h3>No Bookings Found</h3><p>No results match your search.</p>`;
-        bookingsContainer.appendChild(div);
-      }
+
+    updateBookingCards(filteredBookings);
+  }
+
+  searchInput.addEventListener("input", () => {
+    const term = searchInput.value.trim();
+    if (term) {
+      performSearch(term);
     } else {
-      empty?.remove();
+      // Show all bookings if search is cleared
+      updateBookingCards(allBookings);
     }
   });
 });

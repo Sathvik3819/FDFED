@@ -57,8 +57,7 @@ managerRouter.get("/commonSpace", async (req, res) => {
     .select("commonSpaces")
     .lean();
 
-    console.log(csb);
-    
+  console.log(csb);
 
   res.render("communityManager/CSB", {
     path: "cbs",
@@ -66,6 +65,27 @@ managerRouter.get("/commonSpace", async (req, res) => {
     community: community,
     ads,
   });
+});
+
+// API endpoint to fetch bookings data for auto-refresh
+managerRouter.get("/commonSpace/api/bookings", async (req, res) => {
+  try {
+    const c = req.user.community;
+    const csb = await CommonSpaces.find({ community: c }).sort({
+      createdAt: -1,
+    });
+
+    res.json({
+      success: true,
+      bookings: csb,
+    });
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch bookings",
+    });
+  }
 });
 managerRouter.get("/commonSpace/details/:id", async (req, res) => {
   try {
@@ -91,10 +111,13 @@ managerRouter.get("/commonSpace/details/:id", async (req, res) => {
       paymentStatus: booking.paymentStatus,
       payment: booking.payment || null,
       availability: booking.availability,
-      ID:booking.ID,
+      ID: booking.ID,
       bookedBy: booking.bookedBy
         ? {
-            name: booking.bookedBy.residentFirstname + " " + booking.bookedBy.residentLastname ,
+            name:
+              booking.bookedBy.residentFirstname +
+              " " +
+              booking.bookedBy.residentLastname,
             email: booking.bookedBy.email,
           }
         : null,
@@ -183,14 +206,12 @@ managerRouter.get("/commonSpace/checkAvailability/:id", async (req, res) => {
       current.status = "Rejected";
       current.availability = "YES";
       await current.save();
-      return res.status(200).json({ success: true, available: false});
+      return res.status(200).json({ success: true, available: false });
     } else {
       current.availability = "YES";
       current.status = "available";
       await current.save();
-      return res
-        .status(200)
-        .json({ success: true, available: true });
+      return res.status(200).json({ success: true, available: true });
     }
   } catch (err) {
     console.error(err);
@@ -201,14 +222,16 @@ managerRouter.get("/commonSpace/checkAvailability/:id", async (req, res) => {
 managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
   const id = req.params.id;
   console.log(id);
-  
+
   try {
     const b = await CommonSpaces.findById(id)
       .populate("bookedBy")
       .populate("community");
 
     if (!b) {
-      return res.status(404).json({ success: false, message: "Booking not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found" });
     }
 
     b.status = "available";
@@ -262,7 +285,6 @@ managerRouter.get("/commonSpace/approve/:id", async (req, res) => {
 
     await b.save();
     await b.bookedBy.save();
-    
 
     res.status(200).json({ success: true });
   } catch (err) {
@@ -296,7 +318,9 @@ managerRouter.post("/commonSpace/reject/:id", async (req, res) => {
 
     await b.save();
 
-    res.status(200).json({success: true, message: "Booking rejected successfully." });
+    res
+      .status(200)
+      .json({ success: true, message: "Booking rejected successfully." });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Internal server error" });
@@ -361,7 +385,8 @@ managerRouter.post("/spaces", async (req, res) => {
     await community.save();
 
     // get space id of the newly added space
-    const addedSpace =  community.commonSpaces[community.commonSpaces.length - 1];
+    const addedSpace =
+      community.commonSpaces[community.commonSpaces.length - 1];
 
     res.status(201).json({
       success: true,
@@ -519,7 +544,7 @@ managerRouter.delete("/spaces/:id", async (req, res) => {
 
     // Find the space to be deleted for additional checks
     console.log(spaceId);
-    
+
     const spaceToDelete = community.commonSpaces.find(
       (space) => space._id.toString() === spaceId
     );
@@ -643,7 +668,6 @@ managerRouter.get("/api/community/spaces", async (req, res) => {
     });
   }
 });
-
 
 async function checkSubscription(req, res, next) {
   try {
@@ -884,7 +908,6 @@ managerRouter.post("/subscription-payment", async (req, res) => {
   }
 });
 
-
 managerRouter.get("/subscription-history", async (req, res) => {
   try {
     const managerId = req.user.id;
@@ -919,7 +942,6 @@ managerRouter.get("/subscription-history", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch subscription history" });
   }
 });
-
 
 managerRouter.get("/subscription-status", async (req, res) => {
   try {
@@ -1012,7 +1034,6 @@ const upload2 = multer({
     files: 10, // Maximum 10 files
   },
 });
-
 
 managerRouter.get("/new-community", (req, res) => {
   res.render("communityManager/new-community");
@@ -1303,7 +1324,12 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
     if (Rid) {
       const r = await Resident.findById(Rid);
       if (!r) {
-        return res.status(404).json({ success: false, message: `Resident with ID ${Rid} not found` });
+        return res
+          .status(404)
+          .json({
+            success: false,
+            message: `Resident with ID ${Rid} not found`,
+          });
       }
 
       r.residentFirstname = residentFirstname;
@@ -1313,8 +1339,7 @@ managerRouter.post("/userManagement/resident", async (req, res) => {
       r.contact = contact;
 
       await r.save();
-      res.json({ success: true, resident: r , isUpdate: true});
-      
+      res.json({ success: true, resident: r, isUpdate: true });
     } else {
       // Create new resident
       const r = await Resident.create({
@@ -1376,7 +1401,15 @@ managerRouter.delete("/userManagement/resident/:id", async (req, res) => {
 
 managerRouter.post("/userManagement/security", async (req, res) => {
   try {
-    const { Sid, securityName,  securityEmail, securityContact, securityAddress, securityShift, gate } = req.body;
+    const {
+      Sid,
+      securityName,
+      securityEmail,
+      securityContact,
+      securityAddress,
+      securityShift,
+      gate,
+    } = req.body;
 
     console.log("Incoming Security ID:", Sid);
     console.log("Request body:", req.body);
@@ -1384,7 +1417,12 @@ managerRouter.post("/userManagement/security", async (req, res) => {
     if (Sid) {
       const s = await Security.findById(Sid);
       if (!s) {
-        return res.status(404).json({ success: false, message: `Security staff with ID ${Sid} not found` });
+        return res
+          .status(404)
+          .json({
+            success: false,
+            message: `Security staff with ID ${Sid} not found`,
+          });
       }
 
       s.name = securityName;
@@ -1395,11 +1433,11 @@ managerRouter.post("/userManagement/security", async (req, res) => {
       s.workplace = gate;
 
       await s.save();
-     
+
       res.json({ success: true, security: s, isUpdate: true });
     } else {
       const s = await Security.create({
-        name : securityName,
+        name: securityName,
         email: securityEmail,
         contact: securityContact,
         address: securityAddress,
@@ -1408,17 +1446,18 @@ managerRouter.post("/userManagement/security", async (req, res) => {
         community: req.user.community,
       });
 
-      const password = await sendPassword({ email: securityEmail, userType: "Security" });
+      const password = await sendPassword({
+        email: securityEmail,
+        userType: "Security",
+      });
       const hashedPassword = await bcrypt.hash(password, 10);
       s.password = hashedPassword;
       await s.save();
 
       console.log("New security staff:", s);
-      
-    res.json({ success: true , security: s});
 
+      res.json({ success: true, security: s });
     }
-
   } catch (err) {
     console.error("Error in /userManagement/security:", err);
 
@@ -1433,7 +1472,7 @@ managerRouter.post("/userManagement/security", async (req, res) => {
     } else {
       flashMsg = err.message || "Unexpected error occurred";
     }
-    res.status(400).json({ success: false, message: flashMsg } );
+    res.status(400).json({ success: false, message: flashMsg });
   }
 });
 
@@ -1456,7 +1495,15 @@ managerRouter.delete("/userManagement/security/:id", async (req, res) => {
 
 managerRouter.post("/userManagement/worker", async (req, res) => {
   try {
-    const { Wid, workerName , workerEmail, workerJobRole, workerContact, workerAddress, workerSalary } = req.body;
+    const {
+      Wid,
+      workerName,
+      workerEmail,
+      workerJobRole,
+      workerContact,
+      workerAddress,
+      workerSalary,
+    } = req.body;
 
     console.log("Incoming Worker ID:", Wid);
     console.log("Request body:", req.body);
@@ -1464,7 +1511,9 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
     if (Wid) {
       const w = await Worker.findById(Wid);
       if (!w) {
-        return res.status(404).json({ success: false, message: `Worker with ID ${Wid} not found` });
+        return res
+          .status(404)
+          .json({ success: false, message: `Worker with ID ${Wid} not found` });
       }
 
       w.name = workerName;
@@ -1487,7 +1536,10 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
         community: req.user.community,
       });
 
-      const password = await sendPassword({ email: workerEmail, userType: "Worker" });
+      const password = await sendPassword({
+        email: workerEmail,
+        userType: "Worker",
+      });
 
       const hashedPassword = await bcrypt.hash(password, 10);
       w.password = hashedPassword;
@@ -1496,7 +1548,6 @@ managerRouter.post("/userManagement/worker", async (req, res) => {
       console.log("New worker:", w);
       res.json({ success: true, worker: w });
     }
-
   } catch (err) {
     console.error("Error in /userManagement/worker:", err);
 
@@ -1524,7 +1575,6 @@ managerRouter.get("/userManagement/worker/:id", async (req, res) => {
   res.status(200).json({ success: true, r });
 });
 
-
 managerRouter.delete("/userManagement/worker/:id", async (req, res) => {
   const id = req.params.id;
 
@@ -1533,18 +1583,20 @@ managerRouter.delete("/userManagement/worker/:id", async (req, res) => {
   res.status(200).json({ ok: true });
 });
 
-
 managerRouter.get("/dashboard", async (req, res) => {
   const ads = await Ad.find({
     community: req.user.community,
     status: "Active",
   });
 
-  const issues = await Issue.find({ community: req.user.community,status:"Pending" }).populate("resident", "residentFirstname residentLastname");
+  const issues = await Issue.find({
+    community: req.user.community,
+    status: "Pending",
+  }).populate("resident", "residentFirstname residentLastname");
   const residents = await Resident.find({ community: req.user.community });
   const commonSpacesBookings = await CommonSpaces.find({
     community: req.user.community,
-    status:"Pending"
+    status: "Pending",
   }).populate("bookedBy", "residentFirstname residentLastname");
   const payments = await Payment.find({ community: req.user.community });
   const visitors = await visitor.find({ community: req.user.community });
@@ -1554,11 +1606,10 @@ managerRouter.get("/dashboard", async (req, res) => {
   const totalPayments = payments.length;
 
   let Iactions = [...issues];
-  let Cactions = [...commonSpacesBookings]
+  let Cactions = [...commonSpacesBookings];
 
   Iactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   Cactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  
 
   const pendingIssues = issues.filter(
     (issue) => issue.status === "Pending" || issue.status === "Assigned"
@@ -1585,7 +1636,7 @@ managerRouter.get("/dashboard", async (req, res) => {
     completedPayments,
     visitors,
     Iactions,
-    Cactions
+    Cactions,
   });
 });
 
@@ -1628,6 +1679,43 @@ managerRouter.get("/issueResolving", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Server error");
+  }
+});
+
+// API endpoint to fetch issues data for auto-refresh
+managerRouter.get("/issueResolving/api/issues", async (req, res) => {
+  try {
+    const managerId = req.user.id;
+    const manager = await CommunityManager.findById(managerId);
+
+    if (!manager) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Community manager not found" });
+    }
+
+    const community = manager.assignedCommunity;
+    if (!community) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Community not found" });
+    }
+
+    const issues = await Issue.find({ community: community })
+      .populate("resident")
+      .populate("workerAssigned")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      issues: issues,
+    });
+  } catch (error) {
+    console.error("Error fetching issues:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch issues",
+    });
   }
 });
 
@@ -1692,22 +1780,29 @@ managerRouter.get("/payments", async (req, res) => {
     const manager = await CommunityManager.findById(managerId);
 
     if (!manager) {
-      return res.status(404).render("error", { message: "Community manager not found" });
+      return res
+        .status(404)
+        .render("error", { message: "Community manager not found" });
     }
 
-    const community = await Community.findById(manager.assignedCommunity).select(
+    const community = await Community.findById(
+      manager.assignedCommunity
+    ).select(
       "name subscriptionPlan subscriptionStatus planStartDate planEndDate subscriptionHistory"
     );
 
     if (!community) {
-      return res.status(404).render("error", { message: "Community not found" });
+      return res
+        .status(404)
+        .render("error", { message: "Community not found" });
     }
 
     const payments = community.subscriptionHistory || [];
     const hasPayments = payments.length > 0;
 
     const now = new Date();
-    const isExpired = community?.planEndDate && new Date(community.planEndDate) < now;
+    const isExpired =
+      community?.planEndDate && new Date(community.planEndDate) < now;
 
     const x = !hasPayments; // No payment yet
     const y = hasPayments && isExpired; // Paid but expired
@@ -1733,7 +1828,7 @@ managerRouter.get("/payments", async (req, res) => {
         name: community.name,
         subscriptionStatus: community.subscriptionStatus,
         planEndDate: community.planEndDate,
-      }
+      },
     });
   } catch (error) {
     console.error("Error loading payments page:", error);
@@ -1754,33 +1849,48 @@ managerRouter.get("/subscription-plans", async (req, res) => {
       basic: {
         name: "Basic Plan",
         price: 999,
-        features: ["Up to 50 residents", "Basic payment tracking", "Email support"],
-        duration: "monthly"
+        features: [
+          "Up to 50 residents",
+          "Basic payment tracking",
+          "Email support",
+        ],
+        duration: "monthly",
       },
       standard: {
-        name: "Standard Plan", 
+        name: "Standard Plan",
         price: 1999,
-        features: ["Up to 200 residents", "Advanced payment tracking", "SMS notifications", "Priority support"],
-        duration: "monthly"
+        features: [
+          "Up to 200 residents",
+          "Advanced payment tracking",
+          "SMS notifications",
+          "Priority support",
+        ],
+        duration: "monthly",
       },
       premium: {
         name: "Premium Plan",
         price: 3999,
-        features: ["Unlimited residents", "Full payment suite", "SMS + Email notifications", "Dedicated support", "Analytics dashboard"],
-        duration: "monthly"
-      }
+        features: [
+          "Unlimited residents",
+          "Full payment suite",
+          "SMS + Email notifications",
+          "Dedicated support",
+          "Analytics dashboard",
+        ],
+        duration: "monthly",
+      },
     };
 
     res.json({
       success: true,
       plans: planDetails,
-      planPrices
+      planPrices,
     });
   } catch (error) {
     console.error("Error fetching subscription plans:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch subscription plans"
+      message: "Failed to fetch subscription plans",
     });
   }
 });
@@ -1794,7 +1904,7 @@ managerRouter.post("/change-plan", async (req, res) => {
     if (!newPlan || !changeOption) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: newPlan and changeOption"
+        message: "Missing required fields: newPlan and changeOption",
       });
     }
 
@@ -1805,7 +1915,7 @@ managerRouter.post("/change-plan", async (req, res) => {
     if (!manager) {
       return res.status(404).json({
         success: false,
-        message: "Community manager not found"
+        message: "Community manager not found",
       });
     }
 
@@ -1813,7 +1923,7 @@ managerRouter.post("/change-plan", async (req, res) => {
     if (!community) {
       return res.status(404).json({
         success: false,
-        message: "Community not found"
+        message: "Community not found",
       });
     }
 
@@ -1831,14 +1941,14 @@ managerRouter.post("/change-plan", async (req, res) => {
     if (!newPrice) {
       return res.status(400).json({
         success: false,
-        message: "Invalid plan selected"
+        message: "Invalid plan selected",
       });
     }
 
     if (currentPlan === newPlan) {
       return res.status(400).json({
         success: false,
-        message: "You are already on this plan"
+        message: "You are already on this plan",
       });
     }
 
@@ -1849,15 +1959,19 @@ managerRouter.post("/change-plan", async (req, res) => {
     if (changeOption === "immediate") {
       // Immediate change - charge difference and update immediately
       const priceDifference = newPrice - currentPrice;
-      
+
       if (paymentMethod && priceDifference > 0) {
         // Process payment for the difference
-        const transactionId = `PLAN_CHANGE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
+        const transactionId = `PLAN_CHANGE_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`;
+
         // Create payment record for the difference
         const paymentRecord = {
           transactionId,
-          planName: `${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)} Plan (Upgrade)`,
+          planName: `${
+            newPlan.charAt(0).toUpperCase() + newPlan.slice(1)
+          } Plan (Upgrade)`,
           planType: newPlan,
           amount: priceDifference,
           paymentMethod,
@@ -1881,7 +1995,9 @@ managerRouter.post("/change-plan", async (req, res) => {
         community.subscriptionPlan = newPlan;
         community.subscriptionStatus = "active";
         community.planStartDate = now;
-        community.planEndDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        community.planEndDate = new Date(
+          now.getTime() + 30 * 24 * 60 * 60 * 1000
+        );
 
         // Add to subscription history
         if (!community.subscriptionHistory) {
@@ -1897,22 +2013,27 @@ managerRouter.post("/change-plan", async (req, res) => {
           transactionId,
           newPlan,
           amountCharged: priceDifference,
-          planEndDate: community.planEndDate
+          planEndDate: community.planEndDate,
         });
-
       } else if (priceDifference <= 0) {
         // Downgrade - no payment needed, just update plan
         community.subscriptionPlan = newPlan;
         community.planStartDate = now;
-        community.planEndDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        community.planEndDate = new Date(
+          now.getTime() + 30 * 24 * 60 * 60 * 1000
+        );
 
         // Add change record to history
         if (!community.subscriptionHistory) {
           community.subscriptionHistory = [];
         }
         community.subscriptionHistory.push({
-          transactionId: `PLAN_CHANGE_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          planName: `${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)} Plan (Downgrade)`,
+          transactionId: `PLAN_CHANGE_${Date.now()}_${Math.random()
+            .toString(36)
+            .substr(2, 9)}`,
+          planName: `${
+            newPlan.charAt(0).toUpperCase() + newPlan.slice(1)
+          } Plan (Downgrade)`,
           planType: newPlan,
           amount: 0,
           paymentMethod: "No Payment Required",
@@ -1935,27 +2056,25 @@ managerRouter.post("/change-plan", async (req, res) => {
           message: "Plan changed successfully! Your new plan is now active.",
           newPlan,
           amountCharged: 0,
-          planEndDate: community.planEndDate
+          planEndDate: community.planEndDate,
         });
-
       } else {
         return res.status(400).json({
           success: false,
-          message: "Payment method required for plan upgrade"
+          message: "Payment method required for plan upgrade",
         });
       }
-
     } else if (changeOption === "nextCycle") {
       // Schedule change for next billing cycle
       const nextCycleDate = isExpired ? now : planEndDate;
-      
+
       // Store pending plan change
       community.pendingPlanChange = {
         newPlan,
         effectiveDate: nextCycleDate,
         requestedDate: now,
         requestedBy: managerId,
-        status: "pending"
+        status: "pending",
       };
 
       await community.save();
@@ -1965,22 +2084,20 @@ managerRouter.post("/change-plan", async (req, res) => {
         message: `Plan change scheduled for ${nextCycleDate.toLocaleDateString()}. Your current plan will remain active until then.`,
         newPlan,
         effectiveDate: nextCycleDate,
-        currentPlanEndDate: community.planEndDate
+        currentPlanEndDate: community.planEndDate,
       });
-
     } else {
       return res.status(400).json({
         success: false,
-        message: "Invalid change option"
+        message: "Invalid change option",
       });
     }
-
   } catch (error) {
     console.error("Plan change error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to process plan change",
-      error: error.message
+      error: error.message,
     });
   }
 });

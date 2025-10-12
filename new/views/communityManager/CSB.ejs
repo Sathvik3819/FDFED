@@ -108,6 +108,21 @@
         transform: translateY(-2px);
       }
 
+      .refresh-btn {
+        padding: 12px 15px !important;
+        background-color: var(--success) !important;
+        margin-left: 5px;
+      }
+
+      .refresh-btn:hover {
+        background-color: #198754 !important;
+      }
+
+      .refresh-btn:disabled {
+        background-color: #6c757d !important;
+        cursor: not-allowed;
+      }
+
       .bookings-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -282,6 +297,7 @@
         letter-spacing: 0.3px;
         box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
       }
+
       .status-badge::before {
         content: "";
         display: inline-block;
@@ -292,27 +308,31 @@
         background: currentColor;
         opacity: 0.7;
       }
+
       .status-Pending {
         background-color: rgba(234, 179, 8, 0.1);
         color: #b45309;
       }
+
       .status-Approved {
         background-color: rgba(16, 185, 129, 0.1);
         color: #047857;
       }
+
       .status-Rejected {
         background-color: rgba(239, 68, 68, 0.1);
         color: #b91c1c;
       }
+
       .status-Cancelled {
         background-color: rgba(107, 114, 128, 0.1);
         color: #4b5563;
       }
+
       .status-Completed {
         background-color: rgba(6, 212, 57, 0.95);
         color: white;
       }
-      
 
       .popup {
         position: fixed;
@@ -320,13 +340,14 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background: rgba(17, 24, 39, 0.6); /* dark overlay */
+        background: rgba(17, 24, 39, 0.6);
+        /* dark overlay */
         z-index: 1000;
       }
 
       /* Popup content box */
       .popup-content {
-       position: relative;
+        position: relative;
         background: #fff;
         padding: 20px;
         border-radius: 12px;
@@ -431,7 +452,6 @@
         font-size: 0.9rem;
         font-weight: 600;
         border-radius: 20px;
-        
       }
 
       /* Example status colors */
@@ -439,10 +459,12 @@
         background: #d1fae5;
         color: #065f46;
       }
+
       .detail-badge.Pending {
         background: #fef3c7;
         color: #92400e;
       }
+
       .detail-badge.Rejected,
       .detail-badge.Cancelled {
         background: #fee2e2;
@@ -464,7 +486,7 @@
         margin-bottom: 12px;
       }
 
-      .payment-box{
+      .payment-box {
         display: grid;
         grid-template-columns: 1fr 1fr;
         padding: 16px;
@@ -487,6 +509,7 @@
           opacity: 0;
           transform: translateY(-10px);
         }
+
         to {
           opacity: 1;
           transform: translateY(0);
@@ -859,19 +882,55 @@
 
         color: red;
       }
+
+      /* Loading animation for auto-refresh */
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0.5;
+        }
+
+        100% {
+          opacity: 1;
+        }
+      }
+
+      .loading-indicator {
+        animation: pulse 1s infinite;
+      }
+
+      /* Auto-refresh status indicator */
+      .refresh-status {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        z-index: 1000;
+        display: none;
+      }
+
+      .refresh-status.show {
+        display: block;
+      }
     </style>
   </head>
 
   <body>
-    <%- include('../../partials/managerNav.ejs', { message: typeof message !==
-    'undefined' ? message : null }) %>
+    <%- include('../../partials/managerNav.ejs') %>
 
     <div class="bodyContainer">
       <!-- AD SECTION -->
       <div class="adCon d-flex justify-content-center align-items-center">
         <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length >
-          0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
+          <% if (locals.ads && ads.filter(ad=> ad.status==="Active").length > 0)
+          { %> <% ads.filter(ad=> ad.status==="Active").forEach(ad => { %>
           <img
             src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
             class="ad-slide"
@@ -950,6 +1009,8 @@
                         </option>
                         <option value="Amphitheatre">Amphitheatre</option>
                         <option value="Guest Room">Guest Room</option>
+                        <option value="Gym">Gym</option>
+
                         <option value="Other">Other</option>
                       </select>
                     </div>
@@ -1029,8 +1090,8 @@
             <!-- Spaces List -->
             <div class="space-list" id="spacesList">
               <% if (locals.community && community.commonSpaces &&
-              community.commonSpaces.length > 0) { %> <%
-              community.commonSpaces.forEach(space => { %>
+              community.commonSpaces.length> 0) { %> <%
+              community.commonSpaces.forEach(space=> { %>
               <div class="space-item" data-id="<%= space._id %>">
                 <div class="space-actions">
                   <button
@@ -1050,20 +1111,23 @@
                   </button>
                 </div>
                 <h4><%= space.name %></h4>
-                <p><strong>Type:</strong> <%= space.type %></p>
                 <p>
-                  <strong>Bookable:</strong> <%= space.bookable ? 'Yes' : 'No'
-                  %>
+                  <strong>Type:</strong>
+                  <%= space.type %>
+                </p>
+                <p>
+                  <strong>Bookable:</strong>
+                  <%= space.bookable ? 'Yes' : 'No' %>
                 </p>
                 <% if (space.bookable) { %>
                 <p>
-                  <strong>Max Hours:</strong> <%= space.maxBookingDurationHours
-                  || 'Not specified' %>
+                  <strong>Max Hours:</strong>
+                  <%= space.maxBookingDurationHours || 'Not specified' %>
                 </p>
                 <% } %> <% if (space.bookingRules) { %>
                 <p>
-                  <strong>Rules:</strong> <%= space.bookingRules.substring(0,
-                  50) %>...
+                  <strong>Rules:</strong>
+                  <%= space.bookingRules.substring(0, 50) %>...
                 </p>
                 <% } %>
               </div>
@@ -1084,52 +1148,59 @@
         <div class="stats-container">
           <div class="stat-card" style="border-left: 6px solid var(--primary)">
             <h3>Today's Bookings</h3>
-            <span class="stat-number" style="color: var(--primary)"
-              ><%= csb.length %></span
-            >
+            <span class="stat-number" style="color: var(--primary)">
+              <%= csb.length %>
+            </span>
           </div>
           <div class="stat-card" style="border-left: 6px solid var(--danger)">
             <h3>Pending Approvals</h3>
-            <span class="stat-number" style="color: var(--danger)"
-              ><%= csb.filter(c => c.status === "Pending").length %></span
-            >
+            <span class="stat-number" style="color: var(--danger)">
+              <%= csb.filter(c=> c.status === "Pending").length %>
+            </span>
           </div>
           <div class="stat-card" style="border-left: 6px solid var(--success)">
             <h3>Approved</h3>
-            <span class="stat-number" style="color: var(--success)"
-              ><%= csb.filter(c => c.status === "Approved").length %></span
-            >
+            <span class="stat-number" style="color: var(--success)">
+              <%= csb.filter(c=> c.status === "Approved").length %>
+            </span>
           </div>
         </div>
 
         <div class="search-bar">
           <input type="text" placeholder="Search by space, date or status..." />
           <button class="approve-all">Search</button>
+          <button
+            class="refresh-btn"
+            id="manualRefresh"
+            title="Refresh Bookings"
+          >
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
         </div>
 
         <div class="bookings-container" id="bookingsContainer">
-          <% if (locals.csb && csb.length > 0) { %> <% csb.forEach(c => { %>
+          <% if (locals.csb && csb.length> 0) { %> <% csb.forEach(c=> { %>
           <div class="booking-card">
             <div class="booking-card-header">
               <span class="booking-id">ID: <%= c.ID %></span>
-              <span class="booking-status status-<%= c.status %>"
-                ><%= c.status %></span
-              >
+              <span class="booking-status status-<%= c.status %>">
+                <%= c.status %>
+              </span>
             </div>
 
             <h3 class="booking-space"><%= c.name %></h3>
 
             <div class="booking-datetime">
               <i class="bi bi-calendar-event"></i>
-              <span><%= c.Date %>, <%= c.from %> - <%= c.to %></span>
+              <span> <%= c.Date %>, <%= c.from %> - <%= c.to %> </span>
             </div>
 
             <div class="booking-actions">
-              <% if (c.status ==="Pending") { %>
+              <% if (c.status==="Pending" ) { %>
               <button class="available-btn" data-id="<%= c._id %>">
                 <i class="bi bi-eye"></i> Check Availability
               </button>
-              <% } else if(c.status==="available"){ %>
+              <% } else if(c.status==="available" ){ %>
               <button class="approve-btn" data-id="<%= c._id %>">
                 <i class="bi bi-check-circle-fill"></i> Approve
               </button>
