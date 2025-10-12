@@ -76,7 +76,7 @@ securityRouter.get("/preApproval", async (req, res) => {
     community: req.user.community,
   }).populate("approvedBy");
   
-  console.log(pa);
+  // console.log(pa);
   
 
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });

@@ -118,8 +118,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // Show popup
     popup.style.display = "flex";
   }
-});
 
 function closePopup() {
   document.getElementById("visitorPopup").style.display = "none";
 }
+});
+
+
+console.log(Html5QrcodeScanner)
