@@ -415,6 +415,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.head.appendChild(style);
 });
 */
+
 // === Payment Form Popup Controls === //
 function openPaymentForm() {
   const popup = document.getElementById("paymentFormPopup");
