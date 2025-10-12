@@ -53,7 +53,7 @@ securityRouter.post("/addVisitor", async (req, res) => {
       entryDate: new Date(Date.now()),
       entryTime: new Date(Date.now()),
       email,
-     addedBy: req.user.id,
+      addedBy: req.user.id,
       community: req.user.community,
     });
     console.log("visitor entered");
@@ -165,7 +165,7 @@ securityRouter.post("/preApproval/action", UpdatePreApprovalData);
 securityRouter.get("/visitorManagement", async (req, res) => {
   const visitors = await visitor.find({
     community: req.user.community,
-   addedBy: req.user.id,
+    addedBy: req.user.id,
   });
 
  const ads = await Ad.find({ community: req.user.community,startDate: { $lte: new Date() }, endDate: { $gte: new Date() } });
@@ -193,7 +193,7 @@ securityRouter.get("/visitorManagement/:action/:id", async (req, res) => {
   console.log(action, id);
 
   try {
-    const v = await visitor.findById(fullName);
+    const v = await visitor.findById(id);
 
     if (!v) {
       return res

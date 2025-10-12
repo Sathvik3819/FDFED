@@ -1,3 +1,4 @@
+
 const notyf = new Notyf({
   duration: 3000,
   position: { x: "center", y: "top" },
@@ -8,20 +9,20 @@ const notyf = new Notyf({
 });
 
 function showSection(sectionId, activeTabId) {
-  // Hide all sections
+  
   document.querySelectorAll(".form-section").forEach((section) => {
     section.classList.add("d-none");
   });
 
-  // Show selected section
+  
   document.getElementById(sectionId).classList.remove("d-none");
 
-  // Remove active class from all tabs
+  
   document.querySelectorAll(".toggle-tab").forEach((tab) => {
     tab.classList.remove("active");
   });
 
-  // Add active class to clicked tab
+  
   document.getElementById(activeTabId).classList.add("active");
 }
 
@@ -29,7 +30,7 @@ function showSection(sectionId, activeTabId) {
 document.addEventListener("DOMContentLoaded", () => {
   showSection("profileSection", "profileTab");
 
-  // Add animation to form sections
+  // Add animation 
   const sections = document.querySelectorAll(".form-section");
   sections.forEach((section, index) => {
     section.style.opacity = "0";

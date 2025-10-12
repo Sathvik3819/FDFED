@@ -133,20 +133,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
   tabs.forEach((tab) => {
     tab.addEventListener("click", function () {
-      // Remove active class from all tabs
+      
       tabs.forEach((t) => t.classList.remove("active"));
 
-      // Add active class to clicked tab
+      
       this.classList.add("active");
 
-      // Hide all containers
+      
       document
         .querySelectorAll(".visitor-cards-container")
         .forEach((container) => {
           container.classList.remove("active");
         });
 
-      // Show the selected container
+      
       const tabName = this.getAttribute("data-tab");
       document.getElementById(`${tabName}-visitors`).classList.add("active");
     });
@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-// Search functionality
+
 document.addEventListener("DOMContentLoaded", function () {
   const searchInput = document.querySelector(".search-input");
   const searchButton = document.querySelector(".filter-btn");
@@ -199,13 +199,13 @@ document.addEventListener("DOMContentLoaded", function () {
   function performSearch() {
     const searchTerm = searchInput.value.toLowerCase().trim();
 
-    // Get all visitor cards from all containers
+    // Get all visitor cards 
     const allVisitorCards = document.querySelectorAll(
       ".visitor-cards-container.active .visitor-card"
     );
 
     if (searchTerm === "") {
-      // If search is empty, show all cards
+      // search is empty, show all cards
       allVisitorCards.forEach((card) => {
         card.style.display = "block";
       });
@@ -239,7 +239,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-    // Check if any cards are visible in the current tab
+    
     const currentContainer = document.querySelector(
       ".visitor-cards-container.active"
     );
@@ -247,7 +247,7 @@ document.addEventListener("DOMContentLoaded", function () {
       '.visitor-card[style="display: block"]'
     );
 
-    // Show empty state if no cards match the search
+    
     const emptyState = currentContainer.querySelector(".empty-state");
     if (visibleCards.length === 0) {
       if (!emptyState) {
@@ -265,7 +265,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Event listeners for search
+  
   searchButton.addEventListener("click", performSearch);
   searchInput.addEventListener("keyup", function (e) {
     if (e.key === "Enter") {
@@ -273,31 +273,32 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Tab switching functionality (updated to include search reset)
+  
   const tabs = document.querySelectorAll(".visitor-tab");
 
   tabs.forEach((tab) => {
     tab.addEventListener("click", function () {
-      // Remove active class from all tabs
+      
       tabs.forEach((t) => t.classList.remove("active"));
 
-      // Add active class to clicked tab
+      
       this.classList.add("active");
 
-      // Hide all containers
+      
       document
         .querySelectorAll(".visitor-cards-container")
         .forEach((container) => {
           container.classList.remove("active");
         });
 
-      // Show the selected container
+      
       const tabName = this.getAttribute("data-tab");
       document.getElementById(`${tabName}-visitors`).classList.add("active");
 
-      // Reset search when switching tabs
+      
       searchInput.value = "";
       performSearch();
     });
   });
 });
+

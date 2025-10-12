@@ -1,3 +1,4 @@
+
 import Security from "../models/security.js";
 import visitor from "../models/visitors.js";
 import Ad from "../models/Ad.js";
@@ -24,7 +25,7 @@ const getDashboardInfo = async (req, res) => {
 
     const today = new Date();
     const dd = String(today.getDate()).padStart(2, '0');
-    const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); 
     const yyyy = today.getFullYear();
 
     const startOfDay = new Date();
@@ -39,7 +40,7 @@ const getDashboardInfo = async (req, res) => {
       community : req.user.community,
       status : "Approved",
       scheduledAt: { $gte: startOfDay, $lte: endOfDay }
-      // add today condition
+      
     })
 
     const ActiveVisitors = await Visitor.countDocuments({
@@ -47,7 +48,7 @@ const getDashboardInfo = async (req, res) => {
       status : "Approved",
       isCheckedIn : true,
       scheduledAt: { $gte: startOfDay, $lte: endOfDay }
-      // add today conditon
+      
     })
     
     let stats = {Pending : PendingRequests, Visitor : VisitorToday, Active : ActiveVisitors};
@@ -71,14 +72,14 @@ const UpdatePreApprovalData = async (req, res) =>{
 
     console.log("Visitor ID received:", ID);
 
-    // Validate ObjectId format first
+    
     if (!mongoose.Types.ObjectId.isValid(ID)) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid visitor ID" });
     }
 
-    // Fetch the visitor record
+    
     const vis = await Visitor.findById(ID).populate('approvedBy');
     if (!vis) {
       return res
@@ -102,22 +103,7 @@ const UpdatePreApprovalData = async (req, res) =>{
     console.log("status of visitor : ",vis.status);
     
 
-    // if(vis.status === "Approved"){
-    //   const v = await Visitor.create({
-    //   name: vis.name,
-    //   contactNumber: vis.contactNumber,
-    //   email: vis.email,
-    //   purpose: vis.purpose,
-    //   checkInAt : new Date(Date.now()),
-    //   vehicleNumber:vehicleNumber,
-    //   verifiedByResident:true,
-    //   community : req.user.community,
-    //   addedBy:req.user.id,
-    //   status:"Active",
-    // });
-    // console.log("new visitor by preapproval : "+ v);
     
-    // }
 
     res.status(200).json({
       success: true,
