@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pVnSm7w+0K8M1ZhbqJup3PZc+Vhw3v1sxA1Z+T5Yp4v7W0d1yE2V9zF+2O3W1zI7tFqI7YcCvGzZ7JHjvZz5yA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <title>Community Manager Applications | Urban Ease</title>
 <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -673,6 +676,7 @@
             }
         }
     </style>
+    
 </head>
 <body>
     <div class="container">
@@ -688,8 +692,9 @@
                 </div>
                  <div class="header-actions" style="display: flex; align-items: center; gap: 16px;">
             
-            <button class="btn" id="refreshBtn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 500; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2); margin-right: 12px;">
-    <i class="fas fa-sync-alt" id="refreshIcon"></i>
+            <button class="btn" id="refreshBtn" style="background: linear-gradient(135deg, #151A2D 0%, #2c3441 100%); color: white; border: none; padding: 10px 20px; border-radius: 10px;margin-right: 12px;">
+    <i class="fas fa-sync-alt" id="refreshIcon" style="color: white;"></i>
+
     <span>Refresh</span>
 </button>
         </div>
@@ -953,7 +958,7 @@ document.getElementById('rejectionReason').addEventListener('input', function() 
 
 // Auto-refresh variables
 let autoRefreshInterval;
-const REFRESH_INTERVAL = 30000; // 30 seconds
+const REFRESH_INTERVAL = 60000; // 60 seconds
 
 // Add spin animation
 const spinStyle = document.createElement('style');
@@ -1001,11 +1006,91 @@ async function manualRefresh() {
 
 // Refresh applications by reloading the page
 async function refreshApplications() {
-    return new Promise((resolve) => {
-        window.location.reload();
-        resolve();
-    });
+    try {
+        const response = await fetch('/admin/interests/json'); // JSON route
+        const data = await response.json();
+
+        if (!data.success) {
+            console.error('Failed to fetch applications');
+            return;
+        }
+
+        const container = document.querySelector('.applications-container') || document.querySelector('.empty-state');
+
+        if (data.interests.length === 0) {
+            container.outerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No applications found</h3>
+                    <p>There are currently no community interest applications to review.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Rebuild application cards dynamically
+        const html = data.interests.map(interest => `
+            <div class="application-card" data-status="${interest.status.toLowerCase()}">
+                <div class="application-header">
+                    <div class="application-info">
+                        <h3 class="application-title">${interest.firstName} ${interest.lastName}</h3>
+                        <div class="application-meta">
+                            <span><i class="fas fa-envelope"></i> ${interest.email}</span>
+                            <span><i class="fas fa-phone"></i> ${interest.phone}</span>
+                        </div>
+                        <div class="application-meta">
+                            <span><i class="fas fa-users"></i> ${interest.communityName}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> ${interest.location}</span>
+                        </div>
+                    </div>
+                    <span class="status-badge status-${interest.status.toLowerCase()}">${interest.status}</span>
+                </div>
+                <div class="community-info">
+                    <p>${interest.description}</p>
+                </div>
+                ${interest.photos && interest.photos.length > 0 ? `
+                <div class="photo-gallery">
+                    <div class="photo-label">
+                        <i class="fas fa-images"></i>
+                        <span>${interest.photos.length} image${interest.photos.length > 1 ? 's' : ''} attached</span>
+                    </div>
+                    <div class="photo-grid">
+                        ${interest.photos.map(photo => `<img src="/${photo.replace(/\\/g, '/')}" alt="Community photo">`).join('')}
+                    </div>
+                </div>` : ''}
+                ${interest.status === 'rejected' && interest.rejectionReason ? `
+                <div class="rejection-reason">
+                    <div class="rejection-reason-label">
+                        <i class="fas fa-exclamation-circle"></i> Rejection Reason
+                    </div>
+                    <p class="rejection-reason-text">${interest.rejectionReason}</p>
+                </div>` : ''}
+                <div class="application-footer">
+                    <div class="application-date">
+                        <i class="fas fa-calendar-alt"></i> Applied on ${new Date(interest.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric'})}
+                    </div>
+                    ${interest.status === 'pending' ? `
+                    <div class="application-actions">
+                        <form method="POST" action="/admin/interests/${interest._id}/approve" style="display:inline;">
+                            <button type="submit" class="btn btn-approve">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                        </form>
+                        <button onclick="openRejectModal('${interest._id}')" class="btn btn-reject">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
+                    </div>` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        container.outerHTML = `<div class="applications-container">${html}</div>`;
+
+    } catch (error) {
+        console.error('Error refreshing applications:', error);
+    }
 }
+
 
 // Start auto-refresh
 function startAutoRefresh() {

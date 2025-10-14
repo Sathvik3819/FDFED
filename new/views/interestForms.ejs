@@ -97,6 +97,55 @@
                 opacity: 1;
             }
         }
+            /* Dropdown Styling */
+            select {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                font-size: 16px;
+                background-color: #fff;
+                color: #333;
+                box-sizing: border-box;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                appearance: none; /* Removes browser default arrow */
+                -webkit-appearance: none;
+                -moz-appearance: none;
+
+                /* Custom arrow (matches modern look) */
+                background-image: linear-gradient(45deg, transparent 50%, #666 50%),
+                                linear-gradient(135deg, #666 50%, transparent 50%);
+                background-position: calc(100% - 20px) calc(1.2em + 2px),
+                                    calc(100% - 15px) calc(1.2em + 2px);
+                background-size: 5px 5px, 5px 5px;
+                background-repeat: no-repeat;
+            }
+
+            /* Focus & hover states (same as inputs) */
+            select:focus {
+                outline: none;
+                border-color: #3b44f0;
+                box-shadow: 0 0 5px rgba(59, 68, 240, 0.3);
+            }
+
+            select:hover {
+                border-color: #bbb;
+            }
+
+            /* Optional: make dropdown text slightly indented for symmetry */
+            select option {
+                padding: 10px;
+                font-size: 15px;
+                color: #333;
+            }
+
+            /* When disabled (if you add any) */
+            select:disabled {
+                background-color: #f5f5f5;
+                color: #999;
+                cursor: not-allowed;
+            }
 
         /* Main Container */
         .container {
@@ -366,11 +415,29 @@
                             <label for="communityName">Community Name *</label>
                             <input type="text" id="communityName" name="communityName" required>
                         </div>
-                        <div class="form-group">
-                            <label for="location">Location *</label>
-                            <input type="text" id="location" name="location" required>
+                        
+                          
+            <div class="form-group">
+                <label for="location">City *</label>
+                <select id="location" name="location" required>
+                    <option value="">-- Select a City --</option>
+                    <option value="Bangalore">Bangalore</option>
+                    <option value="Chennai">Chennai</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Kolkata">Kolkata</option>
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Pune">Pune</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
                         </div>
+                    <div class="form-group" id="otherCityGroup" style="display: none;">
+                        <label for="otherCity">Enter Your City *</label>
+                        <input type="text" id="otherCity" name="otherCity" placeholder="Type your city name">
                     </div>
+
                     <div class="form-group">
                         <label for="description">Community Description *</label>
                         <textarea id="description" name="description" placeholder="A brief description of your community..." required></textarea>
@@ -404,26 +471,41 @@
         let selectedPhotos = [];
 
         // Alert Functions
-        function showAlert(message, type = 'success', duration = 4000) {
+       function showAlert(message, type = 'success', duration = 4000) {
             const alertBox = document.getElementById('alertBox');
             const alertMessage = document.getElementById('alertMessage');
 
-            // Clear previous classes
-            alertBox.className = 'alert';
-            
-            // Set message
+            // Immediately hide any previous alert
+            alertBox.classList.remove('show');
+
+            // Force reflow so animation can trigger again
+            void alertBox.offsetWidth;
+
+            // Set the new message
             alertMessage.textContent = message;
-            
-            // Add appropriate type class
+
+            // Clear previous type classes and set new one
+            alertBox.className = 'alert';
             alertBox.classList.add(type === 'success' ? 'success' : 'error');
-            
+
             // Show alert
+            alertBox.style.display = 'block';
             alertBox.classList.add('show');
 
             // Auto-hide after duration
             setTimeout(() => {
                 hideAlert();
             }, duration);
+        }
+
+        function hideAlert() {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.classList.remove('show');
+
+            // Wait for animation to finish
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 300);
         }
 
         function hideAlert() {
@@ -493,6 +575,21 @@
                 
                 updatePhotoPreviewVisibility();
             };
+             // Show/Hide city input when "Other" selected
+                const locationSelect = document.getElementById('location');
+                const otherCityGroup = document.getElementById('otherCityGroup');
+                const otherCityInput = document.getElementById('otherCity');
+
+                locationSelect.addEventListener('change', function() {
+                    if (this.value === 'Other') {
+                        otherCityGroup.style.display = 'block';
+                        otherCityInput.setAttribute('required', true);
+                    } else {
+                        otherCityGroup.style.display = 'none';
+                        otherCityInput.removeAttribute('required');
+                        otherCityInput.value = '';
+                    }
+                });
 
             // Form submission logic
             document.getElementById('combinedForm').addEventListener('submit', function(e) {
@@ -506,7 +603,7 @@
                 const communityName = document.getElementById('communityName').value.trim();
                 const location = document.getElementById('location').value.trim();
                 const description = document.getElementById('description').value.trim();
-
+               
                 // Validation
                 if (!firstName || !lastName || !email || !phone || !communityName || !location || !description) {
                     showAlert('Please fill in all required fields.', 'error');
@@ -534,6 +631,58 @@
                 selectedPhotos.forEach(photo => {
                     formData.append('photos', photo);
                 });
+                // --- Name Validation for All Name Fields ---
+                const nameRegex = /^[A-Za-z]+$/;
+
+                // First Name validation
+                if (!nameRegex.test(firstName)) {
+                    showAlert('First Name must contain only letters (no spaces or special characters).', 'error');
+                    return;
+                }
+
+                // Last Name validation
+                if (!nameRegex.test(lastName)) {
+                    showAlert('Last Name must contain only letters (no spaces or special characters).', 'error');
+                    return;
+                }
+                const phoneRegex = /^(\+91[\-\s]?|0)?[0-9]{10}$/;
+
+                if (!phoneRegex.test(phone)) {
+                    showAlert('Enter a valid 10-digit phone number.', 'error');
+                    return;
+                }
+                // Community Name validation
+                if (!nameRegex.test(communityName)) {
+                    showAlert('Community Name must contain only letters (no spaces or special characters).', 'error');
+                    return;
+                }
+
+                if (!location) {
+                    showAlert('Please select a city.', 'error');
+                    return;
+                }
+                let finalLocation = location;
+               
+
+                if (location === 'Other') {
+                    const otherCity = otherCityInput.value.trim();
+                    if (!otherCity) {
+                        showAlert('Please enter your city name.', 'error');
+                        return;
+                    }
+                    if (!nameRegex.test(otherCity)) {
+                        showAlert('City name must contain only letters and spaces.', 'error');
+                        return;
+                    }
+                    finalLocation = otherCity;
+                } else {
+                    if (!nameRegex.test(location)) {
+                        showAlert('City name must contain only letters and spaces.', 'error');
+                        return;
+                    }
+                }
+
+
 
                 // Submit form
                 fetch('/interest/submit', {
