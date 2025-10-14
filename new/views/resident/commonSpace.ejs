@@ -19,6 +19,42 @@
     <link rel="stylesheet" href="../../css/nav.css" />
     <link rel="stylesheet" href="../../css/resident/CSB.css" />
     <link rel="stylesheet" href="/notyf/notyf.min.css" />
+    <style>
+      /* Loading animation for auto-refresh */
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      .loading-indicator {
+        animation: pulse 1s infinite;
+      }
+
+      /* Auto-refresh status indicator */
+      .refresh-status {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        z-index: 1000;
+        display: none;
+      }
+
+      .refresh-status.show {
+        display: block;
+      }
+    </style>
   </head>
   <body>
     <%- include('../../partials/residentNav.ejs') %>
@@ -28,7 +64,8 @@
           <% if (locals.ads && ads.filter(ad => ad.status==="Active").length >
           0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
           <img
-            src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
+            src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, 
+ '/') %>"
             class="ad-slide"
             alt="Ad"
             height="100px"
@@ -36,15 +73,16 @@
           />
           <% }) %> <% } else { %>
           <div
-            class="d-flex justify-content-center align-items-center"
+            class="d-flex justify-content-center 
+ align-items-center"
             style="
               background-color: rgba(158, 207, 250, 0.539);
-              border-radius: 8px;
+ border-radius: 8px;
               color: rgb(0, 80, 193);
               border: 3px dotted blue;
               height: 100%;
               width: 100%;
-            "
+ "
           >
             <p class="ad-text fs-4" style="font-weight: 600">Advertisement</p>
           </div>
@@ -54,15 +92,21 @@
       <div class="contentCon">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h4 class="section-title">Common Space Bookings</h4>
-          <button id="bookFacilityBtn" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-2"></i>Book a Facility
-          </button>
+           <div class="d-flex gap-2">
+            <button id="bookFacilityBtn" class="btn btn-primary">
+              <i class="bi bi-plus-lg me-2"></i>Book a Facility
+            </button>
+            <button class="btn btn-success" id="manualRefresh" title="Refresh Bookings">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
         </div>
         <div class="stats-grid mb-4">
           <div class="stat-card" style="border-left-color: var(--success)">
             <p class="card-label">Total Bookings (this month)</p>
-            <h2 class="card-value text-success"><%= allBookings%></h2>
-          </div>
+            <h2 class="card-value text-success" id="totalBookings"><%= allBookings%></h2>
+    
+       </div>
           <div class="stat-card" style="border-left-color: var(--warning)">
             <p class="card-label">Pending Bookings</p>
             <h2 class="card-value text-warning" id="pendingCount">
@@ -70,60 +114,70 @@
             </h2>
           </div>
           <div class="stat-card" style="border-left-color: var(--primary)">
-            <p class="card-label">Total Facilities</p>
+  
+           <p class="card-label">Total Facilities</p>
             <h2 class="card-value text-primary"><%= ammenities %></h2>
           </div>
         </div>
         <div>
           <h4 class="table-title">Recent Bookings</h4>
-          <div class="bookings-grid">
+          <div class="bookings-grid" id="bookingsGrid">
             <% if (locals.bookings && bookings.length > 0) { %><%
-            bookings.forEach(b=> { %>
+   
+           bookings.forEach(b=> { %>
             <div class="booking-card <%= b.status %>">
               <div class="booking-card-header">
                 <span class="booking-id"
                   >#<%= b._id.toString().slice(-6) %></span
                 >
-                <span class="status-badge status-<%= b.status %>"
+     
+             <span class="status-badge status-<%= b.status %>"
                   ><%= b.status %></span
                 >
               </div>
               <div class="booking-details">
                 <div class="booking-detail">
-                  <span class="detail-label">Facility:</span>
+   
+                 <span class="detail-label">Facility:</span>
                   <span class="detail-value"><%= b.name %></span>
                 </div>
                 <div class="booking-detail">
                   <span class="detail-label">Date:</span>
-                  <span class="detail-value"><%= b.Date %></span>
+           
+         <span class="detail-value"><%= b.Date %></span>
                 </div>
                 <div class="booking-detail">
                   <span class="detail-label">Time:</span>
                   <span class="detail-value"><%= b.from %> - <%= b.to %></span>
-                </div>
+             
+     </div>
                 <% if (b.purpose) { %>
                 <div class="booking-detail">
                   <span class="detail-label">Purpose:</span>
                   <span class="detail-value"><%= b.purpose %></span>
                 </div>
-                <% } %>
+    
+              <% } %>
               </div>
               <div class="booking-actions">
                 <button class="action-btn view" data-id="<%= b._id %>">
                   <i class="bi bi-eye"></i> View Details
-                </button>
+              
+   </button>
                 <% if (b.status==="Pending" ) { %>
                 <button class="action-btn cancel" data-id="<%= b._id %>">
                   <i class="bi bi-x-circle"></i> Cancel
                 </button>
                 <% } %>
-              </div>
+ 
+               </div>
             </div>
             <% }) %><% } else { %>
             <div
               class="no-bookings d-flex gap-3 justify-content-center align-items-center text-muted"
             >
-              <i class="bi bi-calendar fs-3"></i>
+              
+ <i class="bi bi-calendar fs-3"></i>
               <p>No bookings found</p>
             </div>
             <% } %>
@@ -135,7 +189,8 @@
     <div id="bookingFormPopup" class="popup" style="display: none">
       <div class="popup-content">
         <div class="popup-header">
-          <h3>Book Common Space</h3>
+   
+         <h3>Book Common Space</h3>
           <button
             type="button"
             class="close-btn"
@@ -144,121 +199,143 @@
             <i class="bi bi-x"></i>
           </button>
         </div>
-        <form id="bookingForm">
+   
+       <form id="bookingForm">
           <div class="A">
             <div>
               <div class="form-group">
                 <label for="facility">Select Facility *</label>
                 <select
                   id="facility"
-                  name="facility"
+   
+                 name="facility"
                   required
                 >
                   <option value="">Choose a facility...</option>
                   <% if (locals.availableSpaces && availableSpaces.length > 0) {
-                  %> <% availableSpaces.forEach(space => { %>
+     
+               %> <% availableSpaces.forEach(space => { %>
                   <option value="<%= space.name %>"><%= space.name %></option>
                   <% }) %> <% } %>
                 </select>
               </div>
 
-              <p
+      
+          <p
                 id="maxHoursDisplay"
-                style="margin-top: 5px; font-weight: bold"
+                style="margin-top: 5px;
+ font-weight: bold"
               ></p>
 
-              <!-- Booking Rules -->
               <div class="form-group">
                 <label>Booking Rules</label>
                 <textarea
                   id="bookingRulesField"
+  
                   name="rules"
                   rows="4"
                   readonly
                   placeholder="Select a facility to view booking rules..."
                 ></textarea>
-              </div>
+        
+        </div>
 
               <div class="form-group">
                 <label for="bookingDate">Select Date *</label>
                 <input
                   type="date"
                   id="bookingDate"
-                  name="date"
+        
+            name="date"
                   required
                   onchange="handleDateChange()"
                   min="<%= new Date().toISOString().split('T')[0] %>"
                 />
               </div>
 
-              <!-- Hidden inputs for time range -->
-              <input type="hidden" id="hiddenFromTime" name="from" />
+   
+             <input type="hidden" id="hiddenFromTime" name="from" />
               <input type="hidden" id="hiddenToTime" name="to" />
 
-              <!-- Purpose field -->
               <div class="form-group">
-                <label for="purpose">Purpose (Optional)</label>
+               
+   <label for="purpose">Purpose (Optional)</label>
                 <textarea
                   id="purpose"
                   name="purpose"
                   rows="3"
                   placeholder="Brief description of the purpose..."
-                ></textarea>
+     
+             ></textarea>
               </div>
 
               <div class="form-actions">
                 <button
                   type="button"
                   class="btn btn-secondary"
-                  onclick="closeForm('booking')"
+       
+             onclick="closeForm('booking')"
                 >
                   Cancel
                 </button>
                 <button type="submit" class="btn btn-primary">
-                  <i class="bi bi-check-circle"></i> Submit Booking
+                  <i class="bi 
+  bi-check-circle"></i> Submit Booking
                 </button>
               </div>
             </div>
 
             <div>
-              <!-- Enhanced Time slots section -->
               <div class="form-group">
-                <label>Select Time Slots *</label>
+          
+        <label>Select Time Slots *</label>
                 <div class="time-slots-container" id="timeSlotsContainer">
                   <div class="time-slots-header">
                     <h4 class="time-slots-title">
                       <i class="bi bi-clock"></i>
-                      Available Time Slots
+         
+               Available Time Slots
                     </h4>
                     <div class="time-period-info">6:00 AM - 10:00 PM</div>
                   </div>
 
                   <div class="time-slots-grid">
-                    <% for (let hour = 6; hour <= 21; hour++) { %> <% const
-                    timeStr = String(hour).padStart(2, '0') + ':00'; let
-                    displayTime; if (hour === 0) { displayTime = '12:00 AM'; }
-                    else if (hour < 12) { displayTime = hour + ':00 AM'; } else
-                    if (hour === 12) { displayTime = '12:00 PM'; } else {
-                    displayTime = (hour - 12) + ':00 PM'; } %>
+   
+                   <% for (let hour = 6;
+ hour <= 21; hour++) { %> <% const
+                    timeStr = String(hour).padStart(2, '0') + ':00';
+  let
+                    displayTime;
+ if (hour === 0) { displayTime = '12:00 AM'; }
+                    else if (hour < 12) { displayTime = hour + ':00 AM';
+  } else
+                    if (hour === 12) { displayTime = '12:00 PM';
+  } else {
+                    displayTime = (hour - 12) + ':00 PM';
+  } %>
                     <div class="time-slot" data-time="<%= timeStr %>">
                       <input
                         type="checkbox"
                         name="timeSlots"
-                        value="<%= timeStr %>"
+     
+                     value="<%= timeStr %>"
                         id="slot_<%= hour %>"
                       />
                       <label for="slot_<%= hour %>"><%= displayTime %></label>
-                    </div>
+    
+                  </div>
                     <% } %>
                   </div>
 
                   <div class="selected-time-display">
                     <strong>Selected Time: </strong>
-                    <span id="selectedTimeText" class="no-selection">
+   
+                   <span id="selectedTimeText" class="no-selection">
                       No time slots selected
                     </span>
                   </div>
                 </div>
+  
               </div>
             </div>
           </div>
@@ -271,70 +348,78 @@
         <div class="popup-header">
           <h2>Booking Details</h2>
           <button class="close-btn" onclick="closeForm('details')">✖</button>
-        </div>
+ 
+         </div>
 
         <div class="popup-body">
-          <!-- Booking Info -->
           <div class="details-grid shadow-sm">
             <div class="detail-item">
               <span class="detail-label">Booking ID</span>
               <span class="detail-value" id="detail-id">-</span>
             </div>
+  
             <div class="detail-item">
               <span class="detail-label">Status</span>
               <span class="detail-badge" id="detail-status">-</span>
             </div>
             <div class="detail-item">
               <div class="icon-col">
-                <i class="bi bi-building text-primary"></i>
+                <i class="bi 
+  bi-building text-primary"></i>
               </div>
               <div class="d-flex flex-column">
                 <span class="detail-label">Facility</span>
                 <span class="detail-value" id="detail-facility">-</span>
               </div>
             </div>
-            <div class="detail-item">
+        
+      <div class="detail-item">
               <div class="icon-col">
                 <i class="bi bi-calendar text-primary"></i>
               </div>
               <div class="d-flex flex-column">
                 <span class="detail-label">Date</span>
-                <span class="detail-value" id="detail-date">-</span>
+              
+    <span class="detail-value" id="detail-date">-</span>
               </div>
             </div>
             <div class="detail-item">
               <div class="icon-col">
                 <i class="bi bi-clock text-primary"></i>
               </div>
-              <div class="d-flex flex-column">
+         
+       <div class="d-flex flex-column">
                 <span class="detail-label">Time</span>
                 <span class="detail-value" id="detail-time">-</span>
               </div>
             </div>
             <div class="detail-item">
               <div class="icon-col">
-                <i class="bi bi-person-circle text-primary"></i>
+    
+              <i class="bi bi-person-circle text-primary"></i>
               </div>
               <div class="d-flex flex-column">
                 <span class="detail-label">Created</span>
                 <span class="detail-value" id="detail-created">-</span>
               </div>
-            </div>
+      
+        </div>
             <div class="detail-item col-span-2">
               <div class="icon-col">
                 <i class="bi bi-card-text text-primary"></i>
               </div>
               <div class="d-flex flex-column">
-                <span class="detail-label">Purpose</span>
+                
+ <span class="detail-label">Purpose</span>
                 <span class="detail-value" id="detail-purpose">-</span>
               </div>
             </div>
           </div>
 
-          <!-- Cancellation Section -->
           <div
             id="cancellation-section"
-            class="cancellation-box"
+          
+    class="cancellation-box"
             style="display: none"
           >
             <h4>Cancellation Details</h4>
@@ -342,6 +427,7 @@
               <span class="detail-label">Reason</span>
               <span class="detail-value" id="detail-cancellation-reason"
                 >-</span
+  
               >
             </div>
             <div class="detail-item">
@@ -349,7 +435,8 @@
               <span class="detail-value" id="detail-cancelled-by">-</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">Cancelled At</span>
+      
+          <span class="detail-label">Cancelled At</span>
               <span class="detail-value" id="detail-cancelled-at">-</span>
             </div>
           </div>
@@ -358,19 +445,22 @@
             class="payment-section"
             id="payment-section"
             style="display: none"
-          >
+     
+       >
             <h4>Payment Details</h4>
             <div class="row">
               <div class="col">
                 <div class="detail-item">
                   <span class="detail-label">Amount</span>
-                  <span class="detail-value" id="detail-amount">-</span>
+                  
+  <span class="detail-value" id="detail-amount">-</span>
                 </div>
               </div>
               <div class="col">
                 <div class="detail-item">
                   <span class="detail-label">Payment Status</span>
-                  <span class="status-badge" id="detail-payment-status">-</span>
+                
+    <span class="status-badge" id="detail-payment-status">-</span>
                 </div>
               </div>
             </div>
@@ -378,6 +468,8 @@
         </div>
       </div>
     </div>
+    
+    <div class="refresh-status" id="refreshStatus"></div>
 
     <script src="/notyf/notyf.min.js"></script>
     <script src="../../js/resident/CSB.js"></script>

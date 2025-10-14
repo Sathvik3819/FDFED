@@ -30,7 +30,7 @@ const visitorSchema = new mongoose.Schema(
     
     status: {
       type: String,
-      enum: ["Pending", "Approved", "Active", "Rejected", "Unactive"],
+      enum: ["Pending", "Approved", "Active", "Rejected", "Unactive", "CheckedOut"],
       default: "Pending",
     },
     verifiedByResident: { type: Boolean, default: false },

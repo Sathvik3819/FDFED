@@ -1100,7 +1100,7 @@
                     data-name="<%= space.name %>"
                     data-type="<%= space.type %>"
                     data-bookable="<%= space.bookable %>"
-                    data-maxhours="<%= space.maxBookingDurationHours %>"
+                    data-maxhours="<%= space.maxHours ? space.maxHours : null  %>"
                     data-rent="<%= space.rent %>"
                     data-rules="<%= space.bookingRules %>"
                   >

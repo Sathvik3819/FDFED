@@ -322,28 +322,11 @@ residentRouter.get("/api/facilities", async (req, res) => {
     );
     const facilities = community.commonSpaces || [];
 
-    console.log("Raw facilities from database:", facilities); // Debug log
-
-    // Format the data for frontend consumption
-    const facilitiesData = facilities.map((facility) => ({
-      name: facility.name,
-      maxBookingDurationHours: facility.maxBookingDurationHours || 4, // default to 4 hours
-      bookingRules: facility.bookingRules || facility.rules || "", // ADD THIS LINE - Include booking rules
-      id: facility._id,
-      // Add any other properties you need
-      description: facility.description,
-      capacity: facility.capacity,
-      amenities: facility.amenities,
-      type: facility.type,
-      rent: facility.rent,
-      bookable: facility.bookable
-    }));
-
-    console.log("Formatted facilities data being sent:", facilitiesData); // Debug log
+    console.log("Raw facilities from database:", facilities); 
 
     res.json({
       success: true,
-      facilities: facilitiesData,
+      facilities: facilities,
     });
   } catch (error) {
     console.error("Error fetching facilities:", error);
@@ -353,6 +336,15 @@ residentRouter.get("/api/facilities", async (req, res) => {
     });
   }
 });
+
+residentRouter.get("/api/bookings",async (req,res) => {
+  try{
+    const bookings = await CommonSpaces.find({bookedBy:req.user.id});
+    return res.json({success:true,bookings})
+  }catch(err){
+    console.log(err);
+  }
+})
 
 
 const formatDate = (rawDate) => {

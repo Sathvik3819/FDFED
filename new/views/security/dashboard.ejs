@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/../../css/nav.css" />
     <style>
-
         .info-card {
             transition: var(--transition);
             border: none !important;
@@ -47,6 +47,12 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         }
 
+        .activity-con{
+            height: 40vh;
+            overflow: auto;
+            overflow-x: hidden;
+        }
+
         .activity-entry {
             border-left: 4px solid var(--primary);
             background-color: var(--primary-light);
@@ -80,7 +86,7 @@
             margin-bottom: 25px;
             border-bottom: 2px solid #e9ecef;
         }
-        
+
         .section-title::after {
             content: '';
             position: absolute;
@@ -105,8 +111,8 @@
             font-weight: 500;
         }
 
-     
-       
+
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -225,121 +231,144 @@
     <%- include('../../partials/securityNav.ejs') %>
 
 
-    <div class="bodyContainer">
-        <!-- AD SECTION -->
-      <div class="adCon d-flex justify-content-center align-items-center">
-        <div class="advertisement" id="ad-slider">
-          <% if (locals.ads && ads.filter(ad => ad.status==="Active").length > 0) { %> <% ads.filter(ad => ad.status==="Active").forEach(ad => { %>
-          <img
-            src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>"
-            class="ad-slide"
-            alt="Ad"
-            height="100px"
-            width="200px"
-          />
-          <% }) %> <% } else { %>
-          <div
-            class="d-flex justify-content-center align-items-center"
-            style="
+        <div class="bodyContainer">
+            <!-- AD SECTION -->
+            <div class="adCon d-flex justify-content-center align-items-center">
+                <div class="advertisement" id="ad-slider">
+                    <% if (locals.ads && ads.filter(ad=> ad.status==="Active").length > 0) { %> <% ads.filter(ad=>
+                            ad.status==="Active").forEach(ad => { %>
+                            <img src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>" class="ad-slide"
+                                alt="Ad" height="100px" width="200px" />
+                            <% }) %>
+                                <% } else { %>
+                                    <div class="d-flex justify-content-center align-items-center" style="
               background-color: rgba(158, 207, 250, 0.539);
               border-radius: 8px;
               color: rgb(0, 80, 193);
               border: 3px dotted blue;
               height: 100%;
               width: 100%;
-            "
-          >
-            <p class="ad-text fs-4" style="font-weight: 600">Advertisement</p>
-          </div>
-          <% } %>
-        </div>
-      </div>
-
-        <!-- CONTENT SECTION -->
-        <div class="contentCon">
-            <h4 class="section-title">Dashboard</h4>
-
-            <!-- Stats Cards -->
-            <div class="stats-grid">
-                <div class="card info-card">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center py-4">
-                        <div class="card-label">Total Visitors Today</div>
-                        <div class="card-value text-success"><%= stats.Visitor %></div>
-                        <div><i class="bi bi-people-fill fs-2 text-success"></i></div>
-                    </div>
-                </div>
-
-                <div class="card info-card">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center py-4">
-                        <div class="card-label">Pending Approvals</div>
-                        <div class="card-value text-warning"><%= stats.Pending %></div>
-                        <div><i class="bi bi-hourglass-split fs-2 text-warning"></i></div>
-                    </div>
-                </div>
-
-                <div class="card info-card">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center py-4">
-                        <div class="card-label">Active Visitors</div>
-                        <div class="card-value text-primary"><%= stats.Active %></div>
-                        <div><i class="bi bi-person-check fs-2 text-primary"></i></div>
-                    </div>
+            ">
+                                        <p class="ad-text fs-4" style="font-weight: 600">Advertisement</p>
+                                    </div>
+                                    <% } %>
                 </div>
             </div>
 
-         
-            <!-- Recent Activity -->
-            <div class="activity-container">
-                <div class="activity-title">
-                    <i class="bi bi-clock-history fs-1 text-info"></i>
-                    <h2>Recent Activity</h2>
+            <!-- CONTENT SECTION -->
+            <div class="contentCon">
+                <h4 class="section-title">Dashboard</h4>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="card info-card">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center py-4">
+                            <div class="card-label">Total Visitors Today</div>
+                            <div class="card-value text-success">
+                                <%= stats.Visitor %>
+                            </div>
+                            <div><i class="bi bi-people-fill fs-2 text-success"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="card info-card">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center py-4">
+                            <div class="card-label">Pending Approvals</div>
+                            <div class="card-value text-warning">
+                                <%= stats.Pending %>
+                            </div>
+                            <div><i class="bi bi-hourglass-split fs-2 text-warning"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="card info-card">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center py-4">
+                            <div class="card-label">Active Visitors</div>
+                            <div class="card-value text-primary">
+                                <%= stats.Active %>
+                            </div>
+                            <div><i class="bi bi-person-check fs-2 text-primary"></i></div>
+                        </div>
+                    </div>
                 </div>
 
-                <% if (locals.visitors) { %>
-                    <% visitors.forEach(v => { %>
-                     <div class="activity-entry">
-                    <span class="badge badge-entry <%= v.status==="active" ? "entry-in":"entry-out" %>"><%= v.status==="active" ? "Entered":"Exited" %></span>
-                    <p class="m-0"><b><%= v.name %></b> <%= v.status==="active" ? "Entered":"Exited" %> through Gate 1</p>
-                    <div class="entry-time"><%= v.status==="active" ? new Date(v.entryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + " at " + new Date(v.entryTime).toLocaleTimeString('en-US', {hour: '2-digit' ,minute:'2-digit' , hour12:true}) : new Date(v.exitdate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + " at " + new Date(v.exitTime).toLocaleTimeString('en-US', {hour: '2-digit' ,minute:'2-digit' , hour12:true})  %></div>
-                </div>
-                    <% }) %>
-                 
-                <% } %>
 
-                
+                <!-- Recent Activity -->
+                <div class="activity-container">
+                    <div class="activity-title">
+                        <i class="bi bi-clock-history fs-1 text-info"></i>
+                        <h2>Recent Activity</h2>
+                    </div>
+
+                    <div class="activity-con">
+                        <% if (locals.visitors && visitors.length> 0) { %>
+                            <% visitors.forEach(v=> { %>
+                                <div class="activity-entry">
+                                    <span class="badge badge-entry <%= v.status===" Active" ? "entry-in" :"entry-out" %>">
+                                        <%= v.status==="Active" ? "Entered" :"Exited" %>
+                                    </span>
+                                    <p class="m-0"><b>
+                                            <%= v.name %>
+                                        </b>
+                                        <%= v.status==="Active" ? "Entered" :"Exited" %> through Gate 1
+                                    </p>
+                                    <div class="entry-time">
+                                        <% if (v.status==="Active" ) { %>
+                                            <%= v.checkInAt ? new Date(v.checkInAt).toLocaleDateString('en-US', {
+                                                year: 'numeric' , month: 'long' , day: 'numeric' }) + " at " + new
+                                                Date(v.checkInAt).toLocaleTimeString('en-US', {hour: '2-digit'
+                                                ,minute:'2-digit' , hour12:true}) : 'Time not available' %>
+                                                <% } else { %>
+                                                    <%= v.checkOutAt ? new Date(v.checkOutAt).toLocaleDateString('en-US', {
+                                                        year: 'numeric' , month: 'long' , day: 'numeric' }) + " at " + new
+                                                        Date(v.checkOutAt).toLocaleTimeString('en-US', {hour: '2-digit'
+                                                        ,minute:'2-digit' , hour12:true}) : 'Time not available' %>
+                                                        <% } %>
+                                    </div>
+                                </div>
+                                <% }) %>
+    
+                                    <% } else { %>
+                                        <p class="text-muted">No recent Activity</p>
+                                        <% } %>
+                    </div>
+
+
+                </div>
             </div>
         </div>
-    </div>
 
         <script src="../../js/sidebar.js"></script>
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Simple animation for cards on page load
-            const cards = document.querySelectorAll('.info-card, .activity-entry');
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Simple animation for cards on page load
+                const cards = document.querySelectorAll('.info-card, .activity-entry');
 
-            cards.forEach((card, index) => {
-                // Set initial state for animation
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
+                cards.forEach((card, index) => {
+                    // Set initial state for animation
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
 
-                // Animate in with delay
-                setTimeout(() => {
-                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, 200 + (index * 100));
-            });
-
-            // Add click effect to add visitor section
-            const addVisitor = document.querySelector('.add-visitor-section');
-            if (addVisitor) {
-                addVisitor.addEventListener('click', function () {
-                    alert('Opening visitor registration form...');
-                    // In a real app, this would open a form or navigate to another page
+                    // Animate in with delay
+                    setTimeout(() => {
+                        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 200 + (index * 100));
                 });
-            }
-        });
-    </script>
+
+                // Add click effect to add visitor section
+                const addVisitor = document.querySelector('.add-visitor-section');
+                if (addVisitor) {
+                    addVisitor.addEventListener('click', function () {
+                        alert('Opening visitor registration form...');
+                        // In a real app, this would open a form or navigate to another page
+                    });
+                }
+            });
+        </script>
 </body>
+
 </html>
