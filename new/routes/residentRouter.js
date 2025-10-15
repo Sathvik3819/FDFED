@@ -521,6 +521,19 @@ residentRouter.post("/deleteIssue/:issueID", async (req, res) => {
   }
 });
 
+residentRouter.get("/api/issues", async (req, res) => {
+  try {
+    const issues = await Issue.find({ resident: req.user.id })
+      .populate("workerAssigned")
+      .populate("payment");
+
+    res.status(200).json({ issues });
+  } catch (error) {
+    console.error("Error fetching issues:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
 residentRouter.get("/getIssueData/:issueID", async (req, res) => {
   try {
     const { issueID } = req.params;
