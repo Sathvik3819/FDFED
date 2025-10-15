@@ -1,5 +1,199 @@
-// Function to open payment form popup
 /*
+
+// === Payment Form Popup Controls === //
+function openPaymentForm() {
+  const popup = document.getElementById("paymentFormPopup");
+  if (popup) popup.style.display = "flex";
+}
+
+function closePaymentForm() {
+  const popup = document.getElementById("paymentFormPopup");
+  if (popup) popup.style.display = "none";
+  const form = document.querySelector("#paymentFormPopup form");
+  if (form) form.reset(); // reset form on close
+}
+
+// === Generic Close Handler === //
+function closeForm(type) {
+  const popup = document.getElementById(`${type}Popup`);
+  if (popup) popup.style.display = "none";
+}
+
+// === DOM Ready Event Listeners === //
+document.addEventListener("DOMContentLoaded", () => {
+  // Close popup when user clicks outside of content
+  document.querySelectorAll(".popup").forEach((popup) => {
+    popup.addEventListener("click", (e) => {
+      if (e.target === popup) popup.style.display = "none";
+    });
+  });
+
+  // Close popup on 'Esc' key press
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      document.querySelectorAll(".popup").forEach(p => p.style.display = "none");
+    }
+  });
+
+  // Handle payment button clicks
+  const payButtons = document.querySelectorAll(".pay");
+  payButtons.forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const paymentId = btn.dataset.id;
+      console.log("Fetching Payment ID:", paymentId);
+      try {
+        const res = await fetch(`/resident/payment/${paymentId}`, { method: "GET" });
+        const data = await res.json();
+        if (!data.payment) throw new Error("Payment data missing");
+
+        const p = data.payment;
+        document.getElementById("bill").value = p.belongTo;
+        document.getElementById("amount").value = p.amount;
+        document.getElementById("paymentId").value = p._id;
+        document.getElementById("Pdeadline").value = new Date(p.paymentDeadline).toLocaleDateString("en-GB");
+      } catch (err) {
+        console.error("Error loading payment:", err);
+        alert("Failed to load payment details. Please try again.");
+      }
+    });
+  });
+
+  // Toggle card field visibility
+  const paymentSelect = document.getElementById("paymentMethod");
+  if (paymentSelect) {
+    paymentSelect.addEventListener("change", () => {
+      const cardSection = document.getElementById("cardFields");
+      cardSection.style.display =
+        ["credit", "debit"].includes(paymentSelect.value) ? "block" : "none";
+    });
+  }
+
+  // Animate entry of cards/tables
+  const animatables = document.querySelectorAll(".stat-card, .table-container");
+  animatables.forEach((el, idx) => {
+    el.style.opacity = "0";
+    el.style.transform = "translateY(25px)";
+    setTimeout(() => {
+      el.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+      el.style.opacity = "1";
+      el.style.transform = "translateY(0)";
+    }, 150 + idx * 120);
+  });
+
+  // Handle receipt popup buttons
+  document.querySelectorAll(".payment-btn.receipt").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      openReceiptPopup(id);
+    });
+  });
+
+  // Add spinning animation styles
+  const styleTag = document.createElement("style");
+  styleTag.textContent = `
+    @keyframes spin { 
+      0% { transform: rotate(0deg); } 
+      100% { transform: rotate(360deg); } 
+    }
+    .spin { animation: spin 1s linear infinite; }
+  `;
+  document.head.appendChild(styleTag);
+
+  // === Simple form validation on submit ===
+  const paymentForm = document.querySelector("#paymentFormPopup form");
+  if (paymentForm) {
+    paymentForm.addEventListener("submit", (e) => {
+      const amount = document.getElementById("amount").value;
+      const method = document.getElementById("paymentMethod").value;
+      if (!amount || amount <= 0) {
+        e.preventDefault();
+        alert("Please enter a valid payment amount.");
+      } else if (!method) {
+        e.preventDefault();
+        alert("Please select a payment method.");
+      }
+    });
+  }
+});
+
+// === Open Receipt Popup with async data === //
+async function openReceiptPopup(paymentId) {
+  const popup = document.getElementById("ReceiptPopup");
+  const popupContent = popup?.querySelector(".popup-content");
+  popup.style.display = "flex";
+
+  popupContent.innerHTML =
+    '<div style="text-align:center;padding:50px;"><i class="bi bi-arrow-repeat spin" style="font-size:2rem;"></i><p>Loading receipt...</p></div>';
+
+  try {
+    const paymentRes = await fetch(`/resident/payment/${paymentId}`);
+    const paymentData = await paymentRes.json();
+    const communityRes = await fetch("/resident/payment/community");
+    const communityData = await communityRes.json();
+
+    const p = paymentData.payment;
+    const community = communityData;
+
+    const paymentDate = p.paymentDate
+      ? new Date(p.paymentDate).toLocaleDateString("en-GB")
+      : "-";
+    const deadlineDate = p.paymentDeadline
+      ? new Date(p.paymentDeadline).toLocaleDateString("en-GB")
+      : "-";
+    const processingFee = p.paymentMethod === "Credit" ? p.amount * 0.02 : 0;
+    const totalAmount = p.amount + processingFee;
+
+    popupContent.innerHTML = `
+      <span class="close-btn" onclick="closeForm('Receipt')" style="position:absolute;top:15px;right:20px;font-size:28px;cursor:pointer;">&times;</span>
+      <h3 style="text-align:center;">Payment Receipt</h3>
+      <div id="printable-receipt">
+        <div><strong>Receipt No:</strong> ${p._id}</div>
+        <div><strong>Name:</strong> ${p.sender.residentFirstname} ${p.sender.residentLastname}</div>
+        <div><strong>Community:</strong> ${community.name}</div>
+        <div><strong>Payment Method:</strong> ${p.paymentMethod}</div>
+        <div><strong>Amount:</strong> ₹${totalAmount.toFixed(2)}</div>
+        <div><strong>Status:</strong> ${p.status}</div>
+      </div>
+      <div class="no-print" style="text-align:center;margin-top:20px;">
+        <button class="btn primary" id="printBtn">Print Receipt</button>
+        <button class="btn secondary" onclick="closeForm('Receipt')">Close</button>
+      </div>
+    `;
+
+    document.getElementById("printBtn").addEventListener("click", printReceipt);
+  } catch (err) {
+    console.error("Error:", err);
+    popupContent.innerHTML = `
+      <h3 style="color:red;text-align:center;">Failed to load receipt.</h3>
+      <div style="text-align:center;">
+        <button class="btn secondary" onclick="closeForm('Receipt')">Close</button>
+      </div>
+    `;
+  }
+}
+
+// === Dedicated Print Function === //
+function printReceipt() {
+  const content = document.getElementById("printable-receipt");
+  if (!content) return alert("No printable content found.");
+
+  const win = window.open("", "_blank", "width=800,height=600");
+  win.document.write(`
+    <html><head><title>Receipt</title>
+    <style>
+      @media print { .no-print { display:none; } }
+      body { font-family:Arial,sans-serif; padding:20px; }
+    </style></head><body>
+    ${content.outerHTML}
+    </body></html>
+  `);
+  win.document.close();
+  win.onload = () => win.print();
+}
+*/
+
+// Function to open payment form popup
 function openPaymentForm() {
   document.getElementById("paymentFormPopup").style.display = "flex";
 }
@@ -9,8 +203,67 @@ function closePaymentForm() {
   document.getElementById("paymentFormPopup").style.display = "none";
 }
 
+// Auto-refresh function
+let autoRefreshInterval;
+
+function startAutoRefresh() {
+  // Refresh every 30 seconds (30000 milliseconds)
+  autoRefreshInterval = setInterval(() => {
+    refreshPaymentData();
+  }, 30000);
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+  }
+}
+
+// Refresh payment data function
+async function refreshPaymentData() {
+  try {
+    // Show loading state on refresh button
+    const refreshBtn = document.getElementById('refreshBtn');
+    const refreshIcon = refreshBtn.querySelector('i');
+    
+    if (refreshIcon) {
+      refreshIcon.classList.add('spin');
+    }
+    
+    // Reload the page to fetch fresh data
+    window.location.reload();
+    
+  } catch (error) {
+    console.error('Error refreshing payment data:', error);
+    
+    // Remove loading state
+    const refreshBtn = document.getElementById('refreshBtn');
+    const refreshIcon = refreshBtn.querySelector('i');
+    
+    if (refreshIcon) {
+      refreshIcon.classList.remove('spin');
+    }
+  }
+}
+
 // Initialize event listeners when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
+  // Start auto-refresh
+  startAutoRefresh();
+  
+  // Add refresh button event listener
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      refreshPaymentData();
+    });
+  }
+  
+  // Stop auto-refresh when user leaves the page
+  window.addEventListener('beforeunload', () => {
+    stopAutoRefresh();
+  });
+  
   document.querySelectorAll(".popup").forEach((popup) => {
     popup.addEventListener("click", (e) => {
       if (e.target === popup) {
@@ -414,196 +667,3 @@ document.addEventListener("DOMContentLoaded", function () {
   `;
   document.head.appendChild(style);
 });
-*/
-// === Payment Form Popup Controls === //
-function openPaymentForm() {
-  const popup = document.getElementById("paymentFormPopup");
-  if (popup) popup.style.display = "flex";
-}
-
-function closePaymentForm() {
-  const popup = document.getElementById("paymentFormPopup");
-  if (popup) popup.style.display = "none";
-  const form = document.querySelector("#paymentFormPopup form");
-  if (form) form.reset(); // reset form on close
-}
-
-// === Generic Close Handler === //
-function closeForm(type) {
-  const popup = document.getElementById(`${type}Popup`);
-  if (popup) popup.style.display = "none";
-}
-
-// === DOM Ready Event Listeners === //
-document.addEventListener("DOMContentLoaded", () => {
-  // Close popup when user clicks outside of content
-  document.querySelectorAll(".popup").forEach((popup) => {
-    popup.addEventListener("click", (e) => {
-      if (e.target === popup) popup.style.display = "none";
-    });
-  });
-
-  // Close popup on 'Esc' key press
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      document.querySelectorAll(".popup").forEach(p => p.style.display = "none");
-    }
-  });
-
-  // Handle payment button clicks
-  const payButtons = document.querySelectorAll(".pay");
-  payButtons.forEach((btn) => {
-    btn.addEventListener("click", async (e) => {
-      e.preventDefault();
-      const paymentId = btn.dataset.id;
-      console.log("Fetching Payment ID:", paymentId);
-      try {
-        const res = await fetch(`/resident/payment/${paymentId}`, { method: "GET" });
-        const data = await res.json();
-        if (!data.payment) throw new Error("Payment data missing");
-
-        const p = data.payment;
-        document.getElementById("bill").value = p.belongTo;
-        document.getElementById("amount").value = p.amount;
-        document.getElementById("paymentId").value = p._id;
-        document.getElementById("Pdeadline").value = new Date(p.paymentDeadline).toLocaleDateString("en-GB");
-      } catch (err) {
-        console.error("Error loading payment:", err);
-        alert("Failed to load payment details. Please try again.");
-      }
-    });
-  });
-
-  // Toggle card field visibility
-  const paymentSelect = document.getElementById("paymentMethod");
-  if (paymentSelect) {
-    paymentSelect.addEventListener("change", () => {
-      const cardSection = document.getElementById("cardFields");
-      cardSection.style.display =
-        ["credit", "debit"].includes(paymentSelect.value) ? "block" : "none";
-    });
-  }
-
-  // Animate entry of cards/tables
-  const animatables = document.querySelectorAll(".stat-card, .table-container");
-  animatables.forEach((el, idx) => {
-    el.style.opacity = "0";
-    el.style.transform = "translateY(25px)";
-    setTimeout(() => {
-      el.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-      el.style.opacity = "1";
-      el.style.transform = "translateY(0)";
-    }, 150 + idx * 120);
-  });
-
-  // Handle receipt popup buttons
-  document.querySelectorAll(".payment-btn.receipt").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.id;
-      openReceiptPopup(id);
-    });
-  });
-
-  // Add spinning animation styles
-  const styleTag = document.createElement("style");
-  styleTag.textContent = `
-    @keyframes spin { 
-      0% { transform: rotate(0deg); } 
-      100% { transform: rotate(360deg); } 
-    }
-    .spin { animation: spin 1s linear infinite; }
-  `;
-  document.head.appendChild(styleTag);
-
-  // === Simple form validation on submit ===
-  const paymentForm = document.querySelector("#paymentFormPopup form");
-  if (paymentForm) {
-    paymentForm.addEventListener("submit", (e) => {
-      const amount = document.getElementById("amount").value;
-      const method = document.getElementById("paymentMethod").value;
-      if (!amount || amount <= 0) {
-        e.preventDefault();
-        alert("Please enter a valid payment amount.");
-      } else if (!method) {
-        e.preventDefault();
-        alert("Please select a payment method.");
-      }
-    });
-  }
-});
-
-// === Open Receipt Popup with async data === //
-async function openReceiptPopup(paymentId) {
-  const popup = document.getElementById("ReceiptPopup");
-  const popupContent = popup?.querySelector(".popup-content");
-  popup.style.display = "flex";
-
-  popupContent.innerHTML =
-    '<div style="text-align:center;padding:50px;"><i class="bi bi-arrow-repeat spin" style="font-size:2rem;"></i><p>Loading receipt...</p></div>';
-
-  try {
-    const paymentRes = await fetch(`/resident/payment/${paymentId}`);
-    const paymentData = await paymentRes.json();
-    const communityRes = await fetch("/resident/payment/community");
-    const communityData = await communityRes.json();
-
-    const p = paymentData.payment;
-    const community = communityData;
-
-    const paymentDate = p.paymentDate
-      ? new Date(p.paymentDate).toLocaleDateString("en-GB")
-      : "-";
-    const deadlineDate = p.paymentDeadline
-      ? new Date(p.paymentDeadline).toLocaleDateString("en-GB")
-      : "-";
-    const processingFee = p.paymentMethod === "Credit" ? p.amount * 0.02 : 0;
-    const totalAmount = p.amount + processingFee;
-
-    popupContent.innerHTML = `
-      <span class="close-btn" onclick="closeForm('Receipt')" style="position:absolute;top:15px;right:20px;font-size:28px;cursor:pointer;">&times;</span>
-      <h3 style="text-align:center;">Payment Receipt</h3>
-      <div id="printable-receipt">
-        <div><strong>Receipt No:</strong> ${p._id}</div>
-        <div><strong>Name:</strong> ${p.sender.residentFirstname} ${p.sender.residentLastname}</div>
-        <div><strong>Community:</strong> ${community.name}</div>
-        <div><strong>Payment Method:</strong> ${p.paymentMethod}</div>
-        <div><strong>Amount:</strong> ₹${totalAmount.toFixed(2)}</div>
-        <div><strong>Status:</strong> ${p.status}</div>
-      </div>
-      <div class="no-print" style="text-align:center;margin-top:20px;">
-        <button class="btn primary" id="printBtn">Print Receipt</button>
-        <button class="btn secondary" onclick="closeForm('Receipt')">Close</button>
-      </div>
-    `;
-
-    document.getElementById("printBtn").addEventListener("click", printReceipt);
-  } catch (err) {
-    console.error("Error:", err);
-    popupContent.innerHTML = `
-      <h3 style="color:red;text-align:center;">Failed to load receipt.</h3>
-      <div style="text-align:center;">
-        <button class="btn secondary" onclick="closeForm('Receipt')">Close</button>
-      </div>
-    `;
-  }
-}
-
-// === Dedicated Print Function === //
-function printReceipt() {
-  const content = document.getElementById("printable-receipt");
-  if (!content) return alert("No printable content found.");
-
-  const win = window.open("", "_blank", "width=800,height=600");
-  win.document.write(`
-    <html><head><title>Receipt</title>
-    <style>
-      @media print { .no-print { display:none; } }
-      body { font-family:Arial,sans-serif; padding:20px; }
-    </style></head><body>
-    ${content.outerHTML}
-    </body></html>
-  `);
-  win.document.close();
-  win.onload = () => win.print();
-}
-

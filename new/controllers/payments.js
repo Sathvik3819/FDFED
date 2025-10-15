@@ -84,7 +84,7 @@ class PaymentController {
                 sender: senderId,
                 receiver: receiverId,
                 amount,
-                communityId,
+                community:communityId,
                 paymentDeadline: paymentDeadline || new Date(new Date().getTime() + 15 * 24 * 60 * 60 * 1000),
                 paymentMethod: paymentMethod || 'None',
                 status: "Pending",
@@ -103,7 +103,6 @@ class PaymentController {
             return res.status(500).json({ message: 'Error creating payment', error: error.message });
         }
     }
-
     /**
      * Create a new payment by resident (self-payment)
      * @param {Object} req - Express request object

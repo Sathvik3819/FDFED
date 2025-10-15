@@ -57,7 +57,7 @@ managerRouter.get("/commonSpace", async (req, res) => {
     .select("commonSpaces")
     .lean();
 
-  console.log(csb);
+  console.log(community);
 
   res.render("communityManager/CSB", {
     path: "cbs",
@@ -330,7 +330,7 @@ managerRouter.post("/commonSpace/reject/:id", async (req, res) => {
 managerRouter.post("/spaces", async (req, res) => {
   try {
     // Validate required fields
-    const { spaceType, spaceName, bookingRent } = req.body;
+    const { spaceType, spaceName, bookingRent , maxHours } = req.body;
     console.log("req.body : ", req.body);
 
     if (!spaceType || !spaceName) {
@@ -372,14 +372,17 @@ managerRouter.post("/spaces", async (req, res) => {
       name: spaceName.trim(),
       bookable:
         req.body.bookable !== undefined ? Boolean(req.body.bookable) : true,
-      maxBookingDurationHours: req.body.maxBookingDurationHours
-        ? Math.max(1, parseInt(req.body.maxBookingDurationHours))
+      maxHours: req.body.maxHours
+        ? Math.max(1, parseInt(req.body.maxHours))
         : null,
       bookingRules: req.body.bookingRules ? req.body.bookingRules.trim() : "",
       rent: bookingRent,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
+    console.log("new space:",newSpace);
+    
 
     community.commonSpaces.push(newSpace);
     await community.save();
@@ -404,6 +407,8 @@ managerRouter.post("/spaces", async (req, res) => {
 });
 
 managerRouter.put("/spaces/:id", async (req, res) => {
+  console.log(req.body);
+  
   try {
     // Validate space ID
     const spaceId = req.params.id;
@@ -477,9 +482,9 @@ managerRouter.put("/spaces/:id", async (req, res) => {
     if (name !== undefined) updateData.name = name.trim();
     if (req.body.bookable !== undefined)
       updateData.bookable = Boolean(req.body.bookable);
-    if (req.body.maxBookingDurationHours !== undefined) {
-      updateData.maxBookingDurationHours = req.body.maxBookingDurationHours
-        ? Math.max(1, parseInt(req.body.maxBookingDurationHours))
+    if (req.body.maxHours !== undefined) {
+      updateData.maxHours = req.body.maxHours
+        ? Math.max(1, parseInt(req.body.maxHours))
         : null;
     }
     if (req.body.bookingRules !== undefined) {

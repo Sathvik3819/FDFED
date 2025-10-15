@@ -68,6 +68,7 @@ const CommunitySchema = new mongoose.Schema({
       type: String,
       enum: [ 
         "Clubhouse",
+        "Gym",
         "Banquet Hall",
         "Community Hall",
         "Swimming Pool",
@@ -87,7 +88,7 @@ const CommunitySchema = new mongoose.Schema({
       minlength: 2
     },
     bookable: { type: Boolean, default: true },
-    maxBookingDurationHours: { type: Number },
+    maxHours: { type: Number },
     bookingRules: { type: String },
     rent:Number
   }],

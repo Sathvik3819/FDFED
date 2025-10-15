@@ -8,6 +8,9 @@ const notyf = new Notyf({
 });
 
 let facilityData = {};
+let allBookings = [];
+let isRefreshing = false;
+let autoRefreshInterval;
 
 function openForm(type) {
   document.getElementById(type + "FormPopup").style.display = "flex";
@@ -29,12 +32,14 @@ async function fetchFacilityData() {
     facilityData = {};
     facilities.forEach((f) => {
       facilityData[f.name] = {
-        maxBookingDurationHours: f.maxBookingDurationHours,
+        maxHours: f.maxHours,
         bookingRules: f.bookingRules,
         id: f._id,
         rent: f.rent,
       };
     });
+
+    return facilities;
   } catch (err) {
     console.error("Error fetching facilities:", err);
   }
@@ -49,7 +54,6 @@ function handleFacilityChange() {
   resetTimeSlots();
   const selected = facilityData[facility];
 
-  // Check if facility requires time slot booking
   const requiresTimeSlots = shouldShowTimeSlots(facility);
 
   if (requiresTimeSlots) {
@@ -99,7 +103,9 @@ function resetTimeSlots() {
 
 function getMaxHoursForFacility() {
   const f = document.getElementById("facility").value;
-  return facilityData[f]?.maxBookingDurationHours || 4;
+  console.log("hours : ",facilityData[f]);
+  
+  return facilityData[f]?.maxHours || 4;
 }
 
 function updateSelectedTimeDisplay() {
@@ -174,6 +180,109 @@ function bookingRules() {
   return facilityData[facility]?.bookingRules || "";
 }
 
+function updateBookingCards(bookings) {
+  const container = document.getElementById("bookingsGrid");
+  container.innerHTML = ""; // Clear existing cards
+
+  if (bookings.length === 0) {
+    container.innerHTML = `
+      <div class="no-bookings d-flex gap-3 justify-content-center align-items-center text-muted">
+        <i class="bi bi-calendar fs-3"></i>
+        <p>No bookings found</p>
+      </div>`;
+    return;
+  }
+
+  bookings.forEach(b => {
+    const card = `
+      <div class="booking-card ${b.status}">
+        <div class="booking-card-header">
+          <span class="booking-id">#${b._id.toString().slice(-6)}</span>
+          <span class="status-badge status-${b.status}">${b.status}</span>
+        </div>
+        <div class="booking-details">
+          <div class="booking-detail">
+            <span class="detail-label">Facility:</span>
+            <span class="detail-value">${b.name}</span>
+          </div>
+          <div class="booking-detail">
+            <span class="detail-label">Date:</span>
+            <span class="detail-value">${b.Date}</span>
+          </div>
+          <div class="booking-detail">
+            <span class="detail-label">Time:</span>
+            <span class="detail-value">${b.from} - ${b.to}</span>
+          </div>
+          ${b.purpose ? `
+            <div class="booking-detail">
+              <span class="detail-label">Purpose:</span>
+              <span class="detail-value">${b.purpose}</span>
+            </div>` : ''}
+        </div>
+        <div class="booking-actions">
+          <button class="action-btn view" data-id="${b._id}">
+            <i class="bi bi-eye"></i> View Details
+          </button>
+          ${b.status === "Pending" ? `
+            <button class="action-btn cancel" data-id="${b._id}">
+              <i class="bi bi-x-circle"></i> Cancel
+            </button>` : ''}
+        </div>
+      </div>`;
+    container.insertAdjacentHTML("beforeend", card);
+  });
+}
+
+function updateStats() {
+  const pendingCount = allBookings.filter(b => b.status === 'Pending').length;
+  const totalBookingsThisMonth = allBookings.length; 
+
+  document.getElementById('pendingCount').textContent = pendingCount;
+  document.getElementById('totalBookings').textContent = totalBookingsThisMonth;
+}
+
+async function refreshBookings() {
+  if (isRefreshing) return;
+  isRefreshing = true;
+
+  const refreshBtn = document.getElementById('manualRefresh');
+  const refreshStatus = document.getElementById('refreshStatus');
+  
+  refreshBtn?.classList.add('loading-indicator');
+  refreshStatus.textContent = 'Refreshing...';
+  refreshStatus.classList.add('show');
+
+  try {
+    const response = await fetch('/resident/api/bookings'); 
+    if (!response.ok) {
+      throw new Error('Failed to fetch bookings');
+    }
+    const data = await response.json();
+    allBookings = data.bookings; 
+    
+    updateBookingCards(allBookings);
+    updateStats();
+    
+    notyf.success('Bookings updated!');
+  } catch (error) {
+    console.error('Refresh error:', error);
+    notyf.error('Could not refresh bookings.');
+  } finally {
+    isRefreshing = false;
+    refreshBtn?.classList.remove('loading-indicator');
+    setTimeout(() => {
+      refreshStatus.classList.remove('show');
+    }, 2000);
+  }
+}
+
+function startAutoRefresh() {
+  autoRefreshInterval = setInterval(refreshBookings, 30000); 
+}
+
+function stopAutoRefresh() {
+  clearInterval(autoRefreshInterval);
+}
 
 function showLoading(btn) {
   const txt = btn.innerHTML;
@@ -200,9 +309,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   const toggleSection = (id, s) =>
     (document.getElementById(id).style.display = s ? "block" : "none");
 
-  document
-    .getElementById("bookFacilityBtn")
-    ?.addEventListener("click", () => openForm("booking"));
+  document.getElementById("bookFacilityBtn")?.addEventListener("click", async (e) =>{ 
+    const btn = e.currentTarget;
+    const orig = showLoading(btn);
+    try {
+        const facilities = await fetchFacilityData();
+        const facilitySelect = document.getElementById("facility");
+        facilitySelect.innerHTML = '<option value="">Choose a facility...</option>';
+
+        facilities.forEach(space => {
+            const option = document.createElement('option');
+            option.value = space.name;
+            option.textContent = space.name;
+            facilitySelect.appendChild(option);
+        });
+
+        openForm("booking");
+    } catch (error) {
+        notyf.error("Failed to load facilities. Please try again.");
+    } finally {
+        hideLoading(btn, orig);
+        bookingForm.reset();
+    }
+    });
+    
+  document.getElementById('manualRefresh')?.addEventListener('click', refreshBookings);
+
+  startAutoRefresh();
+  window.addEventListener('beforeunload', stopAutoRefresh);
 
   document.querySelectorAll('input[name="timeSlots"]').forEach((cb) => {
     const fn = () => handleTimeSlotChange(cb);
@@ -377,6 +511,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             parseInt(pendingNo.textContent) - 1
           );
         cancelBtn.remove();
+        
+        setTimeout(refreshBookings, 1000); // Refresh after 1 second
       } catch {
         notyf.error("Failed to cancel booking");
       } finally {
@@ -435,37 +571,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       const result = await res.json();
       if (!result.success) throw new Error(result.message);
       notyf.success("Booking successful!");
-      document.querySelector(".no-bookings")?.remove();
-      const newCard = `
-        <div class="booking-card ${result.space.status || "pending"}">
-          <div class="booking-card-header">
-            <span class="booking-id">#${result.space._id.slice(-6)}</span>
-            <span class="status-badge status-${result.space.status}">${result.space.status
-        }</span>
-          </div>
-          <div class="booking-details">
-            <div class="booking-detail"><span class="detail-label">Facility:</span> <span class="detail-value">${result.space.name
-        }</span></div>
-            <div class="booking-detail"><span class="detail-label">Date:</span> <span class="detail-value">${result.space.Date
-        }</span></div>
-            <div class="booking-detail"><span class="detail-label">Time:</span> <span class="detail-value">${result.space.from
-        } - ${result.space.to}</span></div>
-            ${result.space.purpose
-          ? `<div class="booking-detail"><span class="detail-label">Purpose:</span><span class="detail-value">${result.space.purpose}</span></div>`
-          : ""
-        }
-          </div>
-          <div class="booking-actions">
-            <button class="action-btn view" data-id="${result.space._id
-        }"><i class="bi bi-eye"></i> View Details</button>
-            ${result.space.status === "Pending"
-          ? `<button class="action-btn cancel" data-id="${result.space._id}"><i class="bi bi-x-circle"></i> Cancel</button>`
-          : ""
-        }
-          </div>
-        </div>`;
-      bookingGrid.insertAdjacentHTML("afterbegin", newCard);
+      
       closeForm("booking");
+      setTimeout(refreshBookings, 500); // Refresh after submission
     } catch (err) {
       notyf.error(err.message || "Booking failed.");
     } finally {

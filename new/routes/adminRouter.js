@@ -15,10 +15,12 @@ const saltRounds = 10;
 
 import {
   getAllApplications,
-  
+  getAllApplicationsJSON,
   approveApplication,
   rejectApplication
 } from '../controllers/interestForm.js';
+
+AdminRouter.get('/interests/json', getAllApplicationsJSON);
 
 
 

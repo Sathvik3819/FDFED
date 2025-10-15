@@ -27,6 +27,10 @@ const cancelPlanChangeBtn = document.getElementById('cancelPlanChange');
 const confirmPlanChangeBtn = document.getElementById('confirmPlanChange');
 const newPlanSelect = document.getElementById('newPlanSelect');
 
+// Refresh Elements
+const refreshBtn = document.getElementById('refreshBtn');
+const autoRefreshToggle = document.getElementById('autoRefreshToggle');
+
 // Pagination settings
 let currentPage = 1;
 const rowsPerPage = 10;
@@ -39,6 +43,11 @@ let currentUser = {};
 let communityData = {};
 let subscriptionStatus = {};
 let availablePlans = {};
+
+// Auto-refresh configuration
+let autoRefreshInterval = null;
+let lastUpdated = null;
+const AUTO_REFRESH_DELAY = 30000; // 30 seconds
 
 // Subscription plans configuration
 const subscriptionPlans = {
@@ -163,6 +172,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupEventListeners();
         setupSubscriptionEventListeners();
         
+        // Start auto-refresh if toggle is checked
+        if (autoRefreshToggle?.checked) {
+            startAutoRefresh();
+        }
+        
         // Check subscription status periodically (every hour)
         setInterval(checkSubscriptionStatus, 3600000);
         
@@ -205,6 +219,10 @@ function setupEventListeners() {
     closePlanChangeModalBtn?.addEventListener('click', closePlanChangeModal);
     cancelPlanChangeBtn?.addEventListener('click', closePlanChangeModal);
     confirmPlanChangeBtn?.addEventListener('click', handlePlanChangeSubmit);
+
+    // Refresh functionality
+    refreshBtn?.addEventListener('click', handleManualRefresh);
+    autoRefreshToggle?.addEventListener('change', handleAutoRefreshToggle);
 
     // Close modal on outside click
     window.addEventListener('click', (event) => {
@@ -252,6 +270,11 @@ function setupSubscriptionEventListeners() {
 // Handle subscription button click - show payment form only if expired
 // Handle subscription button click - show payment form if expired or pending
 function handleSubscriptionButtonClick() {
+    // Check if button is disabled (active subscription)
+    if (subscriptionPaymentBtn && subscriptionPaymentBtn.disabled) {
+        return; // Do nothing if button is disabled
+    }
+    
     // Show form for expired, pending, or if the modal isn't already open
     if (subscriptionStatus.isExpired || 
         (subscriptionStatus.community?.subscriptionStatus && 
@@ -359,14 +382,88 @@ function debounce(func, wait) {
     };
 }
 
+// Manual refresh handler
+async function handleManualRefresh() {
+    if (refreshBtn) {
+        refreshBtn.classList.add('refreshing');
+        refreshBtn.disabled = true;
+        
+        try {
+            await refreshAllData();
+            ErrorHandler.show('Data refreshed successfully!', 'success');
+        } catch (error) {
+            ErrorHandler.show('Failed to refresh data. Please try again.', 'error');
+        } finally {
+            refreshBtn.classList.remove('refreshing');
+            refreshBtn.disabled = false;
+        }
+    }
+}
+
+// Auto-refresh toggle handler
+function handleAutoRefreshToggle(event) {
+    if (event.target.checked) {
+        startAutoRefresh();
+        ErrorHandler.show('Auto-refresh enabled', 'success');
+    } else {
+        stopAutoRefresh();
+        ErrorHandler.show('Auto-refresh disabled', 'success');
+    }
+}
+
+// Start auto-refresh
+function startAutoRefresh() {
+    stopAutoRefresh(); // Clear any existing interval
+    
+    autoRefreshInterval = setInterval(async () => {
+        try {
+            await refreshAllData();
+            console.log('Auto-refresh completed at', new Date().toLocaleTimeString());
+        } catch (error) {
+            console.error('Auto-refresh failed:', error);
+        }
+    }, AUTO_REFRESH_DELAY);
+}
+
+// Stop auto-refresh
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    }
+}
+
+// Refresh all data
+async function refreshAllData() {
+    const refreshPromises = [
+        fetchPaymentsData(),
+        fetchResidentsData(),
+        fetchSubscriptionStatus()
+    ];
+    
+    await Promise.allSettled(refreshPromises);
+    
+    lastUpdated = new Date();
+    updateLastRefreshTime();
+}
+
+// Update last refresh time display
+function updateLastRefreshTime() {
+    const timeDisplay = document.getElementById('lastRefreshTime');
+    if (timeDisplay && lastUpdated) {
+        timeDisplay.textContent = `Last updated: ${lastUpdated.toLocaleTimeString()}`;
+    }
+}
+
 // Data fetching functions with improved error handling
 async function fetchPaymentsData() {
     try {
-        payments = await ApiClient.get('/manager/all-payments');
+        payments = await ApiClient.get('/manager/all-payments?_=' + Date.now());
         filteredPayments = [...payments];
-        
-        // Apply default filter (this month)
-        filterPaymentsByTime('all-time');
+        console.log('Payments fetched:', payments)
+        // Apply current filters
+        const currentTimeFilter = timeFilter?.value || 'all';
+        filterPaymentsByTime(currentTimeFilter);
         
         updateDashboardStats();
         renderPaymentsTable();
@@ -508,25 +605,6 @@ function updateSubscriptionButton() {
     }
 }
 
-// Modify the click handler to prevent action when disabled
-function handleSubscriptionButtonClick() {
-    // Check if button is disabled (active subscription)
-    if (subscriptionPaymentBtn && subscriptionPaymentBtn.disabled) {
-        return; // Do nothing if button is disabled
-    }
-    
-    // Show form for expired, pending, or if the modal isn't already open
-    if (subscriptionStatus.isExpired || 
-        (subscriptionStatus.community?.subscriptionStatus && 
-         subscriptionStatus.community.subscriptionStatus.toLowerCase() === 'pending') ||
-        !subscriptionPaymentModal.style.display || 
-        subscriptionPaymentModal.style.display === 'none') {
-        openSubscriptionPaymentModal();
-    } else {
-        showCurrentSubscriptionInfo();
-    }
-}
-
 // Filtering and search functions
 function filterPayments() {
     const searchTerm = searchInput.value.toLowerCase().trim();
@@ -608,7 +686,7 @@ function renderPaymentsTable() {
             paymentsTableBody.appendChild(row);
         });
     }
-    
+    console.log(paginatedPayments);
     renderPagination();
 }
 
@@ -1306,12 +1384,6 @@ function closeSubscriptionPaymentModal() {
     }
 }
 
-function closeSubscriptionPaymentModal() {
-    if (subscriptionPaymentModal) {
-        subscriptionPaymentModal.style.display = 'none';
-    }
-}
-
 
 
 
@@ -1696,217 +1768,6 @@ async function createBulkPaymentForResident(resident, paymentData) {
     }
 }
 
-// Enhanced bulk payment handler with progress tracking
-async function handleBulkPaymentSubmit(event) {
-    event.preventDefault();
-    
-    const submitButton = event.target.querySelector('button[type="submit"]');
-    const progressDiv = document.getElementById('bulkPaymentProgress');
-    
-    LoadingManager.show(submitButton, 'Creating payments...');
-    
-    try {
-        const title = document.getElementById('bulkPaymentTitle')?.value?.trim();
-        const amount = parseFloat(document.getElementById('bulkPaymentAmount')?.value || 0);
-        const remarks = document.getElementById('bulkPaymentRemarks')?.value?.trim();
-        const paymentDeadline = document.getElementById('bulkPaymentDeadline')?.value;
-
-        // Validation
-        if (!title || amount <= 0) {
-            throw new Error('Please fill in all required fields with valid values');
-        }
-
-        if (!residents || residents.length === 0) {
-            throw new Error('No residents found. Please try again later.');
-        }
-
-        const paymentData = {
-            title,
-            amount,
-            status: 'Pending',
-            paymentMethod: 'None',
-            remarks: remarks || '',
-            paymentDeadline: paymentDeadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-        };
-
-        // Show progress if element exists
-        if (progressDiv) {
-            progressDiv.style.display = 'block';
-            progressDiv.innerHTML = `
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 0%"></div>
-                </div>
-                <div class="progress-text">Processing 0 of ${residents.length} residents...</div>
-            `;
-        }
-
-        let successCount = 0;
-        let failCount = 0;
-        const failedResidents = [];
-
-        // Process each resident with progress updates
-        for (let i = 0; i < residents.length; i++) {
-            const resident = residents[i];
-            const result = await createBulkPaymentForResident(resident, paymentData);
-            
-            if (result.success) {
-                successCount++;
-            } else {
-                failCount++;
-                failedResidents.push(result);
-            }
-            
-            // Update progress
-            if (progressDiv) {
-                const progress = ((i + 1) / residents.length) * 100;
-                const progressFill = progressDiv.querySelector('.progress-fill');
-                const progressText = progressDiv.querySelector('.progress-text');
-                
-                if (progressFill) progressFill.style.width = `${progress}%`;
-                if (progressText) progressText.textContent = `Processing ${i + 1} of ${residents.length} residents...`;
-            }
-        }
-
-        // Hide progress
-        if (progressDiv) {
-            progressDiv.style.display = 'none';
-        }
-
-        // Show results
-        let message;
-        let messageType;
-        
-        if (failCount === 0) {
-            message = `Successfully created ${successCount} payment requests`;
-            messageType = 'success';
-        } else if (successCount === 0) {
-            message = `Failed to create any payment requests. Please check your connection and try again.`;
-            messageType = 'error';
-        } else {
-            message = `Created ${successCount} payments successfully. ${failCount} failed.`;
-            messageType = 'warning';
-            
-            // Log failed residents for debugging
-            console.warn('Failed residents:', failedResidents);
-        }
-        
-        ErrorHandler.show(message, messageType);
-        closeBulkPaymentModal();
-        await fetchPaymentsData(); // Refresh data
-        
-    } catch (error) {
-        console.error('Bulk payment error:', error);
-        ErrorHandler.show(error.message || 'Failed to create payments. Please try again.');
-        
-        // Hide progress on error
-        if (progressDiv) {
-            progressDiv.style.display = 'none';
-        }
-    } finally {
-        LoadingManager.hide(submitButton);
-    }
-}
-
-// Enhanced subscription status checker with better logic
-// Enhanced subscription status checker with automatic modal opening
-async function checkSubscriptionStatus() {
-    try {
-        // Refresh subscription status from server
-        await fetchSubscriptionStatus();
-        
-        if (!subscriptionStatus.success || !subscriptionStatus.community) {
-            return;
-        }
-        
-        // Remove existing alerts to avoid duplicates
-        const existingAlerts = document.querySelectorAll('.subscription-alert');
-        existingAlerts.forEach(alert => alert.remove());
-        
-        const status = subscriptionStatus.community.subscriptionStatus?.toLowerCase();
-        
-        if (subscriptionStatus.isExpired) {
-            // Automatically open payment modal if subscription is expired
-            openSubscriptionPaymentModal();
-            
-            showSubscriptionAlert(
-                'Your subscription has expired. Please renew to continue using all features.',
-                'error'
-            );
-        } else if (status === 'pending') {
-            showSubscriptionAlert(
-                'Your subscription payment is pending. Please complete the payment to activate your subscription.',
-                'warning'
-            );
-        } else if (subscriptionStatus.isExpiringSoon) {
-            const days = subscriptionStatus.daysUntilExpiry || 0;
-            showSubscriptionAlert(
-                `Your subscription expires in ${days} day(s). Please renew to avoid service interruption.`,
-                'warning'
-            );
-        }
-        
-        // Update subscription button and dashboard
-        updateSubscriptionButton();
-        updateSubscriptionDashboard();
-        
-    } catch (error) {
-        console.error('Error checking subscription status:', error);
-    }
-}
-
-// Enhanced subscription alert with better styling
-function showSubscriptionAlert(message, type) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `subscription-alert alert-${type}`;
-    alertDiv.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: ${type === 'error' ? '#dc3545' : '#ffc107'};
-        color: white;
-        padding: 15px;
-        text-align: center;
-        z-index: 1000;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        animation: slideDown 0.3s ease-out;
-    `;
-    
-    alertDiv.innerHTML = `
-        <div class="alert-content" style="display: flex; justify-content: center; align-items: center; gap: 15px; max-width: 1200px; margin: 0 auto;">
-            <span class="alert-message" style="flex: 1; text-align: center;">${escapeHtml(message)}</span>
-            <button onclick="handleSubscriptionButtonClick()" 
-                    style="background: white; color: ${type === 'error' ? '#dc3545' : '#ffc107'}; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                ${subscriptionStatus.isExpired ? 'Renew Now' : 'View Details'}
-            </button>
-            <button onclick="this.parentElement.parentElement.remove()" 
-                    style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; width: 30px; height: 30px;">×</button>
-        </div>
-    `;
-    
-    // Add CSS animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideDown {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(0); }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    document.body.insertBefore(alertDiv, document.body.firstChild);
-    
-    // Auto-hide after 30 seconds for warnings (not for errors)
-    if (type === 'warning') {
-        setTimeout(() => {
-            if (alertDiv.parentElement) {
-                alertDiv.style.animation = 'slideDown 0.3s ease-out reverse';
-                setTimeout(() => alertDiv.remove(), 300);
-            }
-        }, 30000);
-    }
-}
-
 // Utility function to format currency
 function formatCurrency(amount) {
     return `₹${(amount || 0).toLocaleString('en-IN')}`;
@@ -1958,6 +1819,20 @@ window.PaymentUtils = {
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
     ErrorHandler.show('An unexpected error occurred. Please try again.');
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    stopAutoRefresh();
+});
+
+// Pause auto-refresh when page is hidden, resume when visible
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        stopAutoRefresh();
+    } else if (autoRefreshToggle?.checked) {
+        startAutoRefresh();
+    }
 });
 
 // Initialize tooltips and other UI enhancements

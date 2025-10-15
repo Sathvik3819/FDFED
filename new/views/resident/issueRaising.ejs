@@ -11,7 +11,44 @@
     <link rel="stylesheet" href="/notyf/notyf.min.css">
     <link rel="stylesheet" href="../../css/nav.css" />
     <link rel="stylesheet" href="../../css/resident/issueRaising.css" />
+    <style>
+        /* Loading animation for auto-refresh */
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
 
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .loading-indicator {
+            animation: pulse 1s infinite;
+        }
+
+        /* Auto-refresh status indicator */
+        .refresh-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 1000;
+            display: none;
+        }
+
+        .refresh-status.show {
+            display: block;
+        }
+    </style>
 
 </head>
 
@@ -20,114 +57,153 @@
 
         <div class="bodyContainer">
             <div class="adCon d-flex justify-content-center align-items-center">
-                <div class="advertisement" id="ad-slider">
+      
+          <div class="advertisement" id="ad-slider">
                     <% if (locals.ads && ads.filter(ad=> ad.status==="Active").length > 0) { %> <% ads.filter(ad=>
                             ad.status==="Active").forEach(ad => { %>
-                            <img src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>" class="ad-slide"
+                          
+  <img src="http://localhost:3000/<%= ad.imagePath.replace(/\\/g, '/') %>" class="ad-slide"
                                 alt="Ad" height="100px" width="200px" />
                             <% }) %>
-                                <% } else { %>
+                            
+    <% } else { %>
                                     <div class="d-flex justify-content-center align-items-center" style="
               background-color: rgba(158, 207, 250, 0.539);
-              border-radius: 8px;
+border-radius: 8px;
               color: rgb(0, 80, 193);
               border: 3px dotted blue;
               height: 100%;
               width: 100%;
-            ">
+">
                                         <p class="ad-text fs-4" style="font-weight: 600">Advertisement</p>
                                     </div>
-                                    <% } %>
+                    
+                <% } %>
                 </div>
             </div>
 
             <div class="contentCon">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="section-title">Pending & In-Progress Issues</h4>
-                    <button id="raiseIssueBtn" class="btn btn-primary" onclick="openForm('issue')">
-                        <i class="bi bi-plus-lg me-2"></i>Raise an Issue
-                    </button>
+                    <h4 
+class="section-title">Pending & In-Progress Issues</h4>
+                    <div class="d-flex gap-2">
+                        <button id="raiseIssueBtn" class="btn btn-primary" onclick="openForm('issue')">
+                            <i class="bi bi-plus-lg me-2"></i>Raise an Issue
+                        </button>
+                        <button class="btn btn-success" id="manualRefresh" title="Refresh Issues">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="stats-grid mb-4">
+        
+        <div class="stats-grid mb-4">
                     <div class="stat-card" style="border-left: 6px solid var(--warning)">
                         <p class="card-label">Pending Issues</p>
-                        <h2 class="card-value text-warning">
-                            <%= issueCounts.pending %>
+                        <h2 class="card-value text-warning" id="pendingCount">
+             
+               <%= issueCounts.pending %>
                         </h2>
                     </div>
                     <div class="stat-card" style="border-left: 6px solid var(--info)">
-                        <p class="card-label">Assigned Issues</p>
-                        <h2 class="card-value text-info">
+              
+          <p class="card-label">Assigned Issues</p>
+                        <h2 class="card-value text-info" id="inProgressCount">
                             <%= issueCounts.inProgress %>
                         </h2>
-                    </div>
+        
+            </div>
                     <div class="stat-card" style="border-left: 6px solid var(--success)">
                         <p class="card-label">Resolved</p>
-                        <h2 class="card-value text-success">
-                            <%= issueCounts.resolved %>
+                        <h2 class="card-value text-success" id="resolvedCount">
+            
+                <%= issueCounts.resolved %>
                         </h2>
                     </div>
                 </div>
 
                 <div class="table-container">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+     
+               <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="table-title">Recent Issues</h4>
                     </div>
                     <div class="issues-grid">
-                        <% if (locals.i && i.length>0 ) { %>
+              
+          <% if (locals.i && i.length>0 ) { %>
                             <% i.forEach(is=> { %>
                                 <div class="issue-card" data-id="<%= is._id %>">
-                                    <div class="issue-card-header">
+                
+                    <div class="issue-card-header">
                                         <h5>
-                                            <%= is.title %>
+                                       
+     <%= is.title %>
                                         </h5>
-                                        <span class="status-badge status-<%= is.status %> <%= is.status === "Review Pending" ? "review" : "" %>
-                                            <%= is.status==="Payment Pending" ? "paymentPending" : "" %>">
+                                        <span class="status-badge status-<%= is.status %> <%= is.status === "Review Pending" ?
+"review" : "" %>
+                                            <%= is.status==="Payment Pending" ?
+"paymentPending" : "" %>">
                                                 <%= is.status %>
                                         </span>
-                                    </div>
+       
+                             </div>
                                     <div class="issue-card-body">
-                                        <p><strong>Tracking ID:</strong>
+                                  
+      <p><strong>Tracking ID:</strong>
                                             <%= is.issueID %>
                                         </p>
-                                        <p><strong>Category:</strong>
+       
+                                 <p><strong>Category:</strong>
                                             <%= is.title %>
-                                        </p>
+                     
+                   </p>
                                         <p><strong>Worker Assigned:</strong>
-                                            <%= is.workerAssigned ? is.workerAssigned.name : "-" %>
+                                        
+    <%= is.workerAssigned ? is.workerAssigned.name : "-" %>
                                         </p>
                                     </div>
-                                    <div class="issue-card-actions">
+              
+                      <div class="issue-card-actions">
 
                                         <button class="action-btn view" data-id="<%= is._id %>">
-                                            <i class="bi bi-eye"></i>View
+                                
+            <i class="bi bi-eye"></i>View
                                         </button>
 
                                         <% if (is.status==="Pending" ) { %>
-                                            <button class="action-btn delete">
+ 
+                                           <button class="action-btn delete">
                                                 <i class="bi bi-trash"></i>Cancel
-                                            </button>
+     
+                                       </button>
                                         <% } else if(is.status==="Review Pending" ) { %>
-                                                <button class="action-btn review-btn" data-id="<%= is._id %>">
+              
+                                  <button class="action-btn review-btn" data-id="<%= is._id %>">
                                                     Review
-                                                </button>
+         
+                                       </button>
                                         <% } else if(is.status==="Payment Pending" ) { %>
-                                                    <button class="action-btn pay-btn" data-id="<%= is._id %>">
+              
+                                      <button class="action-btn pay-btn" data-id="<%= is._id %>">
                                                         Pay
-                                                    </button>
+ 
+                                                   </button>
                                         <% } %>
-                                    </div>
+       
+                             </div>
                                 </div>
                                 <% }) %>
-                                    <% } else { %>
+     
+                               <% } else { %>
                                         <div
-                                            class="no-bookings d-flex gap-3 justify-content-center align-items-center text-muted ">
+                         
+                   class="no-bookings d-flex gap-3 justify-content-center align-items-center text-muted ">
                                             <i class="bi bi-tools"></i>
-                                            <p>No issues found</p>
+                             
+               <p>No issues found</p>
                                         </div>
                                         <% } %>
-                    </div>
+ 
+                   </div>
                 </div>
             </div>
         </div>
@@ -135,28 +211,34 @@
         <div id="issueFormPopup" class="popup">
             <div class="popup-content">
                 <span class="close-btn" onclick="closeForm('issue')">&times;</span>
-                <h3 class="form-title">Raise an Issue</h3>
+    
+            <h3 class="form-title">Raise an Issue</h3>
                 <form id="issueForm">
                     <div class="form-group">
                         <label for="issueCategory">Category:</label>
-                        <select id="issueCategory" name="category" required>
+                      
+  <select id="issueCategory" name="category" required>
                             <option value="" disabled selected>Select a category</option>
                             <option value="Electricity">Electricity</option>
                             <option value="Water Supply">Water Supply</option>
-                            <option value="Cleaning">Cleaning</option>
+  
+                          <option value="Cleaning">Cleaning</option>
                             <option value="Maintenance">Maintenance</option>
                             <option value="Other">Other</option>
-                        </select>
+               
+         </select>
                     </div>
 
                     <div class="form-group">
                         <label for="issueDescription">Description:</label>
-                        <textarea id="issueDescription" name="description" rows="4"
+                        <textarea 
+id="issueDescription" name="description" rows="4"
                             placeholder="Describe your issue in detail..." required></textarea>
                     </div>
 
                     <button type="submit" class="form-button">
-                        <i class="bi bi-check-circle"></i>Submit Issue
+                       
+ <i class="bi bi-check-circle"></i>Submit Issue
                     </button>
                 </form>
             </div>
@@ -165,125 +247,156 @@
 
         <div class="popup" id="issuePopup" style="display: none;">
             <div class="popup-content">
-                <div class="popup-header">
+               
+ <div class="popup-header">
                     <div class="d-flex justify-content-between align-items-center w-100">
                         <div>
                             <h4 class="popup-main-title">Issue Details</h4>
-                            <p class="popup-tracking-id">Tracking ID: <span id="popupTrackingId"></span></p>
+                    
+        <p class="popup-tracking-id">Tracking ID: <span id="popupTrackingId"></span></p>
                         </div>
                         <div class="w-25" style="height: 100%;">
                             <span class="status-badge text-center" id="popupStatus">Resolved</span>
-                        </div>
+      
+                  </div>
                     </div>
                     <span class="close-btn" onclick="closePopup()">&times;</span>
 
                 </div>
                 <div class="issue-details">
 
-                    <div class="status-progress position-relative d-flex justify-content-between w-100 align-items-start p-3 my-4">
+       
+             <div class="status-progress position-relative d-flex justify-content-between w-100 align-items-start p-3 my-4">
                         <div class="progress-line">
                             <div class="progress-indicator"></div>
                         </div>
-                        <div class="position-absolute d-flex justify-content-between align-items-center w-75" style="left: 12%; top: 5px;">
+ 
+                       <div class="position-absolute d-flex justify-content-between align-items-center w-75" style="left: 12%;
+top: 5px;">
                             <div class="step">
                                     <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon step-icon-completed"><i class="bi bi-check" ></i></div>
-                                <span class="step-label">Pending</span>
+                      
+          <span class="step-label">Pending</span>
                             </div>
 
                             <div class="step">
-                                    <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon step-icon-completed"><i class="bi bi-check" ></i></div>
+                                
+    <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon step-icon-completed"><i class="bi bi-check" ></i></div>
                                 <span class="step-label">Assigned</span>
                             </div>
 
-                            <div class="step">
+                       
+     <div class="step">
                                 <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"><i class="bi bi-check" ></i></div>
                                 <span class="step-label">In Progress</span>
-                            </div>
+                 
+           </div>
 
                             <div class="step">
                                 <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"><i class="bi bi-check" ></i></div>
-                                <span class="step-label">Review Pending</span>
+                 
+               <span class="step-label">Review Pending</span>
                             </div>
 
-                            <div class="step">                                
+                            <div class="step">                          
+      
                                 <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"><i class="bi bi-check" ></i></div>
 
                                 <span class="step-label">Payment pending</span>
-                            </div>
+                 
+           </div>
                             <div class="step">
                                 <div class="w-6 h-6 rounded-full flex items-center justify-center z-10 step-icon"><i class="bi bi-check" ></i></div>
-                                <span class="step-label">Paid</span>
+                 
+               <span class="step-label">Paid</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="issue-details-con">
+            
+        <div class="issue-details-con">
 
                         <div class="detail-row">
                             <div class="detail-label">Category:</div>
                             <div class="detail-value" id="popupTitle">
-                                Emergency Plumbing Issue
+       
+                         Emergency Plumbing Issue
                             </div>
                         </div>
 
-                        <div class="detail-row">
+                     
+   <div class="detail-row">
                             <div class="detail-label">Description:</div>
                             <div class="detail-value" id="popupDescription">
-                                There was a major water leak in the bathroom that was causing
-                                flooding. Immediate attention was required to prevent water damage
+                                There was a major water 
+leak in the bathroom that was causing
+                                flooding.
+Immediate attention was required to prevent water damage
                                 to the apartment below.
-                            </div>
+</div>
                         </div>
                         <div class="detail-row">
                             <div class="detail-label">Date Reported:</div>
-                            <div class="detail-value" id="popupDate">2023-06-15</div>
+                     
+       <div class="detail-value" id="popupDate">2023-06-15</div>
                         </div>
                         <div class="detail-row">
                             <div class="detail-label">Deadline:</div>
-                            <div class="detail-value" id="popupDeadline">2023-06-15</div>
+             
+               <div class="detail-value" id="popupDeadline">2023-06-15</div>
                         </div>
                     </div>
 
                     <div class="worker-details" id="workerDetails">
-                        <h4>Worker Details</h4>
+                 
+       <h4>Worker Details</h4>
                         <div class="detail-row">
                             <div class="detail-label">Name:</div>
                             <div class="detail-value" id="popupWorkerName">Sunil Patel</div>
-                        </div>
+       
+                 </div>
                         <div class="detail-row">
                             <div class="detail-label">Contact:</div>
-                            <div class="detail-value" id="popupWorkerContact">
+                            <div 
+class="detail-value" id="popupWorkerContact">
                                 +91 9876543210
                             </div>
                         </div>
-                        <div class="detail-row">
+              
+          <div class="detail-row">
                             <div class="detail-label">Specialization:</div>
                             <div class="detail-value" id="popupWorkerSpecialization">
-                                Plumbing & Emergency Repairs
+                              
+  Plumbing & Emergency Repairs
                             </div>
                         </div>
                     </div>
 
                     <div class="payment-details">
-                        <h4>Payment Details</h4>
+  
+                      <h4>Payment Details</h4>
                         <div class="detail-row">
                             <div class="detail-label">Amount:</div>
-                            <div class="detail-value" id="popupAmount">₹1500</div>
+                       
+     <div class="detail-value" id="popupAmount">₹1500</div>
                         </div>
                         <div class="detail-row">
                             <div class="detail-label">Payment Status:</div>
-                            <div class="status-badge status-Resolved" id="popupPaymentStatus">Completed</div>
+              
+              <div class="status-badge status-Resolved" id="popupPaymentStatus">Completed</div>
                         </div>
                         <div id="afterPayment" ></div>
 
                     </div>
 
-                </div>
+             
+   </div>
                 <div class="action-buttons">
                     <button class="btn btn-cancel" id="cancelBtn" onclick="cancelIssue()">
                         Cancel Issue
                     </button>
-                </div>
+           
+     </div>
             </div>
         </div>
 
@@ -291,50 +404,61 @@
             <div class="feedback-form-card">
                 <h3 class="section-title">
                     <i class="bi bi-chat-square-text"></i> Provide Feedback
-                </h3>
+         
+       </h3>
 
                 <form id="feedbackForm" >
                     <div class="form-group">
                         <input type="text" id="issueId" value="" name="id" readonly />
                     </div>
-                    <div class="form-group">
+    
+                <div class="form-group">
                         <label for="feedbackRating">Your Rating:</label>
                         <div class="rating-input">
-                            <input type="radio" id="star5" name="rating" value="5" />
+                            <input type="radio" id="star5" name="rating" 
+value="5" />
                             <label for="star5" title="5 stars"><i class="bi bi-star-fill"></i></label>
 
                             <input type="radio" id="star4" name="rating" value="4" />
-                            <label for="star4" title="4 stars"><i class="bi bi-star-fill"></i></label>
+                            <label for="star4" title="4 stars"><i class="bi 
+bi-star-fill"></i></label>
 
                             <input type="radio" id="star3" name="rating" value="3" />
                             <label for="star3" title="3 stars"><i class="bi bi-star-fill"></i></label>
 
                             <input type="radio" id="star2" name="rating" value="2" />
-                            <label for="star2" title="2 stars"><i class="bi bi-star-fill"></i></label>
+ 
+                           <label for="star2" title="2 stars"><i class="bi bi-star-fill"></i></label>
 
                             <input type="radio" id="star1" name="rating" value="1" />
                             <label for="star1" title="1 star"><i class="bi bi-star-fill"></i></label>
-                        </div>
+  
+                      </div>
                     </div>
 
                     <div class="form-group">
                         <label for="feedbackComments">Your Feedback:</label>
-                        <textarea id="feedbackComments" class="form-control" name="feedback" rows="4"
+           
+             <textarea id="feedbackComments" class="form-control" name="feedback" rows="4"
                             placeholder="Please share your experience..." required></textarea>
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn btn-outline-secondary cancel-feedback">
+          
+              <button type="button" class="btn btn-outline-secondary cancel-feedback">
                             Cancel
                         </button>
                         <button type="submit" class="btn" style="background-color: orangered;color: white;">
-                            <i class="bi bi-send-check"></i> Submit Feedback
+ 
+                           <i class="bi bi-send-check"></i> Submit Feedback
                         </button>
                     </div>
                 </form>
-            </div>
+         
+   </div>
         </div>
 
+        <div class="refresh-status" id="refreshStatus"></div>
 
         <script src="/notyf/notyf.min.js"></script>
         <script src="./../js/resident/issueRaising.js"></script>

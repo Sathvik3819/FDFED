@@ -344,7 +344,35 @@
         .search-bar {
           flex-direction: column;
         }
+
+       /* Refresh Button Styles */
+.btn.refresh {
+  background-color: #17a2b8;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn.refresh:hover {
+  background-color: #138496;
+}
+
+.btn.refresh.refreshing i {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.last-updated {
+  font-size: 0.85rem;
+  color: #666;
+  margin-left: 10px;
+}
       }
+
     </style>
   </head>
 
@@ -430,6 +458,15 @@
           <button class="btn primary" id="changePlanBtn" style="background-color: #28a745;">
             Change Plan
           </button>
+          <div style="display: flex; gap: 15px; align-items: center;">
+    <button class="btn primary" id="refreshBtn" style="background-color: #17a2b8;">
+      <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+    <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
+      <input type="checkbox" id="autoRefreshToggle" checked>
+      <span style="font-size: 14px; color: #666;">Auto-refresh (30s)</span>
+    </label>
+  </div>
         </div>
 
         <div class="search-bar">

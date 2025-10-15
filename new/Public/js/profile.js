@@ -1,3 +1,4 @@
+
 const notyf = new Notyf({
   duration: 3000,
   position: { x: "center", y: "top" },
@@ -8,20 +9,20 @@ const notyf = new Notyf({
 });
 
 function showSection(sectionId, activeTabId) {
-  // Hide all sections
+  
   document.querySelectorAll(".form-section").forEach((section) => {
     section.classList.add("d-none");
   });
 
-  // Show selected section
+  
   document.getElementById(sectionId).classList.remove("d-none");
 
-  // Remove active class from all tabs
+  
   document.querySelectorAll(".toggle-tab").forEach((tab) => {
     tab.classList.remove("active");
   });
 
-  // Add active class to clicked tab
+  
   document.getElementById(activeTabId).classList.add("active");
 }
 
@@ -29,7 +30,7 @@ function showSection(sectionId, activeTabId) {
 document.addEventListener("DOMContentLoaded", () => {
   showSection("profileSection", "profileTab");
 
-  // Add animation to form sections
+  // Add animation 
   const sections = document.querySelectorAll(".form-section");
   sections.forEach((section, index) => {
     section.style.opacity = "0";
@@ -51,29 +52,44 @@ document.addEventListener("DOMContentLoaded", () => {
         .querySelector("#passwordForm")
         .getAttribute("type");
 
-      const cp = document.getElementById("currentPassword").value;
-      const np = document.getElementById("newPassword").value;
-      const cnp = document.getElementById("confirmPassword").value;
+      const currentPassword = document.getElementById("currentPassword").value;
+      const newPassword = document.getElementById("newPassword").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
 
-      if (np !== cnp) {
-        alert("New Password and Confirm Password do not match.");
+      if (newPassword !== confirmPassword) {
+        notyf.error("New Password and Confirm Password do not match.");
         return;
       }
 
-      const response = await fetch(`/${type}/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ cp, np, cnp }),
-      });
+      if (newPassword.length < 8) {
+        notyf.error("Password must be at least 8 characters long.");
+        return;
+      }
 
-      const result = await response.json();
-      if (result.success){
-        notyf.success(result.message);
-        document.getElementById("passwordForm").reset();
-      }else{
-        notyf.error(result.message);
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        notyf.error("All fields are required.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/${type}/change-password`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ currentPassword, newPassword }),
+        });
+
+        const result = await response.json();
+        if (result.success || result.ok) {
+          notyf.success(result.message);
+          document.getElementById("passwordForm").reset();
+        } else {
+          notyf.error(result.message);
+        }
+      } catch (error) {
+        console.error("Password change error:", error);
+        notyf.error("Something went wrong while changing password.");
       }
     });
 
@@ -83,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
 
       const formData = new FormData(this);
-      
+
 
       const type = document.querySelector("#profileForm").getAttribute("type");
       const url = `/${type}/profile`;

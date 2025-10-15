@@ -116,16 +116,44 @@ export const submitInterestForm = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please enter a valid phone number.' });
     }
 
+    // Check for existing application by email
+    const emailExists = await Interest.findOne({ email: email.toLowerCase().trim() });
+    if (emailExists) {
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => fs.existsSync(file.path) && fs.unlinkSync(file.path));
+      }
+      return res.status(409).json({
+        success: false,
+        message: 'An application with this email already exists. Please check your email for further communication.'
+      });
+    }
+
+    // Check for duplicate community + location combination
+    const communityLocationExists = await Interest.findOne({
+      communityName: validator.escape(communityName.trim()),
+      location: validator.escape(location.trim())
+    });
+
+    if (communityLocationExists) {
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => fs.existsSync(file.path) && fs.unlinkSync(file.path));
+      }
+      return res.status(409).json({
+        success: false,
+        message: `An application for the community "${communityName}" in "${location}" already exists.`
+      });
+    }
+
     // Process and compress uploaded photos
     let photoPaths = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         const compressedPath = path.join(path.dirname(file.path), 'compressed_' + file.filename);
         await sharp(file.path)
-          .resize({ width: 1024 }) // optional max width
-          .jpeg({ quality: 80 })   // compress quality
+          .resize({ width: 1024 })
+          .jpeg({ quality: 80 })
           .toFile(compressedPath);
-        fs.unlinkSync(file.path); // remove original
+        fs.unlinkSync(file.path);
         photoPaths.push(compressedPath);
       }
     }
@@ -144,7 +172,6 @@ export const submitInterestForm = async (req, res) => {
       submittedAt: new Date()
     });
 
-    // Save to database
     const savedApplication = await newApplication.save();
 
     res.status(201).json({
@@ -169,14 +196,11 @@ export const submitInterestForm = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Validation failed', errors: validationErrors });
     }
 
-    if (error.code === 11000) {
-      const field = Object.keys(error.keyPattern)[0];
-      return res.status(400).json({ success: false, message: `An application with this ${field} already exists.` });
-    }
-
     if (error instanceof multer.MulterError) {
-      if (error.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ success: false, message: 'File size too large. Each image must be smaller than 5MB.' });
-      if (error.code === 'LIMIT_FILE_COUNT') return res.status(400).json({ success: false, message: 'Too many files. Maximum 5 photos allowed.' });
+      if (error.code === 'LIMIT_FILE_SIZE')
+        return res.status(400).json({ success: false, message: 'File size too large. Each image must be smaller than 5MB.' });
+      if (error.code === 'LIMIT_FILE_COUNT')
+        return res.status(400).json({ success: false, message: 'Too many files. Maximum 5 photos allowed.' });
     }
 
     res.status(500).json({
@@ -186,6 +210,7 @@ export const submitInterestForm = async (req, res) => {
     });
   }
 };
+
 
 
 
@@ -209,6 +234,23 @@ export const getAllApplications = async (req, res) => {
   }
 };
 
+// Admin: Get all applications as JSON
+export const getAllApplicationsJSON = async (req, res) => {
+  try {
+    const interests = await Interest.find().sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      interests
+    });
+  } catch (error) {
+    console.error('Get interests error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching applications'
+    });
+  }
+};
 
 
 export const approveApplication = async (req, res) => {
