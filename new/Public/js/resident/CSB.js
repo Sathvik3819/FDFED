@@ -54,7 +54,6 @@ function handleFacilityChange() {
   resetTimeSlots();
   const selected = facilityData[facility];
 
-  // Check if facility requires time slot booking
   const requiresTimeSlots = shouldShowTimeSlots(facility);
 
   if (requiresTimeSlots) {
@@ -278,7 +277,7 @@ async function refreshBookings() {
 }
 
 function startAutoRefresh() {
-  autoRefreshInterval = setInterval(refreshBookings, 30000); // Refresh every 30 seconds
+  autoRefreshInterval = setInterval(refreshBookings, 30000); 
 }
 
 function stopAutoRefresh() {
