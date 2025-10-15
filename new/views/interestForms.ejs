@@ -520,6 +520,12 @@
                     return;
                 }
 
+                const phoneRegex = /^\d{10}$/;
+                if (!phoneRegex.test(phone)) {
+                        showAlert('Please enter a valid 10-digit phone number.', 'error');
+                    return;
+                }
+
                 // Prepare FormData
                 const formData = new FormData();
                 formData.append('firstName', firstName);
