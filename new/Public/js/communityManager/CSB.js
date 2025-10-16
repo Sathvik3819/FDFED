@@ -27,6 +27,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelRejectionBtn = document.getElementById("cancelRejection");
   const manualRefreshBtn = document.getElementById("manualRefresh");
 
+  document.getElementById("spaceType").addEventListener("change", (e) => {
+    const spaceName = document.getElementById("spaceName");
+    spaceName.value = e.target.value;
+  });
+
   let refreshInterval;
   let isRefreshing = false;
   let allBookings = []; 
@@ -177,7 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Initialize with current bookings data
   function initializeBookings() {
     // Get initial bookings from the server-rendered data
     const initialCards = bookingsContainer.querySelectorAll('.booking-card');
@@ -212,7 +216,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Stop auto-refresh when user leaves the page
   window.addEventListener('beforeunload', stopAutoRefresh);
 
-  // Event delegation for booking actions (works with dynamically updated content)
   bookingsContainer.addEventListener("click", async (e) => {
     const card = e.target.closest(".booking-card");
     if (!card) return;
@@ -351,8 +354,7 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
               <div class="d-flex flex-column">
                 <span class="detail-label">Created</span>
-                <span class="detail-value" id="detail-created">${data.bookedBy.residentFirstName
-          } ${data.bookedBy.residentLastName}</span>
+                <span class="detail-value" id="detail-created">${data.bookedBy.name}
               </div>
             </div>
             <div class="detail-item col-span-2">
