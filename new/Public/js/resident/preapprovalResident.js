@@ -33,6 +33,107 @@ function downloadQRCode() {
   document.body.removeChild(link);
 }
 
+async function fetchAndRenderLatestVisitor() {
+  try {
+    const response = await fetch("/resident/api/preApprovals");
+    const data = await response.json();
+
+    if (data.success && data.visitors.length > 0) {
+      const latest = data.visitors[0];
+      renderVisitorCard(latest);
+    }
+  } catch (err) {
+    console.error("Error fetching latest visitor:", err);
+  }
+}
+
+function renderVisitorCard(v) {
+  const container = document.querySelector(".requests-container");
+  if (!container) return;
+
+  const card = document.createElement("div");
+  card.classList.add("request-card");
+
+  const date = v.scheduledAt
+    ? new Date(v.scheduledAt).toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "N/A";
+  const time = v.scheduledAt
+    ? new Date(v.scheduledAt).toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "N/A";
+
+  card.innerHTML = `
+    <div class="request-card-header">
+      <div class="visitor-info">
+        <div class="visitor-avatar">
+          <i class="bi bi-person-circle"></i>
+        </div>
+        <div>
+          <h5 class="visitor-name">${v.ID}</h5>
+          <p class="visitor-phone"><i class="bi bi-telephone"></i> ${v.contactNumber}</p>
+        </div>
+      </div>
+      <span class="status-badge status-${v.status.toLowerCase()}">
+        ${v.status.charAt(0).toUpperCase() + v.status.slice(1)}
+      </span>
+    </div>
+
+    <div class="request-card-body">
+      <div class="request-detail">
+        <i class="bi bi-person"></i>
+        <div><span class="detail-label">Visit name</span><span class="detail-value">${v.name}</span></div>
+      </div>
+
+      <div class="request-detail">
+        <i class="bi bi-calendar"></i>
+        <div><span class="detail-label">Visit Date</span><span class="detail-value">${date}</span></div>
+      </div>
+
+      <div class="request-detail">
+        <i class="bi bi-clock"></i>
+        <div><span class="detail-label">Visit Time</span><span class="detail-value">${time}</span></div>
+      </div>
+
+      <div class="request-detail">
+        <i class="bi bi-card-text"></i>
+        <div><span class="detail-label">Purpose</span><span class="detail-value">${v.purpose}</span></div>
+      </div>
+    </div>
+
+    <div class="request-card-footer">
+      ${
+        v.status === "Pending"
+          ? `
+        <button class="btn btn-sm btn-outline-danger cancel-btn" data-id="${v._id}">
+          <i class="bi bi-x-circle"></i> Cancel Request
+        </button>
+        <button class="btn btn-sm btn-outline-primary view-qr-btn" data-id="${v._id}">
+          <i class="bi bi-qr-code"></i> View QR
+        </button>`
+          : ""
+      }
+    </div>
+  `;
+
+  // Animate card appearance
+  card.style.opacity = "0";
+  card.style.transform = "translateY(15px)";
+  container.append(card);
+
+  setTimeout(() => {
+    card.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+    card.style.opacity = "1";
+    card.style.transform = "translateY(0)";
+  }, 50);
+}
+
+
 async function submitPreapprovalForm(event) {
   event.preventDefault();
   const form = event.target;
@@ -72,6 +173,7 @@ async function submitPreapprovalForm(event) {
     closeForm('preapproval');
     form.reset();
     
+    setTimeout(fetchAndRenderLatestVisitor, 3000);
     // Refresh the list after showing QR code
   } catch (error) {
     console.error('Submission error:', error);
@@ -82,7 +184,6 @@ async function submitPreapprovalForm(event) {
   }
 }
 
-// Function to view existing QR code
 // View existing QR from backend
 async function viewQRCode(requestId) {
   try {
@@ -112,6 +213,7 @@ async function viewQRCode(requestId) {
   }
 }
 
+
 // Initialize event listeners when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   // Form handling
@@ -123,15 +225,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".popup").forEach(popup => {
     popup.addEventListener("click", (e) => {
       if (e.target === popup) popup.style.display = "none";
-    });
-  });
-
-  // QR code buttons
-    document.querySelectorAll(".view-qr-btn").forEach(btn => {
-    console.log("QR button found:", btn.dataset.id);
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      viewQRCode(btn.dataset.id);
     });
   });
 
@@ -169,26 +262,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 200 + index * 100);
   });
 
-  // Cancel buttons
-  document.querySelectorAll(".cancel-btn").forEach(btn => {
-    btn.addEventListener("click", async function() {
-      const requestId = this.dataset.id;
-      if (!confirm("Are you sure you want to cancel this request?")) return;
-      
-      try {
-        const res = await fetch(`/resident/preapproval/cancel/${requestId}`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ requestId })
-        });
-        
-        if (!res.ok) throw new Error('Cancellation failed');
-        
-        this.closest(".request-card")?.remove();
-      } catch (error) {
-        console.error('Cancellation error:', error);
-        alert("Failed to cancel request. Please try again.");
+  const requestsContainer = document.querySelector(".requests-container");
+  if (requestsContainer) {
+    requestsContainer.addEventListener("click", async (e) => {
+      const viewBtn = e.target.closest(".view-qr-btn");
+      const cancelBtn = e.target.closest(".cancel-btn");
+
+      if (viewBtn) {
+        e.preventDefault();
+        const requestId = viewBtn.dataset.id;
+        if (requestId) await viewQRCode(requestId);
+      }
+
+      if (cancelBtn) {
+        const requestId = cancelBtn.dataset.id;
+        if (!confirm("Are you sure you want to cancel this request?")) return;
+
+        try {
+          const res = await fetch(`/resident/preapproval/cancel/${requestId}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ requestId }),
+          });
+
+          if (!res.ok) throw new Error("Cancellation failed");
+          cancelBtn.closest(".request-card")?.remove();
+        } catch (error) {
+          console.error("Cancellation error:", error);
+          alert("Failed to cancel request. Please try again.");
+        }
       }
     });
-  });
+  }
 });

@@ -63,7 +63,7 @@ const getPreApprovals = async (req, res) => {
       visitors,
       ads,
       counts,
-    });
+    }); 
   } catch (err) {
     console.error("Error loading visitor history:", err);
     res.render("users/resident/preapproval", { visitors: [] });
@@ -262,5 +262,15 @@ const getQRcode = async (req, res) =>{
   }
 }
 
+const getApiPreApprovals = async (req, res) => {
+  try {
+    const visitors = await Visitor.find({ approvedBy: req.user.id }).sort({ createdAt: -1 }).lean();
+    res.status(200).json({ success: true, visitors });
+  } catch (err) {
+    console.error("Error fetching visitor API data:", err);
+    res.status(500).json({ success: false, message: "Failed to fetch visitor data." });
+  }
+};
 
-export { getPreApprovals, getCommonSpace, getIssueData, getPaymentData, getQRcode };
+
+export { getPreApprovals, getCommonSpace, getIssueData, getPaymentData, getQRcode, getApiPreApprovals };
