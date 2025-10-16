@@ -2170,21 +2170,16 @@ managerRouter.post("/profile", upload.single("image"), async (req, res) => {
 managerRouter.post("/profile/changePassword", async (req, res) => {
   const { cp, np, cnp } = req.body;
 
-  console.log(np, cnp);
+  console.log(np, cp);
 
   const r = await CommunityManager.findById(req.user.id);
 
   const isMatch = await bcrypt.compare(cp, r.password);
 
   if (!isMatch) {
-    res.json({ success: false, message: "current password does not match" });
+    return res.json({ success: false, message: "current password does not match" });
   }
 
-  if (np !== cnp) {
-    console.log("not matched");
-
-    return res.json({ success: false, message: "password doesnot match" });
-  }
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(np, salt);

@@ -26,6 +26,44 @@ function showSection(sectionId, activeTabId) {
   document.getElementById(activeTabId).classList.add("active");
 }
 
+function validateForm() {
+  const firstName = document.getElementById("firstName").value.trim();
+  const lastName = document.getElementById("lastName")?.value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address")?.value.trim();
+
+  const nameRegex = /^[A-Za-z]+$/;
+  if (!nameRegex.test(firstName) && lastName !== undefined) {
+    notyf.error("First Name should contain only letters and no spaces.");
+    return false;
+  }
+
+  if (lastName && !nameRegex.test(lastName)) {
+    notyf.error("Last Name should contain only letters and no spaces.");
+    return false;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    notyf.error("Please enter a valid email address.");
+    return false;
+  }
+
+  const phoneRegex = /^\d{10}$/;
+  if (!phoneRegex.test(phone)) {
+    notyf.error("Phone number should be exactly 10 digits.");
+    return false;
+  }
+
+  if (address !== undefined && address === "") {
+    notyf.error("Address cannot be empty.");
+    return false;
+  }
+
+  return true;
+}
+
 // Initialize the page with profile section visible
 document.addEventListener("DOMContentLoaded", () => {
   showSection("profileSection", "profileTab");
@@ -72,12 +110,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
-        const response = await fetch(`/${type}/change-password`, {
+        const response = await fetch(`/${type}/profile/changePassword`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ currentPassword, newPassword }),
+          body: JSON.stringify({ cp:currentPassword, np:newPassword }),
         });
 
         const result = await response.json();
@@ -97,6 +135,10 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("profileForm")
     ?.addEventListener("submit", async function (e) {
       e.preventDefault();
+
+      if (!validateForm()) {
+        return;
+      }
 
       const formData = new FormData(this);
 

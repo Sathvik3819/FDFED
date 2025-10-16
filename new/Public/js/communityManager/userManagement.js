@@ -115,11 +115,22 @@ function showTab(tabId) {
     .classList.add("active");
 }
 
+
+function validateResidentForm() {
+  const uCode = document.getElementById("uCode").value.trim();
+  if (!uCode) {
+    notyf.error("Please enter a valid flat number.");
+    return false;
+  }
+  return true;
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   showTab("residents");
   document
     .getElementById("addResidentBtn")
     .addEventListener("click", function () {
+      
       openForm("resident");
     });
   document
