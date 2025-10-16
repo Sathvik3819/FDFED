@@ -23,7 +23,6 @@
     "express-session": "^1.18.1",
     "flash": "^1.1.0",
     "fs": "^0.0.1-security",
-    "html5-qrcode": "^2.3.8",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.1",
     "mongoose-sequence": "^6.0.1",

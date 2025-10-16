@@ -119,10 +119,51 @@ document.addEventListener("DOMContentLoaded", function () {
     popup.style.display = "flex";
   }
 
-function closePopup() {
-  document.getElementById("visitorPopup").style.display = "none";
+const qrScannerBtn = document.getElementById("qrScannerButton");
+const qrScannerModal = document.getElementById("qrScannerModal");
+const qrScannerContainer = document.getElementById("qrScanner");
+const qrCloseBtn = document.querySelector(".qr-close-btn");
+let html5QrScanner;
+
+qrScannerBtn?.addEventListener("click", function () {
+  qrScannerModal.style.display = "flex";
+
+  html5QrScanner = new Html5QrcodeScanner("qrScanner", {
+    fps: 10,
+    qrbox: 250
+  });
+
+    html5QrScanner.render(onScanSuccess, onScanError);
+});
+
+qrCloseBtn?.addEventListener("click", closeQRScanner);
+
+function onScanSuccess(decodedText, decodedResult) {
+  console.log("Scanned QR Code:", decodedText);
+  alert(`QR Code Scanned: ${decodedText}`);
+
+  // Close scanner after success
+  closeQRScanner();
+}
+
+// Optional error handler
+function onScanError(error) {
+  console.warn("QR Scan error:", error);
+}
+
+// Close QR modal and stop camera
+function closeQRScanner() {
+  if (html5QrScanner) {
+    html5QrScanner.clear().catch((err) => console.error("Clear error:", err));
+  }
+
+  const qrScannerModal = document.getElementById("qrScannerModal");
+  if (qrScannerModal) {
+    qrScannerModal.style.display = "none";
+  }
 }
 });
 
-
-console.log(Html5QrcodeScanner)
+function closePopup() {
+  document.getElementById("visitorPopup").style.display = "none";
+}

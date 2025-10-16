@@ -13,15 +13,24 @@ function closeQRModal() {
 
 // Function to download QR code
 function downloadQRCode() {
-  const canvas = document.querySelector('#qrCodeContainer canvas');
-  if (canvas) {
-    const link = document.createElement('a');
-    link.download = `preapproval-${Date.now()}.png`;
-    link.href = canvas.toDataURL('image/png');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const qrContainer = document.getElementById('qrCodeContainer');
+  const img = qrContainer.querySelector('img'); // Your QR is rendered as <img src="data:image/png;base64,...">
+  
+  if (!img) {
+    alert("QR Code not found!");
+    return;
   }
+
+  // Extract base64 data URL from image
+  const imageSrc = img.src;
+  const link = document.createElement('a');
+  link.download = `preapproval-${Date.now()}.png`;
+  link.href = imageSrc;
+  
+  // Trigger download
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 async function submitPreapprovalForm(event) {
@@ -108,6 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Form handling
   document.getElementById("preApproveBtn")?.addEventListener("click", () => openForm("preapproval"));
   document.getElementById("preapprovalForm")?.addEventListener("submit", submitPreapprovalForm);
+  document.getElementById("downloadQRBtn")?.addEventListener("click", downloadQRCode);
 
   // Modal closing handlers
   document.querySelectorAll(".popup").forEach(popup => {

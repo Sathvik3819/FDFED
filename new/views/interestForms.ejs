@@ -651,7 +651,7 @@
                     showAlert('Last Name must contain only letters (no spaces or special characters).', 'error');
                     return;
                 }
-                const phoneRegex = /^(\+91[\-\s]?|0)?[0-9]{10}$/;
+                
 
                 if (!phoneRegex.test(phone)) {
                     showAlert('Enter a valid 10-digit phone number.', 'error');
