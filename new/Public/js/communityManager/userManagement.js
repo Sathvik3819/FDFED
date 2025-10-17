@@ -30,6 +30,7 @@ function openForm(formType, data = {}) {
       document.getElementById("residentEmail").value = data.email || "";
       document.getElementById("uCode").value = data.uCode || "";
       document.getElementById("residentContact").value = data.contact || "";
+      document.getElementById("workerSalary").value = data.salary
     } else {
       document.getElementById("Rid").value = "";
       document.getElementById("residentForm").reset();
