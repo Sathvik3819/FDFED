@@ -19,18 +19,18 @@ document.addEventListener("DOMContentLoaded", () => {
     historyCard.style.display = "block";
   });
 
-  // Assign Issue Form Population
   const assignButtons = document.querySelectorAll(".assign-btn");
   const issueIDInput = document.getElementById("issueID");
   const id = document.getElementById("idIssue");
 
   const assignPopup = document.getElementById("assignPopup");
 
-  document.getElementById("cancelAssign").addEventListener("click", () => {
-    console.log("Cancel button clicked");
-    
-    closeForm("assign");
-  });
+  // Set minimum date to today for deadline input
+  const deadlineInput = document.getElementById("deadline");
+  if (deadlineInput) {
+    const today = new Date().toISOString().split('T')[0];
+    deadlineInput.setAttribute("min", today);
+  }
 
   assignButtons.forEach((button) => {
     button.addEventListener("click", (event) => {
