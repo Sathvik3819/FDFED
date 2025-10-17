@@ -250,6 +250,23 @@
             min-height: 80px;
         }
 
+        /* Error Styling */
+        input.error,
+        textarea.error,
+        select.error {
+            border: 2px solid #ff4444 !important;
+            outline: none;
+        }
+
+        .error-msg {
+            display: block;
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: 5px;
+            min-height: 16px;
+            font-weight: 500;
+        }
+
         /* Photo Upload Styling */
         .photo-upload-area {
             border: 2px dashed #ddd;
@@ -389,20 +406,24 @@
                         <div class="form-group">
                             <label for="firstName">First Name *</label>
                             <input type="text" id="firstName" name="firstName" required>
+                            <span class="error-msg" id="firstName-error"></span>
                         </div>
                         <div class="form-group">
                             <label for="lastName">Last Name *</label>
                             <input type="text" id="lastName" name="lastName" required>
+                            <span class="error-msg" id="lastName-error"></span>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="email">Email Address *</label>
                             <input type="email" id="email" name="email" required>
+                            <span class="error-msg" id="email-error"></span>
                         </div>
                         <div class="form-group">
                             <label for="phone">Phone Number *</label>
                             <input type="tel" id="phone" name="phone" required>
+                            <span class="error-msg" id="phone-error"></span>
                         </div>
                     </div>
                 </div>
@@ -414,6 +435,7 @@
                         <div class="form-group">
                             <label for="communityName">Community Name *</label>
                             <input type="text" id="communityName" name="communityName" required>
+                            <span class="error-msg" id="communityName-error"></span>
                         </div>
                         
                           
@@ -430,17 +452,20 @@
                     <option value="Pune">Pune</option>
                     <option value="Other">Other</option>
                 </select>
+                <span class="error-msg" id="location-error"></span>
             </div>
 
                         </div>
                     <div class="form-group" id="otherCityGroup" style="display: none;">
                         <label for="otherCity">Enter Your City *</label>
                         <input type="text" id="otherCity" name="otherCity" placeholder="Type your city name">
+                        <span class="error-msg" id="otherCity-error"></span>
                     </div>
 
                     <div class="form-group">
                         <label for="description">Community Description *</label>
                         <textarea id="description" name="description" placeholder="A brief description of your community..." required></textarea>
+                        <span class="error-msg" id="description-error"></span>
                     </div>
                     
                     <!-- Photo Upload Section -->
@@ -468,6 +493,109 @@
     </div>
 
     <script>
+        // Real-time validation rules
+        const validationRules = {
+            firstName: {
+                validate: (value) => {
+                    if (!value.trim()) return "First name is required";
+                    if (!/^[A-Za-z]+$/.test(value.trim())) return "Only letters allowed (no spaces or special characters)";
+                    if (value.trim().length < 2) return "Must be at least 2 characters";
+                    return "";
+                }
+            },
+            lastName: {
+                validate: (value) => {
+                    if (!value.trim()) return "Last name is required";
+                    if (!/^[A-Za-z]+$/.test(value.trim())) return "Only letters allowed (no spaces or special characters)";
+                    if (value.trim().length < 2) return "Must be at least 2 characters";
+                    return "";
+                }
+            },
+            email: {
+                validate: (value) => {
+                    if (!value.trim()) return "Email is required";
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) return "Please enter a valid email address";
+                    return "";
+                }
+            },
+            phone: {
+                validate: (value) => {
+                    if (!value.trim()) return "Phone number is required";
+                    const phoneRegex = /^\d{10}$/;
+                    if (!phoneRegex.test(value)) return "Must be exactly 10 digits";
+                    return "";
+                }
+            },
+            communityName: {
+                validate: (value) => {
+                    if (!value.trim()) return "Community name is required";
+                    if (!/^[A-Za-z\s]+$/.test(value.trim())) return "Only letters and spaces allowed";
+                    if (value.trim().length < 2) return "Must be at least 2 characters";
+                    return "";
+                }
+            },
+            location: {
+                validate: (value) => {
+                    if (!value) return "Please select a city";
+                    return "";
+                }
+            },
+            otherCity: {
+                validate: (value) => {
+                    const locationSelect = document.getElementById('location');
+                    if (locationSelect.value === 'Other') {
+                        if (!value.trim()) return "City name is required";
+                        if (!/^[A-Za-z\s]+$/.test(value.trim())) return "Only letters and spaces allowed";
+                        if (value.trim().length < 2) return "Must be at least 2 characters";
+                    }
+                    return "";
+                }
+            },
+            description: {
+                validate: (value) => {
+                    if (!value.trim()) return "Description is required";
+                    if (value.trim().length < 10) return "Must be at least 10 characters";
+                    return "";
+                }
+            }
+        };
+
+        function validateField(fieldName) {
+            const input = document.getElementById(fieldName);
+            const errorSpan = document.getElementById(`${fieldName}-error`);
+            
+            if (!input || !errorSpan) return true;
+            
+            const error = validationRules[fieldName].validate(input.value);
+            errorSpan.textContent = error;
+            
+            if (error) {
+                input.classList.add('error');
+                return false;
+            } else {
+                input.classList.remove('error');
+                return true;
+            }
+        }
+
+        function setupValidation() {
+            Object.keys(validationRules).forEach(fieldName => {
+                const input = document.getElementById(fieldName);
+                if (!input) return;
+                
+                input.addEventListener('blur', () => {
+                    validateField(fieldName);
+                });
+                
+                input.addEventListener('input', () => {
+                    if (input.classList.contains('error')) {
+                        validateField(fieldName);
+                    }
+                });
+            });
+        }
+
         let selectedPhotos = [];
 
         // Alert Functions
@@ -501,16 +629,6 @@
         function hideAlert() {
             const alertBox = document.getElementById('alertBox');
             alertBox.classList.remove('show');
-
-            // Wait for animation to finish
-            setTimeout(() => {
-                alertBox.style.display = 'none';
-            }, 300);
-        }
-
-        function hideAlert() {
-            const alertBox = document.getElementById('alertBox');
-            alertBox.classList.remove('show');
             
             // Wait for animation to complete before hiding
             setTimeout(() => {
@@ -519,6 +637,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize validation
+            setupValidation();
+            
             // Photo upload handling
             const photoInput = document.getElementById('photoInput');
             const photoPreviewGrid = document.getElementById('photoPreviewGrid');
@@ -588,12 +709,29 @@
                         otherCityGroup.style.display = 'none';
                         otherCityInput.removeAttribute('required');
                         otherCityInput.value = '';
+                        // Clear validation for otherCity when hidden
+                        const errorSpan = document.getElementById('otherCity-error');
+                        if (errorSpan) errorSpan.textContent = '';
+                        otherCityInput.classList.remove('error');
                     }
                 });
 
             // Form submission logic
             document.getElementById('combinedForm').addEventListener('submit', function(e) {
                 e.preventDefault();
+
+                // Validate all fields before submission
+                let isValid = true;
+                Object.keys(validationRules).forEach(fieldName => {
+                    if (!validateField(fieldName)) {
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    showAlert('Please fix all errors before submitting.', 'error');
+                    return;
+                }
 
                 // Get form values
                 const firstName = document.getElementById('firstName').value.trim();
@@ -604,23 +742,9 @@
                 const location = document.getElementById('location').value.trim();
                 const description = document.getElementById('description').value.trim();
                
-                // Validation
-                if (!firstName || !lastName || !email || !phone || !communityName || !location || !description) {
-                    showAlert('Please fill in all required fields.', 'error');
-                    return;
-                }
-
-                // Email validation
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
-                    showAlert('Please enter a valid email address.', 'error');
-                    return;
-                }
-
-                const phoneRegex = /^\d{10}$/;
-                if (!phoneRegex.test(phone)) {
-                        showAlert('Please enter a valid 10-digit phone number.', 'error');
-                    return;
+                let finalLocation = location;
+                if (location === 'Other') {
+                    finalLocation = document.getElementById('otherCity').value.trim();
                 }
 
                 // Prepare FormData
@@ -630,65 +754,13 @@
                 formData.append('email', email);
                 formData.append('phone', phone);
                 formData.append('communityName', communityName);
-                formData.append('location', location);
+                formData.append('location', finalLocation);
                 formData.append('description', description);
 
                 // Append photos
                 selectedPhotos.forEach(photo => {
                     formData.append('photos', photo);
                 });
-                // --- Name Validation for All Name Fields ---
-                const nameRegex = /^[A-Za-z]+$/;
-
-                // First Name validation
-                if (!nameRegex.test(firstName)) {
-                    showAlert('First Name must contain only letters (no spaces or special characters).', 'error');
-                    return;
-                }
-
-                // Last Name validation
-                if (!nameRegex.test(lastName)) {
-                    showAlert('Last Name must contain only letters (no spaces or special characters).', 'error');
-                    return;
-                }
-                
-
-                if (!phoneRegex.test(phone)) {
-                    showAlert('Enter a valid 10-digit phone number.', 'error');
-                    return;
-                }
-                // Community Name validation
-                if (!nameRegex.test(communityName)) {
-                    showAlert('Community Name must contain only letters (no spaces or special characters).', 'error');
-                    return;
-                }
-
-                if (!location) {
-                    showAlert('Please select a city.', 'error');
-                    return;
-                }
-                let finalLocation = location;
-               
-
-                if (location === 'Other') {
-                    const otherCity = otherCityInput.value.trim();
-                    if (!otherCity) {
-                        showAlert('Please enter your city name.', 'error');
-                        return;
-                    }
-                    if (!nameRegex.test(otherCity)) {
-                        showAlert('City name must contain only letters and spaces.', 'error');
-                        return;
-                    }
-                    finalLocation = otherCity;
-                } else {
-                    if (!nameRegex.test(location)) {
-                        showAlert('City name must contain only letters and spaces.', 'error');
-                        return;
-                    }
-                }
-
-
 
                 // Submit form
                 fetch('/interest/submit', {
@@ -711,6 +783,13 @@
                     selectedPhotos = [];
                     photoPreviewGrid.innerHTML = '';
                     updatePhotoPreviewVisibility();
+                    // Clear all error messages
+                    Object.keys(validationRules).forEach(fieldName => {
+                        const errorSpan = document.getElementById(`${fieldName}-error`);
+                        const input = document.getElementById(fieldName);
+                        if (errorSpan) errorSpan.textContent = '';
+                        if (input) input.classList.remove('error');
+                    });
                 })
                 .catch(error => {
                     console.error('Error:', error);

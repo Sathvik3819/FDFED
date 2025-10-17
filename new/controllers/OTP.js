@@ -2,8 +2,10 @@ import nodemailer from "nodemailer";
 import Resident from "../models/resident.js";
 import Worker from "../models/workers.js";
 import Security from "../models/security.js";
+import bcrypt from "bcrypt";
 
 import dotenv from "dotenv";
+import CommunityManager from "../models/cManager.js";
 dotenv.config();
 
 function generateOTP() {
@@ -11,6 +13,9 @@ function generateOTP() {
 }
 
 let otp1;
+
+// Store OTPs for forgot password with expiration
+const forgotPasswordOTPs = new Map();
 
 async function OTP(email) {
   const otp = await generateOTP();
@@ -81,8 +86,8 @@ function generateSecurePassword(email) {
   return password;
 }
 
-async function sendPassword({ email, userType }) {
-  const password = generateSecurePassword(email);
+async function sendPassword({ email, userType,password }) {
+ 
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -510,10 +515,179 @@ User Management System`,
 
   const info = await transporter.sendMail(mes, (err, info) => {
     if (err) console.log(err);
-    else console.log("password sent to email:", pass);
+    else console.log("password sent to email:", password);
   });
 
   return password;
 }
 
-export { OTP, verify, sendPassword };
+// NEW FUNCTIONS FOR FORGOT PASSWORD FEATURE
+
+// Check if email exists in any user collection
+async function checkEmailExists(email) {
+  try {
+    const resident = await Resident.findOne({ email: email });
+    if (resident) return { exists: true, userType: 'Resident', user: resident };
+
+    const worker = await Worker.findOne({ email: email });
+    if (worker) return { exists: true, userType: 'Worker', user: worker };
+
+    const security = await Security.findOne({ email: email });
+    if (security) return { exists: true, userType: 'Security', user: security };
+
+    const communityManager = await CommunityManager.findOne({ email: email });
+    if (communityManager) return { exists: true, userType: 'Community Manager', user: communityManager };
+
+
+    return { exists: false };
+  } catch (error) {
+    console.error("Error checking email:", error);
+    throw error;
+  }
+}
+
+// Send OTP for forgot password
+async function sendForgotPasswordOTP(email) {
+  const otp = generateOTP();
+  
+  // Store OTP with 5 minute expiration
+  forgotPasswordOTPs.set(email, {
+    otp: otp,
+    expiresAt: Date.now() + 5 * 60 * 1000
+  });
+
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
+
+  let mes = {
+    from: '"Urban Ease" ',
+    to: email,
+    subject: "Password Reset OTP - Urban Ease",
+    text: `Dear User,\n\nYou requested to reset your password.\n\nYour OTP is: ${otp}\n\nThis OTP is valid for 5 minutes.\n\nIf you didn't request this, please ignore this email.`,
+    html: `
+    <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #333;">Password Reset Request</h2>
+      <p>You have requested to reset your password for Urban Ease.</p>
+      <p>Your One-Time Password (OTP) is:</p>
+      <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
+        ${otp}
+      </div>
+      <p style="color: #666;">This OTP is valid for 5 minutes.</p>
+      <p style="color: #666;">If you didn't request this, please ignore this email.</p>
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+      <p style="color: #999; font-size: 12px;">Urban Ease - Community Management</p>
+    </div>
+  `,
+  };
+
+  await transporter.sendMail(mes, (err, info) => {
+    if (err) console.log("Error sending OTP:", err);
+    else console.log("Forgot password OTP sent:", otp);
+  });
+
+  return true;
+}
+
+// Verify forgot password OTP
+function verifyForgotPasswordOTP(email, otp) {
+  const storedData = forgotPasswordOTPs.get(email);
+
+  if (!storedData) {
+    return { success: false, message: "OTP not found or expired" };
+  }
+
+  if (Date.now() > storedData.expiresAt) {
+    forgotPasswordOTPs.delete(email);
+    return { success: false, message: "OTP has expired" };
+  }
+
+  if (storedData.otp !== otp) {
+    return { success: false, message: "Invalid OTP" };
+  }
+
+  // OTP is valid
+  forgotPasswordOTPs.delete(email);
+  return { success: true };
+}
+
+// Reset password and send temporary password
+async function resetPasswordAndSendEmail(email, userType) {
+  try {
+    const tempPassword = generateSecurePassword(email);
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    // Update password in the appropriate collection
+    let updateResult;
+    switch (userType) {
+      case 'Resident':
+        updateResult = await Resident.updateOne(
+          { email: email },
+          { password: hashedPassword }
+        );
+        break;
+      case 'Worker':
+        updateResult = await Worker.updateOne(
+          { email: email },
+          { password: hashedPassword }
+        );
+        break;
+      case 'Security':
+        updateResult = await Security.updateOne(
+          { email: email },
+          { password: hashedPassword }
+        );
+
+        break;
+      case 'Community Manager':
+        updateResult= await CommunityManager.updateOne(
+          { email: email },
+          { password: hashedPassword }
+        );
+        break;
+      default:
+        throw new Error("Invalid user type");
+    }
+
+    if (updateResult.modifiedCount === 0) {
+      throw new Error("Failed to update password");
+    }
+    console.log(tempPassword)
+    // Send temporary password email (reusing existing sendPassword function)
+    await sendPassword({ email, userType, password: tempPassword});
+
+    return { success: true, message: "Password reset successful" };
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    throw error;
+  }
+}
+
+// Clean up expired OTPs periodically (run every 10 minutes)
+setInterval(() => {
+  const now = Date.now();
+  for (const [email, data] of forgotPasswordOTPs.entries()) {
+    if (now > data.expiresAt) {
+      forgotPasswordOTPs.delete(email);
+    }
+  }
+}, 10 * 60 * 1000);
+
+export { 
+  OTP, 
+  verify, 
+  sendPassword,
+  checkEmailExists,
+  sendForgotPasswordOTP,
+  verifyForgotPasswordOTP,
+  resetPasswordAndSendEmail
+};

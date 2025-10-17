@@ -4,24 +4,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urban Ease - Register</title>
+    <title>Urban Ease - Login</title>
     <link rel="stylesheet" href="/css/LoginPage.css">
     <style>
-                .login-link {
-                  font-size: 14px;
-                  color: black;
-                  text-decoration: none;
-                  font-weight: bold;
-                }
-              
-                .login-link:hover {
-                  text-decoration: underline;
-                }
-              </style>
+        .login-link {
+            font-size: 14px;
+            color: black;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+
+        .forgot-password-link {
+            font-size: 14px;
+            color: #666;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .forgot-password-link:hover {
+            color: #333;
+            text-decoration: underline;
+        }
+
+        .forgot-password-link.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .otp-container {
+            display: none;
+        }
+
+        .otp-container.active {
+            display: block;
+        }
+
+        .login-container.hidden {
+            display: none;
+        }
+
+        .back-to-login {
+            font-size: 14px;
+            color: #666;
+            text-decoration: none;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .back-to-login:hover {
+            color: #333;
+            text-decoration: underline;
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 24px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .timer {
+            text-align: center;
+            color: #666;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .resend-otp {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .resend-otp button {
+            background: none;
+            border: none;
+            color: #4CAF50;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 14px;
+        }
+
+        .resend-otp button:disabled {
+            color: #ccc;
+            cursor: not-allowed;
+            text-decoration: none;
+        }
+    </style>
 </head>
 
 <body>
-    <% if (message.length > 0) { %>
+    <% if (message && message.length > 0) { %>
         <div class="alert">
            <%= message %>
         </div>
@@ -38,50 +131,462 @@
         <div class="div1"></div>
 
         <div class="right-panel">
-            <h2>Login Now!</h2>
-            <p class="subtitle">Enter your information to login</p>
+            <!-- Login Form Container -->
+            <div class="login-container">
+                <h2>Login Now!</h2>
+                <p class="subtitle">Enter your information to login</p>
 
-            <div class="social-buttons" style="display: flex ;" >
-                <button class="social-btn google">
-                    <img src="/imgs/google.ico" alt="Google">
-                    Google
-                </button>
-                <button class="social-btn facebook">
-                    <img src="/imgs/facebook.png" alt="Facebook">
-                    Facebook
-                </button>
+                <div class="social-buttons" style="display: flex;">
+                    <button class="social-btn google">
+                        <img src="/imgs/google.ico" alt="Google">
+                        Google
+                    </button>
+                    <button class="social-btn facebook">
+                        <img src="/imgs/facebook.png" alt="Facebook">
+                        Facebook
+                    </button>
+                </div>
+
+                <div class="divider">or</div>
+
+                <form id="LoginForm" method="POST" action="/login">
+                    <input type="email" name="email" id="email" class="input" placeholder="Email Address" required>
+                
+                    <div class="password-wrap input">
+    <input type="password" name="password" id="password" placeholder="Password" required>
+    <img src="../imgs/hidePass.svg" id="togglePassword" alt="Toggle Password" height="20px" width="40px">
+</div>
+
+                
+                    <select name="userType" id="userType" class="input" required>
+                        <option value="" disabled selected>Select your role</option>
+                        <option value="Resident">Resident</option>
+                        <option value="Security">Security</option>
+                        <option value="Worker">Worker</option>
+                        <option value="communityManager">Community Manager</option>
+                    </select>
+
+                    <div style="text-align: right; margin-bottom: 10px;">
+                        <a href="#" id="forgotPasswordLink" class="forgot-password-link disabled">Forgot Password?</a>
+                    </div>
+                
+                    <button type="submit" class="continue-btn">Login</button>
+                </form>
+                
+                <div style="text-align: right; margin-top: 5px;">
+                    <a href="/interest" class="login-link">
+                        New? Register here
+                    </a>
+                </div>
             </div>
 
-            <div class="divider">or</div>
+            <!-- OTP Container -->
+            <div class="otp-container" id="otpContainer">
+                <h2>Verify OTP</h2>
+                <p class="subtitle">Enter the OTP sent to <span id="otpEmail"></span></p>
 
-            <form id="LoginForm" method="POST" action="/login">
-                <input type="email" name="email" id="email" class="input" placeholder="Email Address" required>
-            
-                <div class="password-wrap input">
-                    <input type="password" name="password" id="password" placeholder="Password" required>
-                    <img src="../imgs/hidePass.svg" id="img" alt="" height="20px" width="40px">
+                <div class="otp-inputs">
+                    <input type="text" maxlength="1" class="otp-input" id="otp-1">
+                    <input type="text" maxlength="1" class="otp-input" id="otp-2">
+                    <input type="text" maxlength="1" class="otp-input" id="otp-3">
+                    <input type="text" maxlength="1" class="otp-input" id="otp-4">
+                    <input type="text" maxlength="1" class="otp-input" id="otp-5">
+                    <input type="text" maxlength="1" class="otp-input" id="otp-6">
                 </div>
-            
-                <select name="userType" id="userType" class="input" required>
-                    <option value="" disabled selected>Select your role</option>
-                    <option value="Resident">Resident</option>
-                    <option value="Security">Security</option>
-                    <option value="Worker">Worker</option>
-                    <option value="communityManager">Community Manager</option>
-                </select>
-            
-                <button type="submit" class="continue-btn">Login</button>
-            </form>
-            
-              
-              <div style="text-align: right; margin-top: 5px;">
-                <a href="/interest" class="login-link">
-                  New? Register here
-                </a>
-              </div>
-              
+
+                <div class="timer" id="timer">Time remaining: 5:00</div>
+
+                <button type="button" class="continue-btn" id="verifyOtpBtn">Verify OTP</button>
+
+                <div class="resend-otp">
+                    <button type="button" id="resendOtpBtn" disabled>Resend OTP</button>
+                </div>
+
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="#" class="back-to-login" id="backToLogin">Back to Login</a>
+                </div>
+            </div>
         </div>
     </div>
+    <script>// Email format validation
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+// Wait for DOM to be fully loaded
+document.addEventListener("DOMContentLoaded", () => {
+    const icon = document.querySelector("#img");
+    const pass = document.querySelector("#password");
+    const emailInput = document.getElementById("email");
+    const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+    const loginContainer = document.querySelector(".login-container");
+    const otpContainer = document.getElementById("otpContainer");
+    const backToLoginBtn = document.getElementById("backToLogin");
+    const verifyOtpBtn = document.getElementById("verifyOtpBtn");
+    const resendOtpBtn = document.getElementById("resendOtpBtn");
+    const otpEmailSpan = document.getElementById("otpEmail");
+    const form = document.getElementById("LoginForm");
+    const passwordInput = document.getElementById("password");
+    const userTypeSelect = document.getElementById("userType");
+    const toggleImg = document.getElementById("img");
+
+    let timerInterval;
+    let timeRemaining = 300; // 5 minutes in seconds
+
+    // Toggle password visibility
+    if (icon && pass) {
+        icon.addEventListener("click", () => {
+            if (pass.type === "password") {
+                pass.type = "text";
+                icon.src = "../imgs/showPass.svg";
+            } else {
+                pass.type = "password";
+                icon.src = "../imgs/hidePass.svg";
+            }
+        });
+    }
+
+    // Enable/Disable forgot password link based on email input
+    if (emailInput && forgotPasswordLink) {
+        emailInput.addEventListener("input", () => {
+            const email = emailInput.value.trim();
+            if (isValidEmail(email)) {
+                forgotPasswordLink.classList.remove("disabled");
+            } else {
+                forgotPasswordLink.classList.add("disabled");
+            }
+        });
+
+        // Also check on page load if email field has value
+        const email = emailInput.value.trim();
+        if (isValidEmail(email)) {
+            forgotPasswordLink.classList.remove("disabled");
+        }
+    }
+    
+    const togglePassword = document.getElementById("togglePassword");
+
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener("click", () => {
+            const isHidden = passwordInput.type === "password";
+
+            passwordInput.type = isHidden ? "text" : "password";
+            togglePassword.src = isHidden 
+                ? "../imgs/showPass.svg" 
+                : "../imgs/hidePass.svg";
+        });
+    }
+
+    // Forgot Password Click Handler
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener("click", async (e) => {
+            e.preventDefault();
+            
+            const email = emailInput.value.trim();
+
+            if (!isValidEmail(email)) {
+                showAlert("Please enter a valid email address first.");
+                return;
+            }
+
+            // Show loading state
+            forgotPasswordLink.textContent = "Sending...";
+            forgotPasswordLink.style.pointerEvents = "none";
+
+            try {
+                // Send request to check if email exists and send OTP
+                const response = await fetch("/forgot-password", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Email exists, OTP sent
+                    showAlert("OTP sent to your email!", "success");
+                    otpEmailSpan.textContent = email;
+                    switchToOtpView();
+                    startTimer();
+                } else {
+                    // Email doesn't exist
+                    showAlert(data.message || "Email not found in our records.");
+                }
+            } catch (error) {
+                showAlert("An error occurred. Please try again.");
+                console.error("Error:", error);
+            } finally {
+                // Reset link state
+                forgotPasswordLink.textContent = "Forgot Password?";
+                forgotPasswordLink.style.pointerEvents = "auto";
+            }
+        });
+    }
+
+    // Switch to OTP view
+    function switchToOtpView() {
+        if (loginContainer && otpContainer) {
+            loginContainer.classList.add("hidden");
+            otpContainer.classList.add("active");
+        }
+    }
+
+    // Back to Login
+    if (backToLoginBtn) {
+        backToLoginBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            resetOtpView();
+            if (otpContainer && loginContainer) {
+                otpContainer.classList.remove("active");
+                loginContainer.classList.remove("hidden");
+            }
+            clearInterval(timerInterval);
+        });
+    }
+
+    // Timer for OTP
+    function startTimer() {
+        timeRemaining = 300;
+        if (resendOtpBtn) resendOtpBtn.disabled = true;
+        
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const timerElement = document.getElementById("timer");
+            if (timerElement) {
+                timerElement.textContent = 
+                    `Time remaining: ${minutes}:${seconds.toString().padStart(2, "0")}`;
+            }
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                if (timerElement) timerElement.textContent = "OTP expired";
+                if (resendOtpBtn) resendOtpBtn.disabled = false;
+            }
+        }, 1000);
+    }
+
+    // OTP Input Handling - Auto focus next input
+    const otpInputs = document.querySelectorAll(".otp-input");
+    otpInputs.forEach((input, index) => {
+        input.addEventListener("input", (e) => {
+            if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+        });
+
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace" && e.target.value === "" && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        });
+
+        // Only allow numbers
+        input.addEventListener("keypress", (e) => {
+            if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    // Verify OTP
+    if (verifyOtpBtn) {
+        verifyOtpBtn.addEventListener("click", async () => {
+            const otp = Array.from(otpInputs).map(input => input.value).join("");
+            
+            if (otp.length !== 6) {
+                showAlert("Please enter the complete 6-digit OTP.");
+                return;
+            }
+
+            const email = emailInput.value.trim();
+
+            // Show loading state
+            verifyOtpBtn.textContent = "Verifying...";
+            verifyOtpBtn.disabled = true;
+
+            try {
+                const response = await fetch("/verify-otp", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, otp }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showAlert("OTP verified! Temporary password sent to your email.", "success");
+                    clearInterval(timerInterval);
+                    setTimeout(() => {
+                        resetOtpView();
+                        if (otpContainer && loginContainer) {
+                            otpContainer.classList.remove("active");
+                            loginContainer.classList.remove("hidden");
+                        }
+                    }, 2000);
+                } else {
+                    showAlert(data.message || "Invalid OTP. Please try again.");
+                    resetOtpInputs();
+                }
+            } catch (error) {
+                showAlert("An error occurred. Please try again.");
+                console.error("Error:", error);
+            } finally {
+                // Reset button state
+                verifyOtpBtn.textContent = "Verify OTP";
+                verifyOtpBtn.disabled = false;
+            }
+        });
+    }
+
+    // Resend OTP
+    if (resendOtpBtn) {
+        resendOtpBtn.addEventListener("click", async () => {
+            const email = emailInput.value.trim();
+
+            // Show loading state
+            resendOtpBtn.textContent = "Sending...";
+            resendOtpBtn.disabled = true;
+
+            try {
+                const response = await fetch("/forgot-password", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showAlert("New OTP sent to your email!", "success");
+                    resetOtpInputs();
+                    startTimer();
+                } else {
+                    showAlert(data.message || "Failed to resend OTP.");
+                    resendOtpBtn.disabled = false;
+                }
+            } catch (error) {
+                showAlert("An error occurred. Please try again.");
+                console.error("Error:", error);
+                resendOtpBtn.disabled = false;
+            } finally {
+                // Reset button text
+                resendOtpBtn.textContent = "Resend OTP";
+            }
+        });
+    }
+
+    // Reset OTP inputs
+    function resetOtpInputs() {
+        otpInputs.forEach(input => {
+            input.value = "";
+        });
+        if (otpInputs[0]) otpInputs[0].focus();
+    }
+
+    // Reset OTP view
+    function resetOtpView() {
+        resetOtpInputs();
+        timeRemaining = 300;
+        const timerElement = document.getElementById("timer");
+        if (timerElement) timerElement.textContent = "Time remaining: 5:00";
+    }
+
+    // Login Form Validation
+    if (form) {
+        // Show / Hide Password Toggle
+        if (toggleImg && passwordInput) {
+            toggleImg.addEventListener("click", () => {
+                if (passwordInput.type === "password") {
+                    passwordInput.type = "text";
+                    toggleImg.src = "../imgs/showPass.svg";
+                } else {
+                    passwordInput.type = "password";
+                    toggleImg.src = "../imgs/hidePass.svg";
+                }
+            });
+        }
+
+        // Validation handler
+        form.addEventListener("submit", (e) => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            const userType = userTypeSelect.value;
+
+            // Clear any previous error borders
+            [emailInput, passwordInput, userTypeSelect].forEach((el) => {
+                if (el) el.style.border = "1px solid #ccc";
+            });
+
+            let valid = true;
+            let errorMsg = "";
+
+            if (!isValidEmail(email)) {
+                valid = false;
+                errorMsg = "Please enter a valid email address.";
+                if (emailInput) emailInput.style.border = "2px solid red";
+            } else if (password.length < 6) {
+                valid = false;
+                errorMsg = "Password must be at least 6 characters long.";
+                if (passwordInput) passwordInput.style.border = "2px solid red";
+            } else if (!userType) {
+                valid = false;
+                errorMsg = "Please select your role.";
+                if (userTypeSelect) userTypeSelect.style.border = "2px solid red";
+            }
+
+            if (!valid) {
+                e.preventDefault();
+                showAlert(errorMsg);
+            }
+        });
+    }
+});
+
+// Show alert message
+function showAlert(message, type = "error") {
+    let alertBox = document.querySelector(".alert");
+    if (!alertBox) {
+        alertBox = document.createElement("div");
+        alertBox.className = "alert";
+        document.body.insertBefore(alertBox, document.body.firstChild);
+    }
+    
+    if (type === "success") {
+        alertBox.style.background = "#d4edda";
+        alertBox.style.color = "#155724";
+        alertBox.style.border = "1px solid #c3e6cb";
+    } else {
+        alertBox.style.background = "#f8d7da";
+        alertBox.style.color = "#721c24";
+        alertBox.style.border = "1px solid #f5c6cb";
+    }
+    
+    alertBox.style.padding = "12px 20px";
+    alertBox.style.marginBottom = "20px";
+    alertBox.style.borderRadius = "5px";
+    alertBox.style.position = "fixed";
+    alertBox.style.top = "20px";
+    alertBox.style.right = "20px";
+    alertBox.style.zIndex = "9999";
+    alertBox.style.maxWidth = "400px";
+    alertBox.textContent = message;
+    alertBox.style.display = "block";
+
+    // Auto hide alert after 4 seconds
+    setTimeout(() => {
+        alertBox.style.display = "none";
+    }, 4000);
+}</script>
     <script src="/JS/LoginPage.js"></script>
 </body>
 
