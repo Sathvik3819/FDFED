@@ -23,8 +23,8 @@ const getDashboardInfo = async (req, res) => {
     ] = await Promise.all([
       visitor.find({
         community: req.user.community,
-        status: { $in: ["Active", "CheckedOut"] },
-      }).sort({ createdAt: -1 }).limit(10),
+        status: { $in: ["Active", "Pending","CheckedOut"] },
+      }).sort({ createdAt: -1 }),
 
       Security.findById(req.user.id),
 
@@ -47,15 +47,14 @@ const getDashboardInfo = async (req, res) => {
 
       visitor.countDocuments({
         community: req.user.community,
-        status: "Approved",
+        status: "Active",
         isCheckedIn: true,
-        scheduledAt: { $gte: startOfDay, $lte: endOfDay },
       }),
     ]);
 
     const stats = {
       Pending: PendingRequests,
-      Visitor: VisitorToday,
+      Visitor: visitors,
       Active: ActiveVisitors,
     };
 
