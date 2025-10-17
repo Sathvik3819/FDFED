@@ -669,12 +669,12 @@
         <form id="preapprovalForm" action="preapproval" method="POST">
           <div class="form-group">
             <label for="visitorName">Visitor Name:</label>
-            <input type="text" id="visitorName" name="visitorName" required />
+            <input type="text" id="visitorName" name="visitorName" required pattern="^[A-Za-z\s]+$"/>
           </div>
 
           <div class="form-group">
             <label for="visitorPhone">Visitor Phone Number:</label>
-            <input type="text" id="visitorPhone" name="contactNumber" required />
+            <input type="text" id="visitorPhone" name="contactNumber" required  pattern="^[6-9]\d{9}$" maxlength="10"/>
           </div>
 
           <div class="form-group">
@@ -690,7 +690,7 @@
 
           <div class="form-group">
             <label for="visitDate">Date of Visit:</label>
-            <input type="date" id="visitDate" name="dateOfVisit" required />
+            <input type="date" id="visitDate" name="dateOfVisit" required min="<%= new Date().toISOString().split('T')[0] %>"/>
           </div>
 
           <div class="form-group">

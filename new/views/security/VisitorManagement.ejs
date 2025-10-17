@@ -936,20 +936,20 @@
           <div class="row">
             <div class="col-md-6 mb-4">
               <label for="fullName" class="form-label">Full name</label>
-              <input type="text" class="form-control" name="fullName" id="fullName" required
+              <input type="text" class="form-control" name="fullName" id="fullName" required pattern="^[A-Za-z\s]+$"
                 placeholder="Enter visitor's full name" />
             </div>
             <div class="col-md-6 mb-4">
               <label for="contact" class="form-label">Contact number</label>
               <input type="tel" class="form-control" name="contact" id="contact" required
-                placeholder="10 digit mobile number" pattern="[0-9]{10}" maxlength="10" />
+                placeholder="10 digit mobile number" pattern="^[6-9]\d{9}$" maxlength="10" />
             </div>
           </div>
 
           <div class="row">
             <div class="col-md-6 mb-4">
               <label for="visitDate" class="form-label">Visit date</label>
-              <input type="date" class="form-control" name="visitDate" required min="" />
+              <input type="date" class="form-control" name="visitDate" required min="<%= new Date().toISOString().split('T')[0] %>" />
             </div>
             <div class="col-md-6 mb-4">
               <label for="email" class="form-label">Email address</label>
