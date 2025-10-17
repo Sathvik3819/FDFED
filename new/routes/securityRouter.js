@@ -236,6 +236,54 @@ securityRouter.get("/visitorManagement/api/visitors", async (req, res) => {
   }
 });
 
+securityRouter.post("/verify-qr", async(req, res) => {
+
+  try {
+    const { token } = req.body;
+    const visitor = await Visitor.findOne({ qrToken: token }).populate("approvedBy");
+
+
+    if (!visitor.isCheckedIn) {
+      visitor.isCheckedIn = true;
+      visitor.checkInAt = new Date();
+      visitor.status = "Active";
+    } else {
+      visitor.isCheckedIn = false;
+      visitor.checkOutAt = new Date();
+      visitor.status = "CheckedOut";
+    }
+
+    visitor.approvedBy.notifications.push({
+      n: `Visitor ${visitor.ID} is now ${visitor.status}`,
+      createdAt: new Date(Date.now()),
+      belongs: "PA",
+    });
+
+    await visitor.approvedBy.save();
+    await visitor.save();
+
+
+    return res.status(200).json({
+      success: true,
+      message: `Visitor ${visitor.status} successfully`,
+      visitor: {
+        id: visitor._id,
+        name: visitor.name,
+        status: visitor.status,
+        checkInAt: visitor.checkInAt,
+        checkOutAt: visitor.checkOutAt,
+        isCheckedIn: visitor.isCheckedIn,
+      },
+    });
+
+  } catch (error) {
+    console.error("Error verifying QR:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Internal server error", error });
+  }
+  })
+
 securityRouter.get("/visitorManagement/:action/:id", async (req, res) => {
   const { action, id } = req.params;
 

@@ -138,10 +138,24 @@ qrScannerBtn?.addEventListener("click", function () {
 
 qrCloseBtn?.addEventListener("click", closeQRScanner);
 
-function onScanSuccess(decodedText, decodedResult) {
-  console.log("Scanned QR Code:", decodedText);
-  alert(`QR Code Scanned: ${decodedText}`);
+async function onScanSuccess(decodedText, decodedResult) { 
+  const response = await fetch("/security/verify-qr", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token: decodedText }),
+    });
 
+    if (!response.ok) {
+      throw new Error("Failed to verify visitor");
+    }
+    const data = await response.json();
+     if (data.success) {
+      alert(`Visitor ${data.visitor.name} ${data.visitor.status === "Active" ? "checked in" : "checked out"} successfully!`);
+    } else {
+      alert(` Verification failed: ${data.message}`);
+    }
   // Close scanner after success
   closeQRScanner();
 }
